@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlayStats</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0a12;--panel:#1a1522;--panel2:#241c2e;--line:#3a2d48;--tx:#f1ebf7;--mut:#9b8bad;--acc:#c6ff3d;--acc-tx:#101400;--bad:#ff5d73;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:radial-gradient(120% 60% at 50% -10%,#2a1a3a 0%,var(--bg) 60%) fixed;color:var(--tx);font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh}
+body.fifa{--acc:#2ee67a;--acc-tx:#04180c;--panel:#10201a;--panel2:#183027;--line:#255240;--bg:#07120d;--mut:#8fb5a2}
+body.brawl{--acc:#ff8a2b;--acc-tx:#1c0c00;--panel:#241612;--panel2:#33201a;--line:#5a3426;--bg:#120a08;--mut:#c0a090}
+body.fifa{background:radial-gradient(120% 60% at 50% -10%,#14402c 0%,var(--bg) 60%) fixed}
+body.brawl{background:radial-gradient(120% 60% at 50% -10%,#4a2210 0%,var(--bg) 60%) fixed}
+#app{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+h1,h2,h3,.disp{font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;margin:0;letter-spacing:.01em}
+.logo{font-size:44px;line-height:1;margin:20px 0 4px}
+.logo b{color:var(--acc)}
+.sub{color:var(--mut);margin:0 0 24px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.top h2{font-size:30px;flex:1}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:9px 14px;min-height:40px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.pri{background:var(--acc);color:var(--acc-tx);border-color:var(--acc);font-weight:700}
+.ghost{background:transparent}
+.danger{color:var(--bad)}
+.big{display:block;width:100%;text-align:left;border-radius:18px;padding:22px 20px;margin-bottom:14px;border:1px solid;min-height:120px;position:relative;overflow:hidden}
+.big .disp{font-size:38px;display:block}
+.big small{display:block;margin-top:4px;opacity:.8}
+.big .em{position:absolute;right:14px;top:10px;font-size:64px;opacity:.9}
+.b-fifa{background:linear-gradient(135deg,#0f3d27,#15683f);border-color:#2ee67a}
+.b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
+.row2{display:flex;gap:10px}
+.row2 button{flex:1}
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);padding:4px;border-radius:12px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--mut)}
+.tabs button.on{background:var(--acc);color:var(--acc-tx);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:42px}
+.add{display:flex;gap:8px;margin-bottom:12px}
+.add .in{flex:1}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:420px}
+th{font-family:'Rajdhani',sans-serif;font-size:15px;color:var(--mut);text-align:center;padding:8px 4px;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+td{padding:8px 4px;border-top:1px solid var(--line);text-align:center}
+td:first-child{font-weight:700}
+.ctl{display:inline-flex;align-items:center;gap:6px}
+.ctl button{width:30px;height:30px;min-height:0;padding:0;border-radius:8px}
+.ctl span{min-width:22px;font-weight:700;font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 12px;display:inline-flex;gap:6px;align-items:center}
+.chip button{border:0;background:transparent;padding:0 6px;min-height:0;color:var(--mut)}
+.match{display:grid;grid-template-columns:1fr 46px 12px 46px 1fr;gap:6px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.match .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match .n:last-child{text-align:right}
+.match input{width:100%;text-align:center;padding:8px 0;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+.match.done .n.w{color:var(--acc);font-weight:700}
+.rd{font-family:'Rajdhani',sans-serif;color:var(--acc);font-size:18px;margin:14px 0 2px}
+.empty{color:var(--mut);text-align:center;padding:22px 8px}
+.t-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;margin-bottom:8px;padding:14px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--panel2);color:var(--mut)}
+.tag.ok{background:var(--acc);color:var(--acc-tx);font-weight:700}
+.champ{background:var(--acc);color:var(--acc-tx);border-radius:14px;padding:14px;margin-bottom:12px;font-weight:700}
+.note{color:var(--mut);font-size:13px;margin:8px 0}
+:root{--gold:#ffd24a}
+.throne{text-align:center;padding:22px 16px 18px;margin:4px 0 16px;border-radius:20px;border:1px solid var(--gold);background:radial-gradient(90% 120% at 50% 0%,rgba(255,210,74,.3),rgba(255,210,74,.04) 70%),var(--panel);box-shadow:0 0 0 1px rgba(255,210,74,.25),0 10px 40px -10px rgba(255,210,74,.55)}
+.throne .cr{font-size:46px;line-height:1;animation:flo 3s ease-in-out infinite}
+.throne .tl{color:var(--gold);font-weight:700;margin-top:6px}
+.throne .tn{font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:clamp(40px,13vw,66px);line-height:1;font-weight:700;color:#fff3c4;text-shadow:0 0 24px rgba(255,210,74,.6);overflow-wrap:anywhere}
+.throne .ts{color:var(--mut);margin-top:8px}
+@keyframes flo{50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.throne .cr{animation:none}}
+tr.top1 td{background:linear-gradient(90deg,rgba(255,210,74,.24),rgba(255,210,74,.05));color:#fff3c4;font-size:1.12em;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold)}
+tr.top1 td:first-child{border-left:3px solid var(--gold)}
+.rk{display:inline-block;width:22px;color:var(--mut);font-weight:500;font-size:13px}
+.crown{display:inline-block;width:22px}
+.zocalo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--bad);color:#2a0007;border-radius:12px;border-left:8px solid #7a0016;padding:10px 14px;margin:0 0 12px}
+.zocalo b{font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:28px;line-height:1}
+.zocalo .zt{font-weight:700;background:#2a0007;color:#ffd0d6;border-radius:6px;padding:2px 8px;font-size:13px}
+tr.last td{background:linear-gradient(90deg,rgba(255,93,115,.26),rgba(255,93,115,.05));color:#ffb3bd;border-top:1px solid var(--bad);border-bottom:1px solid var(--bad)}
+tr.last td:first-child{border-left:3px solid var(--bad)}
+.bm{border-top:1px solid var(--line);padding:8px 0}.bp{display:grid;grid-template-columns:1fr 92px 92px;gap:8px;align-items:center;padding:4px 0}.bp .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bp select{padding:6px 8px}.ko{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px}.ko input{width:52px;text-align:center;padding:8px 0;background:var(--bg);border:1px solid var(--line);border-radius:8px}.bm.done .bp .n{color:var(--acc)}.warn{color:var(--bad);font-size:13px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const GAMES={fifa:{n:'FIFA',e:'⚽',u:'Goles'},brawl:{n:'BrawlHalla',e:'⚔️',u:'Puntos'}};
+const blank=()=>({friends:[],games:{fifa:{players:[],tours:[],stats:{}},brawl:{players:[],tours:[],stats:{}}}});
+let R=null;try{R=JSON.parse(localStorage.getItem('virg0')||'null')}catch(e){}
+const nid=()=>Math.random().toString(36).slice(2,9);
+function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
+let S;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0];R.cur=S.id}
+R=migrate(R);setS();normalize();
+let USER=null,authChecked=false,ready=false,tm=null,loginErr='';
+function save(){try{localStorage.setItem('virg0',JSON.stringify(R))}catch(e){}
+  if(!USER||!ready||!window.FB)return;clearTimeout(tm);
+  tm=setTimeout(()=>{FB.save(USER.uid,JSON.stringify(R)).catch(()=>{})},400)}
+window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';
+  if(u){try{const j=await FB.load(u.uid);
+      if(j){const r=JSON.parse(j);if(r&&(r.games||r.groups)){R=migrate(r);setS();normalize();try{localStorage.setItem('virg0',JSON.stringify(R))}catch(e){}}}
+      ready=true;if(!j)save();
+    }catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá.'}}
+  v.s='home';render()};
+function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar sesión: '+(e.code||e.message);render()})}
+function doLogout(){FB.logout().then(()=>{try{localStorage.removeItem('virg0')}catch(e){}R=migrate(null);setS()})}
+function loginView(){return `<h1 class="logo disp">Play<b>Stats</b></h1><p class="sub">Iniciá sesión para guardar tus torneos en la nube.</p>${loginErr?`<p class="warn" style="margin-bottom:12px">${esc(loginErr)}</p>`:''}<button class="pri" style="width:100%;min-height:52px;font-size:17px" onclick="doLogin()">Entrar con Google</button>`}
+setTimeout(()=>{if(!authChecked){authChecked=true;loginErr='No se pudo conectar con Firebase. Revisá tu conexión y recargá.';render()}},8000);
+const sortedPlayers=(G,g)=>G.players.slice().sort((a,b)=>{const x=stat(g,a),y=stat(g,b);return y.c-x.c||x.d-y.d||y.t-x.t||nm(a).localeCompare(nm(b))});
+let v={s:'home',g:null,tab:'table',t:null,draft:{name:'',ps:[]}};
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc(f.name):'?'};
+const stat=(g,p)=>S.games[g].stats[p]||(S.games[g].stats[p]={c:0,d:0,t:0});
+const go=o=>{Object.assign(v,o);render()};
+
+function rounds(ids){
+  const a=ids.slice();if(a.length%2)a.push(null);
+  const n=a.length,out=[];
+  for(let r=0;r<n-1;r++){
+    for(let i=0;i<n/2;i++){const x=a[i],y=a[n-1-i];if(x&&y)out.push({r:r+1,a:x,b:y,sa:null,sb:null,pa:null,pb:null,ka:0,kb:0})}
+    a.splice(1,0,a.pop());
+  }
+  return out;
+}
+function normalize(){for(const gr of R.groups)for(const g in gr.games)gr.games[g].tours.forEach(t=>t.matches.forEach(m=>{if(m.pa===undefined){m.pa=null;m.pb=null;m.ka=0;m.kb=0}}))}
+function isDone(m,g){return g==='brawl'?(m.pa>0&&m.pb>0&&m.pa!==m.pb):(m.sa!==null&&m.sb!==null)}
+function standings(t,g=v.g){return g==='brawl'?standingsB(t):standingsF(t)}
+function standingsB(t){
+  const m={};t.players.forEach(p=>m[p]={p,pj:0,g:0,ko:0,pts:0});
+  t.matches.forEach(x=>{if(!isDone(x,'brawl'))return;
+    [[x.a,x.pa,x.ka],[x.b,x.pb,x.kb]].forEach(([p,pl,k])=>{const r=m[p];r.pj++;r.pts+=5-pl;r.ko+=k;if(pl===1)r.g++});});
+  return Object.values(m).sort((a,b)=>b.pts-a.pts||b.ko-a.ko||b.g-a.g);
+}
+function standingsF(t){
+  const m={};t.players.forEach(p=>m[p]={p,pj:0,g:0,e:0,l:0,gf:0,gc:0,pts:0});
+  t.matches.forEach(x=>{if(x.sa===null||x.sb===null)return;
+    const A=m[x.a],B=m[x.b];A.pj++;B.pj++;A.gf+=x.sa;A.gc+=x.sb;B.gf+=x.sb;B.gc+=x.sa;
+    if(x.sa>x.sb){A.g++;A.pts+=3;B.l++}else if(x.sa<x.sb){B.g++;B.pts+=3;A.l++}else{A.e++;B.e++;A.pts++;B.pts++}});
+  return Object.values(m).sort((a,b)=>b.pts-a.pts||b.g-a.g);
+}
+
+/* acciones */
+function addFriend(){const i=$('fn');const n=i.value.trim();if(!n)return;
+  if(S.friends.some(f=>f.name.toLowerCase()===n.toLowerCase())){i.value='';return}
+  S.friends.push({id:uid(),name:n});save();render()}
+function delFriend(id){S.friends=S.friends.filter(f=>f.id!==id);
+  for(const g in S.games){const G=S.games[g];G.players=G.players.filter(p=>p!==id);delete G.stats[id]}
+  save();render()}
+function addToTable(){const id=$('sel').value;if(!id)return;const G=S.games[v.g];
+  if(!G.players.includes(id)){G.players.push(id);stat(v.g,id)}save();render()}
+function rmFromTable(id){const G=S.games[v.g];G.players=G.players.filter(p=>p!==id);save();render()}
+function bump(id,k,d){const s=stat(v.g,id);s[k]=Math.max(0,s[k]+d);save();render()}
+function addDraft(){const id=$('dsel').value;if(id&&!v.draft.ps.includes(id)){v.draft.ps.push(id);render()}}
+function rmDraft(id){v.draft.ps=v.draft.ps.filter(p=>p!==id);render()}
+function createT(){const d=v.draft;if(d.ps.length<2)return;
+  const G=S.games[v.g];
+  const t={id:uid(),name:d.name.trim()||('Torneo '+(G.tours.length+1)),players:d.ps.slice(),matches:rounds(d.ps),done:false,champ:null};
+  G.tours.push(t);d.ps.forEach(p=>{if(!G.players.includes(p))G.players.push(p)});
+  v.draft={name:'',ps:[]};save();go({s:'tour',t:t.id})}
+function curT(){return S.games[v.g].tours.find(t=>t.id===v.t)}
+function setScore(i,side,val){const m=curT().matches[i];
+  m[side]=val===''?null:Math.max(0,parseInt(val)||0);save();render()}
+function setB(i,k,val){const m=curT().matches[i];
+  if(k==='pa'||k==='pb')m[k]=val===''?null:parseInt(val);else m[k]=Math.max(0,parseInt(val)||0);
+  save();render()}
+function finishT(){const t=curT(),G=S.games[v.g];const st=standings(t);
+  t.done=true;t.champ=st[0].p;
+  st.forEach(r=>stat(v.g,r.p).t++);stat(v.g,st[0].p).c++;stat(v.g,st[st.length-1].p).d++;
+  save();render()}
+function throne(n,l,sub){return `<div class="throne"><div class="cr">👑</div><div class="tl">${l}</div><div class="tn">${n}</div><div class="ts">${sub}</div></div>`}
+function shame(n,l,sub){return `<div class="zocalo"><span class="zt">${l}</span><b>${n}</b><span>${sub}</span></div>`}
+function worstIx(a){let m=0,w=-1;a.forEach((x,i)=>{if(x.d>0&&x.d>=m){m=x.d;w=i}});return a.length>1&&w>0?w:-1}
+function worstG(G,g){const sp=sortedPlayers(G,g);const i=worstIx(sp.map(p=>stat(g,p)));return i>=0?sp[i]:null}
+const rk=(ix,ok,bad)=>bad?'<span class="crown">🔻</span>':ix===0&&ok?'<span class="crown">👑</span>':'<span class="rk">'+(ix+1)+'</span>';
+function throneG(){const G=S.games[v.g];const p=sortedPlayers(G,v.g)[0];if(!p)return'';const s=stat(v.g,p);if(!s.c)return'';
+  return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+' · '+s.d+' descensos<br>Vení, bajame si podés')}
+function delT2(rev){const t=curT(),G=S.games[v.g];
+  if(rev&&t.done){const st=standings(t);st.forEach(r=>{const s=stat(v.g,r.p);s.t=Math.max(0,s.t-1)});
+    const a=stat(v.g,t.champ||st[0].p),b=stat(v.g,st[st.length-1].p);a.c=Math.max(0,a.c-1);b.d=Math.max(0,b.d-1)}
+  G.tours=G.tours.filter(x=>x.id!==v.t);save();go({s:'game',tab:'tours',cd:false})}
+
+/* vistas */
+function friendSelect(id,excl){
+  const o=S.friends.filter(f=>!excl.includes(f.id));
+  return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
+
+function addGroup(){const n=$('gn').value.trim();if(!n)return;const g={id:uid(),name:n,...blank()};R.groups.push(g);R.cur=g.id;setS();save();go({s:'home',g:null})}
+function pickGroup(id){R.cur=id;setS();save();go({s:'home',g:null,dg:null,ren:null})}
+function renGroup(id){const n=$('rn').value.trim();if(n){R.groups.find(g=>g.id===id).name=n;save()}v.ren=null;render()}
+function delGroup(id){if(R.groups.length<2)return;R.groups=R.groups.filter(g=>g.id!==id);setS();save();v.dg=null;render()}
+function groups(){return `<div class="top"><button class="ghost" onclick="go({s:'home',ren:null,dg:null})">←</button><h2>Grupos</h2></div>
+<p class="note">Cada grupo tiene sus propios amigos, torneos y tablas.</p>
+<div class="add"><input class="in" id="gn" placeholder="Nombre del nuevo grupo" onkeydown="if(event.key==='Enter')addGroup()"><button class="pri" onclick="addGroup()">Crear grupo</button></div>
+${R.groups.map(g=>{const cur=g.id===R.cur;const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
+ if(v.ren===g.id)return `<div class="card"><div class="add" style="margin:0"><input class="in" id="rn" value="${esc(g.name)}" onkeydown="if(event.key==='Enter')renGroup('${g.id}')"><button class="pri" onclick="renGroup('${g.id}')">Guardar</button></div></div>`;
+ if(v.dg===g.id)return `<div class="card"><b>¿Eliminar "${esc(g.name)}"?</b><p class="note">Se borran sus amigos, torneos y tablas. No se puede deshacer.</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">Eliminar grupo</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
+ return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.friends.length} amigos · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div><div class="row2" style="margin-top:10px"><button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button>${R.groups.length>1?`<button class="ghost danger" onclick="go({dg:'${g.id}'})">Eliminar</button>`:''}</div></div>`}).join('')}`}
+function home(){return `
+<h1 class="logo disp">Play<b>Stats</b></h1>
+<p class="sub">Elegí el juego y llevá la cuenta de los torneos.</p>
+<button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
+<button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
+<button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
+<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Amigos (${S.friends.length})</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
+
+function friends(){return `
+<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Amigos</h2></div>
+<div class="add"><input class="in" id="fn" placeholder="Nombre del amigo" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar</button></div>
+${S.friends.length?`<div class="card">${S.friends.map(f=>`<div class="ctl" style="display:flex;justify-content:space-between;padding:6px 0"><b>${esc(f.name)}</b><button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></div>`).join('')}</div>`:'<div class="empty">Todavía no hay amigos. Agregá el primero para armar torneos.</div>'}`}
+
+function supreme(){
+  const rows=S.friends.map(f=>{let c=0,d=0,t=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t}}return{n:esc(f.name),c,d,t}}).sort((a,b)=>b.c-a.c||a.d-b.d);
+  return `<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Tabla suprema</h2></div>
+${rows.length&&rows[0].c?throne(rows[0].n,'Rey supremo de la cueva',rows[0].c+' campeonatos · '+rows[0].d+' descensos<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Ponete las pilas pibe',rows[worstIx(rows)].d+' descensos · A ponerse las pilas'):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}.</p>
+<div class="card wrap">${rows.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Descensos</th><th>Torneos jugados</th></tr>${rows.map((r,ix)=>`<tr class="${ix===0&&r.c?'top1':ix===worstIx(rows)?'last':''}"><td>${rk(ix,r.c>0,ix===worstIx(rows))}${r.n}</td><td>${r.c}</td><td>${r.d}</td><td>${r.t}</td></tr>`).join('')}</table>`:'<div class="empty">Sin jugadores todavía.</div>'}</div>`}
+
+function game(){
+  const G=S.games[v.g],M=GAMES[v.g];const wid=worstG(G,v.g);
+  const tabs=`<div class="tabs"><button class="${v.tab==='table'?'on':''}" onclick="go({tab:'table'})">Tabla</button><button class="${v.tab==='tours'?'on':''}" onclick="go({tab:'tours'})">Torneos</button><button class="${v.tab==='new'?'on':''}" onclick="go({tab:'new'})">Nuevo</button></div>`;
+  let body='';
+  if(v.tab==='table'){
+    body=`${throneG()}<div class="add">${friendSelect('sel',G.players)}<button class="pri" onclick="addToTable()">Agregar a la tabla</button></div>
+${S.friends.length?'':'<p class="note">Primero cargá amigos desde el inicio.</p>'}
+<div class="card wrap">${G.players.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Descensos</th><th>Torneos jugados</th><th></th></tr>
+${sortedPlayers(G,v.g).map((p,ix)=>{const s=stat(v.g,p);const c=(k)=>`<span class="ctl"><button onclick="bump('${p}','${k}',-1)" aria-label="menos">−</button><span>${s[k]}</span><button onclick="bump('${p}','${k}',1)" aria-label="más">+</button></span>`;
+return `<tr class="${ix===0&&s.c>0?'top1':p===wid?'last':''}"><td>${rk(ix,s.c>0,p===wid)}${nm(p)}</td><td>${c('c')}</td><td>${c('d')}</td><td>${c('t')}</td><td><button class="ghost" onclick="rmFromTable('${p}')" aria-label="Quitar">✕</button></td></tr>`}).join('')}</table>`:'<div class="empty">Tabla vacía. Sumá jugadores con la lista de arriba.</div>'}</div>
+${wid?shame(nm(wid),'Ponete las pilas pibe',stat(v.g,wid).d+' descensos · A ponerse las pilas'):''}<p class="note">Ordenada de más campeonatos (arriba) a más descensos (abajo). Se actualiza sola al cerrar un torneo y podés corregirla con − y +.</p>`;
+  }else if(v.tab==='tours'){
+    body=G.tours.length?G.tours.slice().reverse().map(t=>`<button class="card t-item" onclick="go({s:'tour',t:'${t.id}'})"><span><b>${esc(t.name)}</b><br><small style="color:var(--mut)">${t.players.length} jugadores · ${t.matches.filter(m=>isDone(m,v.g)).length}/${t.matches.length} partidos</small></span><span class="tag ${t.done?'ok':''}">${t.done?'🏆 '+nm(t.champ):(()=>{const s=standings(t,v.g)[0];return s&&s.pts?'Líder: '+nm(s.p)+' · '+s.pts+' pts':'En juego'})()}</span></button>`).join(''):'<div class="empty">Sin torneos. Creá uno en la pestaña Nuevo.</div>';
+  }else{
+    const d=v.draft;
+    body=`<div class="card"><h3>Nuevo torneo de ${M.n}</h3>
+<input class="in" style="margin:10px 0" placeholder="Nombre (ej. Liga de octubre)" value="${esc(d.name)}" oninput="v.draft.name=this.value">
+<div class="add">${friendSelect('dsel',d.ps)}<button onclick="addDraft()">Sumar</button></div>
+<div class="chips">${d.ps.length?d.ps.map(p=>`<span class="chip">${nm(p)}<button onclick="rmDraft('${p}')" aria-label="Quitar">✕</button></span>`).join(''):'<span class="note">Elegí al menos 2 amigos de la lista.</span>'}</div>
+<button class="pri" style="width:100%" ${d.ps.length<2?'disabled style="width:100%;opacity:.5"':''} onclick="createT()">Crear torneo y fixture</button></div>`;
+  }
+  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>${M.e} ${M.n}</h2></div>${tabs}${body}`;
+}
+
+function brawlMatch(m,i,t,dn){
+  const dup=m.pa&&m.pb&&m.pa===m.pb;
+  const side=(p,k,kk)=>`<div class="bp"><span class="n">${nm(p)}</span><select class="in" aria-label="Puesto" ${t.done?'disabled':''} onchange="setB(${i},'${k}',this.value)"><option value="">Puesto</option>${[1,2,3,4].map(n=>`<option value="${n}" ${m[k]===n?'selected':''}>${n}°</option>`).join('')}</select><label class="ko">KOs<input type="number" inputmode="numeric" min="0" value="${m[kk]}" ${t.done?'disabled':''} onchange="setB(${i},'${kk}',this.value)"></label></div>`;
+  return `<div class="bm ${dn?'done':''}">${side(m.a,'pa','ka')}${side(m.b,'pb','kb')}${dup?'<div class="warn">No pueden terminar en el mismo puesto.</div>':''}</div>`}
+function tour(){
+  const t=curT();if(!t){return'<div class="empty">Torneo no encontrado.</div>'}
+  const M=GAMES[v.g],st=standings(t);
+  const all=t.matches.every(m=>isDone(m,v.g));const lw=st.length>1&&st[st.length-1].pj>0&&st[0].pts>st[st.length-1].pts?st.length-1:-1;
+  let fx='',lr=0;
+  t.matches.forEach((m,i)=>{
+    if(m.r!==lr){lr=m.r;fx+=`<div class="rd">Fecha ${lr}</div>`}
+    const dn=isDone(m,v.g);if(v.g==='brawl'){fx+=brawlMatch(m,i,t,dn);return}
+    fx+=`<div class="match ${dn?'done':''}"><span class="n ${dn&&m.sa>m.sb?'w':''}">${nm(m.a)}</span>
+<input type="number" inputmode="numeric" min="0" aria-label="${M.u} local" value="${m.sa===null?'':m.sa}" ${t.done?'disabled':''} onchange="setScore(${i},'sa',this.value)"><span style="text-align:center">-</span>
+<input type="number" inputmode="numeric" min="0" aria-label="${M.u} visitante" value="${m.sb===null?'':m.sb}" ${t.done?'disabled':''} onchange="setScore(${i},'sb',this.value)"><span class="n ${dn&&m.sb>m.sa?'w':''}">${nm(m.b)}</span></div>`;
+  });
+  return `<div class="top"><button class="ghost" onclick="go({s:'game',tab:'tours'})">←</button><h2>${esc(t.name)}</h2></div>
+${t.done?throne(nm(t.champ),'Campeón del torneo','Descenso: '+nm(st[st.length-1].p)):''}
+${st[0]&&st[0].pts&&!t.done?throne(nm(st[0].p),'Líder del torneo',st[0].pts+' pts'):''}<div class="card wrap"><table>${v.g==='brawl'?'<tr><th>Jugador</th><th>PJ</th><th>1°</th><th>KOs</th><th>Pts</th></tr>':'<tr><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th></tr>'}
+${st.map((r,ix)=>v.g==='brawl'?`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.ko}</td><td><b>${r.pts}</b></td></tr>`:`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.l}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table></div>
+${lw>=0?shame(nm(st[lw].p),'Ponete las pilas pibe','Vas último con '+st[lw].pts+' pts · el descenso te espera'):''}<div class="card"><h3>Fixture</h3><p class="note">${v.g==='brawl'?'Cada partido es de 2 jugadores y 2 bots. Elegí el puesto final (1° a 4°) de cada uno y sus KOs. Puntos: 1° = 4, 2° = 3, 3° = 2, 4° = 1.':'Cargá el resultado de cada partido. Victoria 3 pts, empate 1.'}</p>${fx}</div>
+${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${all?'':'opacity:.5'}" ${all?'':'disabled'} onclick="finishT()">Cerrar torneo y sumar a la tabla</button><p class="note">${all?'El primero suma un campeonato, el último un descenso y todos un torneo jugado.':'Completá todos los partidos para cerrar el torneo.'}</p>`}
+${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Este torneo ya sumó campeonato, descenso y torneo jugado a la tabla del juego.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo el torneo</button><button class="danger" onclick="delT2(true)">Torneo y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar torneo</button>`}`;
+}
+
+function render(){
+  document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
+  $('app').innerHTML=!authChecked?'<p class="empty">Cargando…</p>':!USER?loginView():({home,friends,supreme,game,tour,groups})[v.s]();
+  window.scrollTo(0,0);
+}
+render();
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAGXNLFqr5lJG64dVf1twqU0CuUb_lK1nA",
+  authDomain: "playstats-44b04.firebaseapp.com",
+  projectId: "playstats-44b04",
+  storageBucket: "playstats-44b04.firebasestorage.app",
+  messagingSenderId: "359440420654",
+  appId: "1:359440420654:web:0fd892b22e2439282c74bf",
+  measurementId: "G-BEKNLS6YC0"
+};
+const app=initializeApp(firebaseConfig);const auth=getAuth(app);const fs=getFirestore(app);
+window.FB={
+  login:()=>signInWithPopup(auth,new GoogleAuthProvider()),
+  logout:()=>signOut(auth),
+  load:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data().json:null},
+  save:(uid,json)=>setDoc(doc(fs,'users',uid),{json,updated:Date.now()})
+};
+onAuthStateChanged(auth,u=>window.onUser&&window.onUser(u));
+</script>
+</body>
+</html>
