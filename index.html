@@ -92,23 +92,46 @@ tr.last td:first-child{border-left:3px solid var(--bad)}
 <script>
 const GAMES={fifa:{n:'FIFA',e:'⚽',u:'Goles'},brawl:{n:'BrawlHalla',e:'⚔️',u:'Puntos'}};
 const blank=()=>({friends:[],games:{fifa:{players:[],tours:[],stats:{}},brawl:{players:[],tours:[],stats:{}}}});
-let R=null;try{R=JSON.parse(localStorage.getItem('virg0')||'null')}catch(e){}
+let R={groups:[],cur:null};
 const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
-let S;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0];R.cur=S.id}
-R=migrate(R);setS();normalize();
-let USER=null,authChecked=false,ready=false,tm=null,loginErr='';
-function save(){try{localStorage.setItem('virg0',JSON.stringify(R))}catch(e){}
-  if(!USER||!ready||!window.FB)return;clearTimeout(tm);
-  tm=setTimeout(()=>{FB.save(USER.uid,JSON.stringify(R)).catch(()=>{})},400)}
+let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
+let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
+const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
+const fromDoc=d=>{let x={};try{x=JSON.parse(d.json||'{}')}catch(e){}return{id:d.id,name:d.name||'Grupo',owner:d.owner,members:d.members||[],code:d.code||'',friends:x.friends||[],games:x.games||blank().games}};
+function saveG(g){FB.saveGroup(g.id,{name:g.name,json:gData(g),updated:Date.now()}).catch(e=>{v.err='No se pudo guardar: '+(e.code||e.message)})}
+function save(){if(!USER||!ready||!S)return;const g=S;clearTimeout(tms[g.id]);tms[g.id]=setTimeout(()=>saveG(g),400)}
+function saveUser(){if(USER)FB.setUser(USER.uid,{gids:R.groups.map(g=>g.id),cur:R.cur}).catch(()=>{})}
+async function createG(name,data){const gid=FB.newId();const b=blank();
+  const g={id:gid,name,owner:USER.uid,members:[USER.uid],code:'',friends:(data&&data.friends)||b.friends,games:(data&&data.games)||b.games};
+  g.code=await FB.createGroup(gid,{name,owner:USER.uid,members:[USER.uid],json:gData(g),updated:Date.now()},USER.uid);
+  R.groups.push(g);return g}
+function softRender(){if(!S&&(v.s==='game'||v.s==='tour'))v.s='home';const a=document.activeElement;if(a&&a.matches&&a.matches('input,select'))return;render()}
+function dropLocal(id){if(subs[id]){subs[id]();delete subs[id]}R.groups=R.groups.filter(g=>g.id!==id)}
+async function afterDrop(){if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id;watch(g)}setS();saveUser();if(v.s==='game'||v.s==='tour')v.s='home'}
+function watch(g){if(subs[g.id])return;subs[g.id]=FB.watch(g.id,s=>{
+  if(!s.exists()||s.metadata.hasPendingWrites)return;
+  const d=s.data(),x=R.groups.find(q=>q.id===g.id);if(!x)return;let ch=false;
+  if(x.name!==d.name){x.name=d.name;ch=true}
+  if((d.members||[]).length!==x.members.length){x.members=d.members||[];ch=true}
+  if(d.code&&x.code!==d.code){x.code=d.code;ch=true}
+  if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;normalize();ch=true}catch(e){}}
+  if(ch)softRender()},()=>{dropLocal(g.id);afterDrop().then(softRender).catch(()=>{})})}
+async function loadAll(){
+  const ud=await FB.getUser(USER.uid);const gids=(ud&&ud.gids)||[];
+  R={groups:[],cur:(ud&&ud.cur)||null};
+  for(const id of gids){const d=await FB.getGroup(id);if(d)R.groups.push(fromDoc(d))}
+  if(!gids.length&&ud&&ud.json){const old=migrate(JSON.parse(ud.json));for(const og of old.groups)await createG(og.name,{friends:og.friends,games:og.games})}
+  if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id}
+  setS();normalize();R.groups.forEach(watch);saveUser();
+}
 window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';
-  if(u){try{const j=await FB.load(u.uid);
-      if(j){const r=JSON.parse(j);if(r&&(r.games||r.groups)){R=migrate(r);setS();normalize();try{localStorage.setItem('virg0',JSON.stringify(R))}catch(e){}}}
-      ready=true;if(!j)save();
-    }catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá.'}}
+  Object.values(subs).forEach(f=>f());subs={};
+  if(!u){R={groups:[],cur:null};S=null;v.s='home';render();return}
+  try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
   v.s='home';render()};
 function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar sesión: '+(e.code||e.message);render()})}
-function doLogout(){FB.logout().then(()=>{try{localStorage.removeItem('virg0')}catch(e){}R=migrate(null);setS()})}
+function doLogout(){FB.logout()}
 function loginView(){return `<h1 class="logo disp">Play<b>Stats</b></h1><p class="sub">Iniciá sesión para guardar tus torneos en la nube.</p>${loginErr?`<p class="warn" style="margin-bottom:12px">${esc(loginErr)}</p>`:''}<button class="pri" style="width:100%;min-height:52px;font-size:17px" onclick="doLogin()">Entrar con Google</button>`}
 setTimeout(()=>{if(!authChecked){authChecked=true;loginErr='No se pudo conectar con Firebase. Revisá tu conexión y recargá.';render()}},8000);
 const sortedPlayers=(G,g)=>G.players.slice().sort((a,b)=>{const x=stat(g,a),y=stat(g,b);return y.c-x.c||x.d-y.d||y.t-x.t||nm(a).localeCompare(nm(b))});
@@ -118,7 +141,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc(f.name):'?'};
 const stat=(g,p)=>S.games[g].stats[p]||(S.games[g].stats[p]={c:0,d:0,t:0});
-const go=o=>{Object.assign(v,o);render()};
+const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);render();if(v.s+v.tab+v.t!==k)window.scrollTo(0,0)};
 
 function rounds(ids){
   const a=ids.slice();if(a.length%2)a.push(null);
@@ -191,17 +214,37 @@ function friendSelect(id,excl){
   const o=S.friends.filter(f=>!excl.includes(f.id));
   return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
 
-function addGroup(){const n=$('gn').value.trim();if(!n)return;const g={id:uid(),name:n,...blank()};R.groups.push(g);R.cur=g.id;setS();save();go({s:'home',g:null})}
-function pickGroup(id){R.cur=id;setS();save();go({s:'home',g:null,dg:null,ren:null})}
-function renGroup(id){const n=$('rn').value.trim();if(n){R.groups.find(g=>g.id===id).name=n;save()}v.ren=null;render()}
-function delGroup(id){if(R.groups.length<2)return;R.groups=R.groups.filter(g=>g.id!==id);setS();save();v.dg=null;render()}
-function groups(){return `<div class="top"><button class="ghost" onclick="go({s:'home',ren:null,dg:null})">←</button><h2>Grupos</h2></div>
-<p class="note">Cada grupo tiene sus propios amigos, torneos y tablas.</p>
+async function addGroup(){const n=$('gn').value.trim();if(!n)return;v.err='';
+  try{const g=await createG(n);R.cur=g.id;setS();watch(g);saveUser();go({s:'home',g:null})}catch(e){v.err='No se pudo crear el grupo: '+(e.code||e.message);render()}}
+function pickGroup(id){R.cur=id;setS();saveUser();go({s:'home',g:null,dg:null,ren:null})}
+function renGroup(id){const n=$('rn').value.trim();const g=R.groups.find(x=>x.id===id);if(n&&g){g.name=n;saveG(g)}v.ren=null;render()}
+async function delGroup(id){const g=R.groups.find(x=>x.id===id);if(!g)return;v.dg=null;v.err='';
+  try{if(subs[id]){subs[id]();delete subs[id]}
+    if(g.owner===USER.uid)await FB.deleteGroup(id,g.code);else await FB.leave(id,USER.uid);
+    R.groups=R.groups.filter(x=>x.id!==id);
+    if(!R.groups.length){const ng=await createG('Mi grupo');R.cur=ng.id;watch(ng)}
+    setS();saveUser();render()}catch(e){v.err='No se pudo completar: '+(e.code||e.message);watch(g);render()}}
+async function doJoin(){const c=$('jc').value.trim().toUpperCase();if(!c)return;v.err='';v.msg='';
+  try{const gid=await FB.join(c,USER.uid);
+    if(R.groups.some(g=>g.id===gid)){v.err='Ya estás en ese grupo.';render();return}
+    const d=await FB.getGroup(gid);if(!d)throw new Error('x');
+    const g=fromDoc(d);R.groups.push(g);R.cur=gid;setS();normalize();watch(g);saveUser();go({s:'home',g:null})
+  }catch(e){v.err='No se pudo unir. Revisá que el código esté bien escrito.';render()}}
+const invText=c=>'Sumate a mi grupo en PlayStats: '+location.href.split('#')[0]+' · Código: '+c;
+function copyInv(c){const f=()=>{v.msg='Código: '+c+' (copialo y pasalo a tus amigos)';render()};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(invText(c)).then(()=>{v.msg='Invitación copiada. Pegala en WhatsApp.';render()}).catch(f);else f()}
+function waInv(c){window.open('https://wa.me/?text='+encodeURIComponent(invText(c)),'_blank')}
+function groups(){return `<div class="top"><button class="ghost" onclick="go({s:'home',ren:null,dg:null,err:'',msg:''})">←</button><h2>Grupos</h2></div>
+<p class="note">Cada grupo tiene sus propios amigos, torneos y tablas. Todos los miembros ven y editan lo mismo.</p>
+${v.err?`<p class="warn" style="margin-bottom:10px">${esc(v.err)}</p>`:''}${v.msg?`<p class="note" style="color:var(--acc)">${esc(v.msg)}</p>`:''}
 <div class="add"><input class="in" id="gn" placeholder="Nombre del nuevo grupo" onkeydown="if(event.key==='Enter')addGroup()"><button class="pri" onclick="addGroup()">Crear grupo</button></div>
-${R.groups.map(g=>{const cur=g.id===R.cur;const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
+<div class="add"><input class="in" id="jc" placeholder="Código de invitación" maxlength="8" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')doJoin()"><button onclick="doJoin()">Unirme</button></div>
+${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
  if(v.ren===g.id)return `<div class="card"><div class="add" style="margin:0"><input class="in" id="rn" value="${esc(g.name)}" onkeydown="if(event.key==='Enter')renGroup('${g.id}')"><button class="pri" onclick="renGroup('${g.id}')">Guardar</button></div></div>`;
- if(v.dg===g.id)return `<div class="card"><b>¿Eliminar "${esc(g.name)}"?</b><p class="note">Se borran sus amigos, torneos y tablas. No se puede deshacer.</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">Eliminar grupo</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
- return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.friends.length} amigos · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div><div class="row2" style="margin-top:10px"><button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button>${R.groups.length>1?`<button class="ghost danger" onclick="go({dg:'${g.id}'})">Eliminar</button>`:''}</div></div>`}).join('')}`}
+ if(v.dg===g.id)return `<div class="card"><b>${own?'¿Eliminar':'¿Salir de'} "${esc(g.name)}"?</b><p class="note">${own?'Se borra para todos los miembros: amigos, torneos y tablas. No se puede deshacer.':'Dejás de ver este grupo. Podés volver a entrar con el código.'}</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">${own?'Eliminar grupo':'Salir del grupo'}</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
+ return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.members.length} miembros · ${g.friends.length} jugadores · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div>
+<p class="note" style="margin:10px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
+<div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button><button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button><button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div></div>`}).join('')}`}
 function home(){return `
 <h1 class="logo disp">Play<b>Stats</b></h1>
 <p class="sub">Elegí el juego y llevá la cuenta de los torneos.</p>
@@ -272,15 +315,14 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 
 function render(){
   document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
-  $('app').innerHTML=!authChecked?'<p class="empty">Cargando…</p>':!USER?loginView():({home,friends,supreme,game,tour,groups})[v.s]();
-  window.scrollTo(0,0);
+  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():({home,friends,supreme,game,tour,groups})[v.s]();
 }
 render();
 </script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,onSnapshot,arrayUnion,arrayRemove} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyAGXNLFqr5lJG64dVf1twqU0CuUb_lK1nA",
   authDomain: "playstats-44b04.firebaseapp.com",
@@ -291,11 +333,22 @@ const firebaseConfig = {
   measurementId: "G-BEKNLS6YC0"
 };
 const app=initializeApp(firebaseConfig);const auth=getAuth(app);const fs=getFirestore(app);
+const genCode=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=a[Math.floor(Math.random()*a.length)];return c};
 window.FB={
   login:()=>signInWithPopup(auth,new GoogleAuthProvider()),
   logout:()=>signOut(auth),
-  load:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data().json:null},
-  save:(uid,json)=>setDoc(doc(fs,'users',uid),{json,updated:Date.now()})
+  getUser:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data():null},
+  setUser:(uid,d)=>setDoc(doc(fs,'users',uid),d,{merge:true}),
+  newId:()=>doc(collection(fs,'groups')).id,
+  getGroup:async gid=>{try{const s=await getDoc(doc(fs,'groups',gid));return s.exists()?{id:s.id,...s.data()}:null}catch(e){if(e.code==='permission-denied')return null;throw e}},
+  createGroup:async(gid,data,uid)=>{let code=genCode();await setDoc(doc(fs,'groups',gid),{...data,code});
+    for(let i=0;i<8;i++){try{await setDoc(doc(fs,'codes',code),{gid,owner:uid});break}catch(e){code=genCode();await updateDoc(doc(fs,'groups',gid),{code})}}
+    return code},
+  saveGroup:(gid,d)=>updateDoc(doc(fs,'groups',gid),d),
+  deleteGroup:async(gid,code)=>{await deleteDoc(doc(fs,'groups',gid));try{await deleteDoc(doc(fs,'codes',code))}catch(e){}},
+  join:async(code,uid)=>{const c=await getDoc(doc(fs,'codes',code));if(!c.exists())throw new Error('code');const gid=c.data().gid;await updateDoc(doc(fs,'groups',gid),{members:arrayUnion(uid)});return gid},
+  leave:(gid,uid)=>updateDoc(doc(fs,'groups',gid),{members:arrayRemove(uid)}),
+  watch:(gid,cb,err)=>onSnapshot(doc(fs,'groups',gid),cb,err)
 };
 onAuthStateChanged(auth,u=>window.onUser&&window.onUser(u));
 </script>
