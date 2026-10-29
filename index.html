@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PlayStats</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0a12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PlayStats">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d0a12;--panel:#1a1522;--panel2:#241c2e;--line:#3a2d48;--tx:#f1ebf7;--mut:#9b8bad;--acc:#c6ff3d;--acc-tx:#101400;--bad:#ff5d73;
@@ -97,6 +105,10 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
+let INST=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();INST=e;if(typeof softRender==='function'&&v.s==='home')softRender()});
+window.addEventListener('appinstalled',()=>{INST=null;render()});
+function installApp(){if(!INST)return;INST.prompt();INST.userChoice.finally(()=>{INST=null;render()})}
 let ME=null,PROF={},FR=[],INV=[],socUnsub=[];
 function startSocial(){if(socUnsub.length||!USER||!ME)return;
   socUnsub.push(FB.watchFr(USER.uid,l=>{FR=l;loadProfiles().then(softRender).catch(()=>softRender())}));
@@ -305,7 +317,7 @@ function home(){return `
 <button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
-<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
+<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
 
 function friends(){
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
@@ -469,5 +481,6 @@ window.FB={
 };
 onAuthStateChanged(auth,u=>window.onUser&&window.onUser(u));
 </script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>
