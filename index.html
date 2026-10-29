@@ -46,6 +46,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
 .b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
 .b-cr .disp{font-size:32px;padding-right:70px}
+.rob{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:var(--mut)}
+body.ro .ctl button,body.ro .add,body.ro td .ghost,body.ro .tabs button[onclick*="'new'"],body.ro button[onclick^="finishT"],body.ro button[onclick^="finishCup"],body.ro button[onclick^="go({cd"],body.ro button[onclick^="delT2"],body.ro button[onclick^="delFriend"],body.ro select[onchange^="linkFriend"],body.ro .card:has(#cc),body.ro .card:has(button[onclick^="addMember"]){display:none!important}
+body.ro .match input,body.ro .bp select,body.ro .bp input{pointer-events:none;opacity:.6}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:#1f1f26;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+#toast.show{opacity:1}
 .row2{display:flex;gap:10px}
 .row2 button{flex:1}
 .tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);padding:4px;border-radius:12px}
@@ -112,6 +117,13 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
+const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
+const canEdit=()=>isAdminOf(S);
+let toastT=null;
+function toast(m){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e)}e.textContent=m;e.className='show';clearTimeout(toastT);toastT=setTimeout(()=>{e.className=''},3000)}
+async function toggleAdmin(gid,u){const g=R.groups.find(x=>x.id===gid);if(!g||g.owner!==USER.uid)return;v.err='';v.msg='';
+  const cur=g.admins||[];const nx=cur.includes(u)?cur.filter(x=>x!==u):[...cur,u];
+  try{await FB.setAdmins(gid,nx);g.admins=nx;v.msg='Listo: '+(nx.includes(u)?'@'+memberNick(u)+' ahora es administrador.':'@'+memberNick(u)+' ya no es administrador.')}catch(e){v.err='No se pudo cambiar el rol: '+(e.code||e.message)}render()}
 let INST=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();INST=e;if(typeof softRender==='function'&&v.s==='home')softRender()});
 window.addEventListener('appinstalled',()=>{INST=null;render()});
@@ -177,7 +189,7 @@ async function restoreNew(i){const g=v.bk.groups[i];
   try{const n=R.groups.some(x=>x.name===g.name)?g.name+' (restaurado)':g.name;
     const ng=await createG(n,{friends:g.friends,games:g.games});normalize();R.cur=ng.id;setS();watch(ng);saveUser();
     v.bk=null;v.rc=null;v.bmsg='Listo: "'+ng.name+'" se restauró como grupo nuevo.'}catch(e){v.bmsg='No se pudo restaurar: '+(e.code||e.message)}render()}
-function restoreReplace(i){const b=v.bk.groups[i];const g=R.groups.find(x=>x.id===b.id);if(!g)return;
+function restoreReplace(i){const b=v.bk.groups[i];const g=R.groups.find(x=>x.id===b.id);if(!g)return;if(!isAdminOf(g)){v.bmsg='Solo un administrador puede reemplazar los datos de este grupo.';v.rc=null;render();return}
   dlBackup(true);g.friends=b.friends;g.games=b.games;normalize();saveG(g);
   v.bk=null;v.rc=null;v.bmsg='Listo: se reemplazaron los datos de "'+g.name+'". Además se descargó una copia de cómo estaba antes.';render()}
 function backupCard(){const bk=v.bk;
@@ -190,7 +202,7 @@ ${v.bmsg?`<p class="note" style="color:var(--acc)">${esc(v.bmsg)}</p>`:''}
 ${bk?`<p class="note">Copia del ${esc(bk.exportedAt?new Date(bk.exportedAt).toLocaleDateString('es-AR'):'?')}${bk.by?' · de @'+esc(bk.by):''}</p>`+bk.groups.map((g,i)=>{const ex=R.groups.find(x=>x.id===g.id);const nt=Object.values(g.games).reduce((a,x)=>a+(x.tours?x.tours.length:0),0);
  return `<div style="border-top:1px solid var(--line);padding:10px 0"><b>${esc(g.name)}</b><div class="note" style="margin:2px 0 8px">${g.friends.length} jugadores · ${nt} torneos</div>
 ${v.rc===i?`<p class="warn" style="margin-bottom:8px">Se van a reemplazar los datos actuales de este grupo por los de la copia. Antes se descarga una copia de lo actual.</p><div class="row2"><button class="danger" onclick="restoreReplace(${i})">Sí, reemplazar</button><button onclick="go({rc:null})">Cancelar</button></div>`
- :`<div class="row2" style="flex-wrap:wrap">${ex?`<button onclick="go({rc:${i}})">Reemplazar el grupo actual</button>`:''}<button class="${ex?'ghost':'pri'}" onclick="restoreNew(${i})">${ex?'Restaurar como grupo nuevo':'Restaurar como grupo nuevo'}</button></div>`}</div>`}).join(''):''}</div>`}
+ :`<div class="row2" style="flex-wrap:wrap">${ex&&isAdminOf(ex)?`<button onclick="go({rc:${i}})">Reemplazar el grupo actual</button>`:''}<button class="${ex?'ghost':'pri'}" onclick="restoreNew(${i})">${ex?'Restaurar como grupo nuevo':'Restaurar como grupo nuevo'}</button></div>`}</div>`}).join(''):''}</div>`}
 function profile(){return `<div class="top"><button class="ghost" onclick="go({s:'home',nickErr:'',bk:null,bmsg:'',rc:null})">←</button><h2>Mi perfil</h2></div>
 <div class="card"><p class="note" style="margin:0">Tu nick</p><div class="disp" style="font-size:38px;color:var(--acc)">@${esc(ME.nick)}</div></div>
 ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}
@@ -199,13 +211,13 @@ ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:'
 function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
 function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
 const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
-const fromDoc=d=>{let x={};try{x=JSON.parse(d.json||'{}')}catch(e){}return{id:d.id,name:d.name||'Grupo',owner:d.owner,members:d.members||[],code:d.code||'',friends:x.friends||[],games:x.games||blank().games}};
+const fromDoc=d=>{let x={};try{x=JSON.parse(d.json||'{}')}catch(e){}return{id:d.id,name:d.name||'Grupo',owner:d.owner,admins:d.admins||[],members:d.members||[],code:d.code||'',friends:x.friends||[],games:x.games||blank().games}};
 function saveG(g){FB.saveGroup(g.id,{name:g.name,json:gData(g),updated:Date.now()}).catch(e=>{v.err='No se pudo guardar: '+(e.code||e.message)})}
-function save(){if(!USER||!ready||!S)return;const g=S;clearTimeout(tms[g.id]);tms[g.id]=setTimeout(()=>saveG(g),400)}
+function save(){if(!USER||!ready||!S||!canEdit())return;const g=S;clearTimeout(tms[g.id]);tms[g.id]=setTimeout(()=>saveG(g),400)}
 function saveUser(){if(USER)FB.setUser(USER.uid,{gids:R.groups.map(g=>g.id),cur:R.cur}).catch(()=>{})}
 async function createG(name,data){const gid=FB.newId();const b=blank();
-  const g={id:gid,name,owner:USER.uid,members:[USER.uid],code:'',friends:(data&&data.friends)||(ME?[{id:uid(),name:ME.nick,uid:USER.uid}]:b.friends),games:(data&&data.games)||b.games};
-  g.code=await FB.createGroup(gid,{name,owner:USER.uid,members:[USER.uid],json:gData(g),updated:Date.now()},USER.uid);
+  const g={id:gid,name,owner:USER.uid,admins:[],members:[USER.uid],code:'',friends:(data&&data.friends)||(ME?[{id:uid(),name:ME.nick,uid:USER.uid}]:b.friends),games:(data&&data.games)||b.games};
+  g.code=await FB.createGroup(gid,{name,owner:USER.uid,admins:[],members:[USER.uid],json:gData(g),updated:Date.now()},USER.uid);
   R.groups.push(g);return g}
 function softRender(){if(!S&&(v.s==='game'||v.s==='tour'))v.s='home';const a=document.activeElement;if(a&&a.matches&&a.matches('input,select'))return;render()}
 function dropLocal(id){if(subs[id]){subs[id]();delete subs[id]}R.groups=R.groups.filter(g=>g.id!==id)}
@@ -216,6 +228,7 @@ function watch(g){if(subs[g.id])return;subs[g.id]=FB.watch(g.id,s=>{
   if(x.name!==d.name){x.name=d.name;ch=true}
   if((d.members||[]).length!==x.members.length){x.members=d.members||[];ch=true;loadProfiles().then(softRender).catch(()=>{})}
   if(d.code&&x.code!==d.code){x.code=d.code;ch=true}
+  if(JSON.stringify(d.admins||[])!==JSON.stringify(x.admins||[])){x.admins=d.admins||[];ch=true}
   if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;normalize();ch=true}catch(e){}}
   if(ch)softRender()},()=>{dropLocal(g.id);afterDrop().then(softRender).catch(()=>{})})}
 async function loadAll(){
@@ -327,10 +340,10 @@ function friendSelect(id,excl){
 async function addGroup(){const n=$('gn').value.trim();if(!n)return;v.err='';
   try{const g=await createG(n);R.cur=g.id;setS();watch(g);saveUser();go({s:'home',g:null})}catch(e){v.err='No se pudo crear el grupo: '+(e.code||e.message);render()}}
 function pickGroup(id){R.cur=id;setS();saveUser();go({s:'home',g:null,dg:null,ren:null})}
-function renGroup(id){const n=$('rn').value.trim();const g=R.groups.find(x=>x.id===id);if(n&&g){g.name=n;saveG(g)}v.ren=null;render()}
+function renGroup(id){const n=$('rn').value.trim();const g=R.groups.find(x=>x.id===id);if(g&&!isAdminOf(g)){v.ren=null;toast('Solo los administradores pueden renombrar el grupo.');render();return}if(n&&g){g.name=n;saveG(g)}v.ren=null;render()}
 async function delGroup(id){const g=R.groups.find(x=>x.id===id);if(!g)return;v.dg=null;v.err='';
   try{if(subs[id]){subs[id]();delete subs[id]}
-    if(g.owner===USER.uid)await FB.deleteGroup(id,g.code);else await FB.leave(id,USER.uid);
+    if(g.owner===USER.uid)await FB.deleteGroup(id,g.code);else await FB.leave(id,USER.uid,(g.admins||[]).includes(USER.uid));
     R.groups=R.groups.filter(x=>x.id!==id);
     if(!R.groups.length){const ng=await createG('Mi grupo');R.cur=ng.id;watch(ng)}
     setS();saveUser();render()}catch(e){v.err='No se pudo completar: '+(e.code||e.message);watch(g);render()}}
@@ -345,7 +358,7 @@ function copyInv(c){const f=()=>{v.msg='Código: '+c+' (copialo y pasalo a tus a
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(invText(c)).then(()=>{v.msg='Invitación copiada. Pegala en WhatsApp.';render()}).catch(f);else f()}
 function waInv(c){window.open('https://wa.me/?text='+encodeURIComponent(invText(c)),'_blank')}
 function groups(){return `<div class="top"><button class="ghost" onclick="go({s:'home',ren:null,dg:null,err:'',msg:''})">←</button><h2>Grupos</h2></div>
-<p class="note">Cada grupo tiene sus propios amigos, torneos y tablas. Todos los miembros ven y editan lo mismo.</p>
+<p class="note">Cada grupo tiene sus propios amigos, torneos y tablas. Todos los miembros lo ven, pero solo el creador y los administradores pueden cargar datos.</p>
 ${v.err?`<p class="warn" style="margin-bottom:10px">${esc(v.err)}</p>`:''}${v.msg?`<p class="note" style="color:var(--acc)">${esc(v.msg)}</p>`:''}
 <div class="add"><input class="in" id="gn" placeholder="Nombre del nuevo grupo" onkeydown="if(event.key==='Enter')addGroup()"><button class="pri" onclick="addGroup()">Crear grupo</button></div>
 <div class="add"><input class="in" id="jc" placeholder="Código de invitación" maxlength="8" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')doJoin()"><button onclick="doJoin()">Unirme</button></div>
@@ -353,9 +366,10 @@ ${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=Object
  if(v.ren===g.id)return `<div class="card"><div class="add" style="margin:0"><input class="in" id="rn" value="${esc(g.name)}" onkeydown="if(event.key==='Enter')renGroup('${g.id}')"><button class="pri" onclick="renGroup('${g.id}')">Guardar</button></div></div>`;
  if(v.dg===g.id)return `<div class="card"><b>${own?'¿Eliminar':'¿Salir de'} "${esc(g.name)}"?</b><p class="note">${own?'Se borra para todos los miembros: amigos, torneos y tablas. No se puede deshacer.':'Dejás de ver este grupo. Podés volver a entrar con el código.'}</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">${own?'Eliminar grupo':'Salir del grupo'}</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
  return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.members.length} miembros · ${g.friends.length} jugadores · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div>
-<p class="note" style="margin:8px 0 0">Miembros: ${g.members.map(u=>esc('@'+memberNick(u))).join(', ')}</p>
+<p class="note" style="margin:8px 0 0">Miembros: ${g.members.map(u=>(u===g.owner?'👑 ':(g.admins||[]).includes(u)?'🛡️ ':'')+esc('@'+memberNick(u))).join(', ')}</p>
+<p class="note" style="margin:2px 0 0">${own?'Sos el creador del grupo.':isAdminOf(g)?'Sos administrador.':'Sos miembro: podés ver, pero no cargar datos.'}</p>
 <p class="note" style="margin:4px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
-<div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button><button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button><button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div></div>`}).join('')}`}
+<div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button>${own?`<button class="ghost" onclick="go({adm:v.adm==='${g.id}'?null:'${g.id}'})">🛡️ Administradores</button>`:''}${isAdminOf(g)?`<button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button>`:''}<button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div>${own&&v.adm===g.id?`<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px"><p class="note" style="margin:0 0 6px">Los administradores pueden cargar resultados, crear y borrar torneos y editar jugadores. Los demás miembros solo pueden ver.</p>${g.members.filter(u=>u!==g.owner).map(u=>{const ad=(g.admins||[]).includes(u);return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0"><b>@${esc(memberNick(u))}</b><button class="${ad?'ghost':'pri'}" onclick="toggleAdmin('${g.id}','${u}')">${ad?'Quitar admin':'Hacer admin'}</button></div>`}).join('')||'<p class="note">Todavía no hay otros miembros.</p>'}</div>`:''}</div>`}).join('')}`}
 function home(){return `
 <h1 class="logo disp">Play<b>Stats</b></h1>
 <p class="sub">Elegí el juego y llevá la cuenta de los torneos.</p>
@@ -409,11 +423,19 @@ function h2h(){v.hs=v.hs||'grp';v.hg=v.hg||'all';
   const sc=`<div class="card" style="text-align:center"><div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end">
 <div><div class="note" style="margin:0">${la}</div><div class="disp" style="font-size:64px;line-height:1;color:${col(wa,wb)}">${wa}</div></div>
 <div><div class="note" style="margin:0">${v.hg==='brawl'?'Partidos':'Empates'}</div><div class="disp" style="font-size:34px;color:var(--mut)">${v.hg==='brawl'?pj:f.e+c.e}</div></div>
-<div><div class="note" style="margin:0">${lb}</div><div class="disp" style="font-size:64px;line-height:1;color:${col(wb,wa)}">${wb}</div></div></div>
-<p class="note" style="margin:10px 0 0">${pj?pj+(pj===1?' partido jugado':' partidos jugados')+(wa===wb?' · Parejo':' · Domina '+(wa>wb?la:lb)):'Todavía no jugaron entre sí.'}</p></div>`;
+<div><div class="note" style="margin:0">${lb}</div><div class="disp" style="font-size:64px;line-height:1;color:${wb>wa?'var(--acc)':'var(--tx)'}">${wb}</div></div></div>
+${pj?`<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin:12px 0 0;background:var(--line)"><span style="width:${wa/pj*100}%;background:var(--gold)"></span><span style="width:${(pj-wa-wb)/pj*100}%;background:var(--mut);opacity:.5"></span><span style="width:${wb/pj*100}%;background:var(--acc)"></span></div>`:''}<p class="note" style="margin:10px 0 0">${pj?pj+(pj===1?' partido jugado':' partidos jugados')+(wa===wb?' · Parejo':' · Domina '+(wa>wb?la:lb)):'Todavía no jugaron entre sí.'}</p></div>`;
   let det='';
-  if(pj){det=`<div class="card">${f.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚽ FIFA</b><span>${f.pj} PJ · ${f.a}-${f.e}-${f.b} · goles ${f.ga}-${f.gb}</span></div>`:''}${b.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚔️ BrawlHalla</b><span>${b.pj} PJ · ${b.a}-${b.b} · KOs ${b.ka}-${b.kb}</span></div>`:''}${c.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>🏰 Clash Royale</b><span>${c.pj} PJ · ${c.a}-${c.e}-${c.b} · coronas ${c.ga}-${c.gb}</span></div>`:''}
-${r.tor.n?`<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--line);margin-top:6px"><b>🏆 Torneos cerrados juntos</b><span>${r.tor.n} · mejor ubicado: ${r.tor.a}-${r.tor.b}</span></div>`:''}</div>`;
+  if(pj){
+    const hd=`<div style="display:grid;grid-template-columns:1fr 96px 1fr;gap:8px;margin:8px 0 0"><span class="note" style="text-align:center;margin:0">${la}</span><span></span><span class="note" style="text-align:center;margin:0">${lb}</span></div>`;
+    const cmp=(x,l,y)=>`<div style="display:grid;grid-template-columns:1fr 96px 1fr;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)"><b class="disp" style="font-size:26px;text-align:center;color:${x>y?'var(--gold)':'var(--tx)'}">${x}</b><span class="note" style="margin:0;text-align:center;line-height:1.2">${l}</span><b class="disp" style="font-size:26px;text-align:center;color:${y>x?'var(--acc)':'var(--tx)'}">${y}</b></div>`;
+    const card=(t,rows,extra)=>`<div class="card"><h3>${t}</h3>${hd}${rows}${extra||''}</div>`;
+    const pl=n=>n+(n===1?' partido':' partidos');
+    const nt=t=>`<p class="note" style="text-align:center;margin:8px 0 0">${t}</p>`;
+    if(f.pj)det+=card('⚽ FIFA · '+pl(f.pj),cmp(f.a,'Victorias',f.b)+cmp(f.ga,'Goles',f.gb),nt('Empates: '+f.e));
+    if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('Empates: '+c.e));
+    if(b.pj)det+=card('⚔️ BrawlHalla · '+pl(b.pj),cmp(b.a,'Victorias',b.b)+cmp(b.ka,'KOs',b.kb),nt('Gana quien termina mejor ubicado en cada partida.'));
+    if(r.tor.n)det+=card('🏆 Torneos terminados · '+r.tor.n,cmp(r.tor.a,'Terminó mejor ubicado',r.tor.b),nt('Cuenta los torneos de liga ya cerrados en los que jugaron los dos.'));
     det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)} · Fecha ${m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b></div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
   return top+`<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0">${sel(ka,'ha')}<b class="disp" style="font-size:22px;color:var(--mut)">VS</b>${sel(kb,'hb')}</div>${sc}${det}
 <p class="note">${v.hs==='all'?'En el historial global solo cuentan jugadores con cuenta vinculada. Los invitados aparecen solo dentro de su grupo.':'Cuenta solo lo jugado en este grupo.'} En BrawlHalla gana quien termina mejor ubicado en cada partido.</p>`}
@@ -497,11 +519,14 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 
 function render(reset){
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap')].map(e=>e.scrollLeft);
-  document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
+  const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
+  document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h})[v.s]();
+  if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
 }
+['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','delT2','addMember','linkFriend'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
 </script>
 <script type="module">
@@ -546,7 +571,8 @@ window.FB={
   saveGroup:(gid,d)=>updateDoc(doc(fs,'groups',gid),d),
   deleteGroup:async(gid,code)=>{await deleteDoc(doc(fs,'groups',gid));try{await deleteDoc(doc(fs,'codes',code))}catch(e){}},
   join:async(code,uid)=>{const c=await getDoc(doc(fs,'codes',code));if(!c.exists())throw new Error('code');const gid=c.data().gid;await updateDoc(doc(fs,'groups',gid),{members:arrayUnion(uid)});return gid},
-  leave:(gid,uid)=>updateDoc(doc(fs,'groups',gid),{members:arrayRemove(uid)}),
+  leave:(gid,uid,wasAdmin)=>updateDoc(doc(fs,'groups',gid),wasAdmin?{members:arrayRemove(uid),admins:arrayRemove(uid)}:{members:arrayRemove(uid)}),
+  setAdmins:(gid,list)=>updateDoc(doc(fs,'groups',gid),{admins:list}),
   watch:(gid,cb,err)=>onSnapshot(doc(fs,'groups',gid),cb,err)
 };
 onAuthStateChanged(auth,u=>window.onUser&&window.onUser(u));
