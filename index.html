@@ -232,7 +232,7 @@ function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar
 function doLogout(){FB.logout()}
 function loginView(){return `<h1 class="logo disp">Play<b>Stats</b></h1><p class="sub">Iniciá sesión para guardar tus torneos en la nube.</p>${loginErr?`<p class="warn" style="margin-bottom:12px">${esc(loginErr)}</p>`:''}<button class="pri" style="width:100%;min-height:52px;font-size:17px" onclick="doLogin()">Entrar con Google</button>`}
 setTimeout(()=>{if(!authChecked){authChecked=true;loginErr='No se pudo conectar con Firebase. Revisá tu conexión y recargá.';render()}},8000);
-const score=s=>s.c*3-s.d*2;
+const score=s=>s.c*3-s.d*2+(s.cp||0);
 const sortedPlayers=(G,g)=>G.players.slice().sort((a,b)=>{const x=stat(g,a),y=stat(g,b);return score(y)-score(x)||y.c-x.c||x.d-y.d||y.t-x.t||nm(a).localeCompare(nm(b))});
 const balTxt=s=>{const b=score(s);return 'Balance '+(b>0?'+':'')+b+(s.t?' · prom. '+(b/s.t).toFixed(2).replace('.',','):'')};
 let v={s:'home',g:null,tab:'table',t:null,draft:{name:'',ps:[]}};
@@ -240,7 +240,8 @@ const $=id=>document.getElementById(id);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
-const stat=(g,p)=>S.games[g].stats[p]||(S.games[g].stats[p]={c:0,d:0,t:0});
+const stat=(g,p)=>{const o=S.games[g].stats;const x=o[p]||(o[p]={c:0,d:0,t:0,cp:0});if(x.cp===undefined)x.cp=0;return x};
+const copTxt=n=>n?' · '+n+(n===1?' copa':' copas'):'';
 const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);render();if(v.s+v.tab+v.t!==k)window.scrollTo(0,0)};
 
 function rounds(ids){
@@ -282,9 +283,10 @@ function rmFromTable(id){const G=S.games[v.g];G.players=G.players.filter(p=>p!==
 function bump(id,k,d){const s=stat(v.g,id);s[k]=Math.max(0,s[k]+d);save();render()}
 function addDraft(){const id=$('dsel').value;if(id&&!v.draft.ps.includes(id)){v.draft.ps.push(id);render()}}
 function rmDraft(id){v.draft.ps=v.draft.ps.filter(p=>p!==id);render()}
-function createT(){const d=v.draft;if(d.ps.length<2)return;
+function setMode(m){v.draft.mode=m;render()}
+function createT(){const d=v.draft;if(d.ps.length<2)return;const cup=v.g==='fifa'&&d.mode==='copa';
   const G=S.games[v.g];
-  const t={id:uid(),name:d.name.trim()||('Torneo '+(G.tours.length+1)),players:d.ps.slice(),matches:rounds(d.ps),done:false,champ:null};
+  const t={id:uid(),name:d.name.trim()||((cup?'Copa ':'Torneo ')+(G.tours.length+1)),players:d.ps.slice(),matches:cup?[]:rounds(d.ps),mode:cup?'copa':'liga',done:false,champ:null};
   G.tours.push(t);d.ps.forEach(p=>{if(!G.players.includes(p))G.players.push(p)});
   v.draft={name:'',ps:[]};save();go({s:'tour',t:t.id})}
 function curT(){return S.games[v.g].tours.find(t=>t.id===v.t)}
@@ -304,9 +306,10 @@ function worstIx(a){const i=a.length-1;return a.length>1&&a[i].d>0?i:-1}
 function worstG(G,g){const sp=sortedPlayers(G,g);const i=worstIx(sp.map(p=>stat(g,p)));return i>=0?sp[i]:null}
 const rk=(ix,ok,bad)=>bad?'<span class="crown">🔻</span>':ix===0&&ok?'<span class="crown">👑</span>':'<span class="rk">'+(ix+1)+'</span>';
 function throneG(){const G=S.games[v.g];const p=sortedPlayers(G,v.g)[0];if(!p)return'';const s=stat(v.g,p);if(score(s)<=0)return'';
-  return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+' · '+s.d+' descensos<br>Vení, bajame si podés')}
+  return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+copTxt(s.cp)+' · '+s.d+' descensos<br>Vení, bajame si podés')}
 function delT2(rev){const t=curT(),G=S.games[v.g];
-  if(rev&&t.done){const st=standings(t);st.forEach(r=>{const s=stat(v.g,r.p);s.t=Math.max(0,s.t-1)});
+  if(rev&&t.done&&t.mode==='copa'){t.players.forEach(p=>{const x=stat(v.g,p);x.t=Math.max(0,x.t-1)});const a=stat(v.g,t.champ);a.cp=Math.max(0,a.cp-1);if(t.desc){const b=stat(v.g,t.desc);b.d=Math.max(0,b.d-1)}}
+  else if(rev&&t.done){const st=standings(t);st.forEach(r=>{const s=stat(v.g,r.p);s.t=Math.max(0,s.t-1)});
     const a=stat(v.g,t.champ||st[0].p),b=stat(v.g,st[st.length-1].p);a.c=Math.max(0,a.c-1);b.d=Math.max(0,b.d-1)}
   G.tours=G.tours.filter(x=>x.id!==v.t);save();go({s:'game',tab:'tours',cd:false})}
 
@@ -379,7 +382,7 @@ function h2hCalc(ka,kb){
       if(gm==='fifa'){const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res.fifa;r.pj++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,ts:m.ts||0})}
       else{const x=sw?m.pb:m.pa,y=sw?m.pa:m.pb,A=sw?m.kb:m.ka,B=sw?m.ka:m.kb,r=res.brawl;r.pj++;r.ka+=A;r.kb+=B;if(x<y)r.a++;else r.b++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,A,B,ts:m.ts||0})}
     });
-    if(t.done){const st=standings(t,gm);const ia=st.findIndex(s=>key(g,s.p)===ka),ib=st.findIndex(s=>key(g,s.p)===kb);
+    if(t.done&&t.mode!=='copa'){const st=standings(t,gm);const ia=st.findIndex(s=>key(g,s.p)===ka),ib=st.findIndex(s=>key(g,s.p)===kb);
       if(ia>=0&&ib>=0){res.tor.n++;if(ia<ib)res.tor.a++;else res.tor.b++}}
   })));
   return res}
@@ -408,10 +411,10 @@ ${r.tor.n?`<div style="display:flex;justify-content:space-between;padding:4px 0;
   return top+`<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0">${sel(ka,'ha')}<b class="disp" style="font-size:22px;color:var(--mut)">VS</b>${sel(kb,'hb')}</div>${sc}${det}
 <p class="note">${v.hs==='all'?'En el historial global solo cuentan jugadores con cuenta vinculada. Los invitados aparecen solo dentro de su grupo.':'Cuenta solo lo jugado en este grupo.'} En BrawlHalla gana quien termina mejor ubicado en cada partido.</p>`}
 function supreme(){
-  const rows=S.friends.map(f=>{let c=0,d=0,t=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t}}return{n:nm(f.id),c,d,t}}).sort((a,b)=>score(b)-score(a)||b.c-a.c||a.d-b.d||b.t-a.t);
+  const rows=S.friends.map(f=>{let c=0,d=0,t=0,cp=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t;cp+=s.cp||0}}return{n:nm(f.id),c,d,t,cp}}).sort((a,b)=>score(b)-score(a)||b.c-a.c||a.d-b.d||b.t-a.t);
   return `<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Tabla suprema</h2></div>
-${rows.length&&score(rows[0])>0?throne(rows[0].n,'Rey supremo de la cueva',rows[0].c+' campeonatos · '+rows[0].d+' descensos<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Mucho descenso, poca copa…',rows[worstIx(rows)].d+' descensos · '+rows[worstIx(rows)].c+(rows[worstIx(rows)].c===1?' campeonato':' campeonatos')):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}. Orden: cada campeonato suma 3 y cada descenso resta 2. Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden.</p>
-<div class="card wrap">${rows.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Descensos</th><th>Torneos jugados</th></tr>${rows.map((r,ix)=>`<tr class="${ix===0&&score(r)>0?'top1':ix===worstIx(rows)?'last':''}"><td>${rk(ix,score(r)>0,ix===worstIx(rows))}${r.n}<small class="bal">${balTxt(r)}</small></td><td>${r.c}</td><td>${r.d}</td><td>${r.t}</td></tr>`).join('')}</table>`:'<div class="empty">Sin jugadores todavía.</div>'}</div>`}
+${rows.length&&score(rows[0])>0?throne(rows[0].n,'Rey supremo de la cueva',rows[0].c+' campeonatos'+copTxt(rows[0].cp)+' · '+rows[0].d+' descensos<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Mucho descenso, poca copa…',rows[worstIx(rows)].d+' descensos · '+rows[worstIx(rows)].c+(rows[worstIx(rows)].c===1?' campeonato':' campeonatos')):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}. Orden: cada campeonato suma 3, cada copa suma 1 y cada descenso resta 2. Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden.</p>
+<div class="card wrap">${rows.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Copas</th><th>Descensos</th><th>Torneos jugados</th></tr>${rows.map((r,ix)=>`<tr class="${ix===0&&score(r)>0?'top1':ix===worstIx(rows)?'last':''}"><td>${rk(ix,score(r)>0,ix===worstIx(rows))}${r.n}<small class="bal">${balTxt(r)}</small></td><td>${r.c}</td><td>${r.cp}</td><td>${r.d}</td><td>${r.t}</td></tr>`).join('')}</table>`:'<div class="empty">Sin jugadores todavía.</div>'}</div>`}
 
 function game(){
   const G=S.games[v.g],M=GAMES[v.g];const wid=worstG(G,v.g);
@@ -420,19 +423,20 @@ function game(){
   if(v.tab==='table'){
     body=`${throneG()}<div class="add">${friendSelect('sel',G.players)}<button class="pri" onclick="addToTable()">Agregar a la tabla</button></div>
 ${S.friends.length?'':'<p class="note">Primero cargá amigos desde el inicio.</p>'}
-<div class="card wrap">${G.players.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Descensos</th><th>Torneos jugados</th><th></th></tr>
+<div class="card wrap">${G.players.length?`<table><tr><th>Jugador</th><th>Campeonatos</th>${v.g==='fifa'?'<th>Copas</th>':''}<th>Descensos</th><th>Torneos jugados</th><th></th></tr>
 ${sortedPlayers(G,v.g).map((p,ix)=>{const s=stat(v.g,p);const c=(k)=>`<span class="ctl"><button onclick="bump('${p}','${k}',-1)" aria-label="menos">−</button><span>${s[k]}</span><button onclick="bump('${p}','${k}',1)" aria-label="más">+</button></span>`;
-return `<tr class="${ix===0&&score(s)>0?'top1':p===wid?'last':''}"><td>${rk(ix,score(s)>0,p===wid)}${nm(p)}<small class="bal">${balTxt(s)}</small></td><td>${c('c')}</td><td>${c('d')}</td><td>${c('t')}</td><td><button class="ghost" onclick="rmFromTable('${p}')" aria-label="Quitar">✕</button></td></tr>`}).join('')}</table>`:'<div class="empty">Tabla vacía. Sumá jugadores con la lista de arriba.</div>'}</div>
-${wid?shame(nm(wid),'Mucho descenso, poca copa…',stat(v.g,wid).d+' descensos · '+stat(v.g,wid).c+(stat(v.g,wid).c===1?' campeonato':' campeonatos')):''}<p class="note">Orden: cada campeonato suma 3 y cada descenso resta 2 (balance). Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden. Se actualiza sola al cerrar un torneo y podés corregirla con − y +.</p>`;
+return `<tr class="${ix===0&&score(s)>0?'top1':p===wid?'last':''}"><td>${rk(ix,score(s)>0,p===wid)}${nm(p)}<small class="bal">${balTxt(s)}</small></td><td>${c('c')}</td>${v.g==='fifa'?`<td>${c('cp')}</td>`:''}<td>${c('d')}</td><td>${c('t')}</td><td><button class="ghost" onclick="rmFromTable('${p}')" aria-label="Quitar">✕</button></td></tr>`}).join('')}</table>`:'<div class="empty">Tabla vacía. Sumá jugadores con la lista de arriba.</div>'}</div>
+${wid?shame(nm(wid),'Mucho descenso, poca copa…',stat(v.g,wid).d+' descensos · '+stat(v.g,wid).c+(stat(v.g,wid).c===1?' campeonato':' campeonatos')):''}<p class="note">Orden: cada campeonato suma 3, cada copa suma 1 y cada descenso resta 2 (balance). Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden. Se actualiza sola al cerrar un torneo y podés corregirla con − y +.</p>`;
   }else if(v.tab==='tours'){
-    body=G.tours.length?G.tours.slice().reverse().map(t=>`<button class="card t-item" onclick="go({s:'tour',t:'${t.id}'})"><span><b>${esc(t.name)}</b><br><small style="color:var(--mut)">${t.players.length} jugadores · ${t.matches.filter(m=>isDone(m,v.g)).length}/${t.matches.length} partidos</small></span><span class="tag ${t.done?'ok':''}">${t.done?'🏆 '+nm(t.champ):(()=>{const s=standings(t,v.g)[0];return s&&s.pts?'Líder: '+nm(s.p)+' · '+s.pts+' pts':'En juego'})()}</span></button>`).join(''):'<div class="empty">Sin torneos. Creá uno en la pestaña Nuevo.</div>';
+    body=G.tours.length?G.tours.slice().reverse().map(t=>`<button class="card t-item" onclick="go({s:'tour',t:'${t.id}'})"><span><b>${esc(t.name)}</b><br><small style="color:var(--mut)">${t.players.length} jugadores · ${t.mode==='copa'?'Copa':t.matches.filter(m=>isDone(m,v.g)).length+'/'+t.matches.length+' partidos'}</small></span><span class="tag ${t.done?'ok':''}">${t.done?'🏆 '+nm(t.champ):(()=>{const s=standings(t,v.g)[0];return s&&s.pts?'Líder: '+nm(s.p)+' · '+s.pts+' pts':'En juego'})()}</span></button>`).join(''):'<div class="empty">Sin torneos. Creá uno en la pestaña Nuevo.</div>';
   }else{
     const d=v.draft;
     body=`<div class="card"><h3>Nuevo torneo de ${M.n}</h3>
+${v.g==='fifa'?`<div class="tabs" style="margin:10px 0 0"><button class="${d.mode==='copa'?'':'on'}" onclick="setMode('liga')">Liga</button><button class="${d.mode==='copa'?'on':''}" onclick="setMode('copa')">Copa</button></div>`:''}
 <input class="in" style="margin:10px 0" placeholder="Nombre (ej. Liga de octubre)" value="${esc(d.name)}" oninput="v.draft.name=this.value">
 <div class="add">${friendSelect('dsel',d.ps)}<button onclick="addDraft()">Sumar</button></div>
 <div class="chips">${d.ps.length?d.ps.map(p=>`<span class="chip">${nm(p)}<button onclick="rmDraft('${p}')" aria-label="Quitar">✕</button></span>`).join(''):'<span class="note">Elegí al menos 2 amigos de la lista.</span>'}</div>
-<button class="pri" style="width:100%" ${d.ps.length<2?'disabled style="width:100%;opacity:.5"':''} onclick="createT()">Crear torneo y fixture</button></div>`;
+<button class="pri" style="width:100%" ${d.ps.length<2?'disabled style="width:100%;opacity:.5"':''} onclick="createT()">${v.g==='fifa'&&d.mode==='copa'?'Crear copa':'Crear torneo y fixture'}</button></div>`;
   }
   return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>${M.e} ${M.n}</h2></div>${tabs}${body}`;
 }
@@ -441,8 +445,30 @@ function brawlMatch(m,i,t,dn){
   const dup=m.pa&&m.pb&&m.pa===m.pb;
   const side=(p,k,kk)=>`<div class="bp"><span class="n">${nm(p)}</span><select class="in" aria-label="Puesto" ${t.done?'disabled':''} onchange="setB(${i},'${k}',this.value)"><option value="">Puesto</option>${[1,2,3,4].map(n=>`<option value="${n}" ${m[k]===n?'selected':''}>${n}°</option>`).join('')}</select><label class="ko">KOs<input type="number" inputmode="numeric" min="0" value="${m[kk]}" ${t.done?'disabled':''} onchange="setB(${i},'${kk}',this.value)"></label></div>`;
   return `<div class="bm ${dn?'done':''}">${side(m.a,'pa','ka')}${side(m.b,'pb','kb')}${dup?'<div class="warn">No pueden terminar en el mismo puesto.</div>':''}</div>`}
+function finishCup(){const t=curT();const c=$('cc').value,r=$('cr').value,d=$('cd').value;v.cerr='';
+  if(!c){v.cerr='Elegí al campeón.';render();return}
+  if(r&&r===c){v.cerr='El subcampeón no puede ser el campeón.';render();return}
+  if(d&&d===c){v.cerr='El campeón no puede descender.';render();return}
+  t.done=true;t.champ=c;t.runner=r||null;t.desc=d||null;
+  t.players.forEach(p=>stat(v.g,p).t++);stat(v.g,c).cp++;if(d)stat(v.g,d).d++;
+  save();render()}
+function cupView(t){
+  const opts=ph=>`<option value="">${ph}</option>`+t.players.map(p=>`<option value="${p}">${nm(p)}</option>`).join('');
+  const sub=[t.runner?'Subcampeón: '+nm(t.runner):'',t.desc?'Descenso: '+nm(t.desc):''].filter(Boolean).join('<br>')||'Copa cerrada';
+  const del=v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Esta copa ya sumó una copa al campeón y un torneo jugado a cada participante.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo la copa</button><button class="danger" onclick="delT2(true)">Copa y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar copa</button>`;
+  return `<div class="top"><button class="ghost" onclick="go({s:'game',tab:'tours'})">←</button><h2>🏅 ${esc(t.name)}</h2></div>
+${t.done?throne(nm(t.champ),'Campeón de la copa',sub):`<div class="card"><h3>Cerrar la copa</h3><p class="note">Jugaron la copa por fuera de la app. Cargá el resultado final.</p>
+<label class="note" style="display:block">Campeón</label><select class="in" id="cc">${opts('Elegí al campeón')}</select>
+<label class="note" style="display:block;margin-top:10px">Subcampeón (opcional)</label><select class="in" id="cr">${opts('Sin cargar')}</select>
+<label class="note" style="display:block;margin-top:10px">Descenso (opcional)</label><select class="in" id="cd">${opts('Nadie desciende')}</select>
+${v.cerr?`<p class="warn" style="margin-top:10px">${esc(v.cerr)}</p>`:''}
+<button class="pri" style="width:100%;margin-top:12px" onclick="finishCup()">Cerrar copa y sumar a la tabla</button>
+<p class="note">El campeón suma una copa y todos suman un torneo jugado. Si elegís un descenso, también se suma.</p></div>`}
+<div class="card"><h3>Participantes</h3><div class="chips">${t.players.map(p=>`<span class="chip" style="padding-right:12px">${nm(p)}</span>`).join('')}</div></div>
+${del}`}
 function tour(){
   const t=curT();if(!t){return'<div class="empty">Torneo no encontrado.</div>'}
+  if(t.mode==='copa')return cupView(t);
   const M=GAMES[v.g],st=standings(t);
   const all=t.matches.every(m=>isDone(m,v.g));const lw=st.length>1&&st[st.length-1].pj>0&&st[0].pts>st[st.length-1].pts?st.length-1:-1;
   let fx='',lr=0;
