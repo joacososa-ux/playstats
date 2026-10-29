@@ -314,8 +314,10 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 }
 
 function render(){
+  const y=window.scrollY;
   document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():({home,friends,supreme,game,tour,groups})[v.s]();
+  window.scrollTo(0,y);
 }
 render();
 </script>
