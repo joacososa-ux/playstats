@@ -97,13 +97,32 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
+let ME=null,PROF={};
+const memberNick=u=>(PROF[u]&&PROF[u].nick)||'usuario';
+async function loadProfiles(){const ids=[...new Set(R.groups.flatMap(g=>g.members||[]))].filter(id=>!PROF[id]);
+  const out=await Promise.all(ids.map(id=>FB.getProfile(id).catch(()=>null)));ids.forEach((id,i)=>{if(out[i])PROF[id]=out[i]})}
+async function saveNick(){const raw=$('nk').value.trim();v.nickErr='';
+  if(!/^[A-Za-z0-9_]{3,16}$/.test(raw)){v.nickErr='Usá de 3 a 16 caracteres: letras, números o guión bajo.';render();return}
+  const nl=raw.toLowerCase();
+  try{if(!(ME&&ME.nickLower===nl)&&!(await FB.nickFree(nl))){v.nickErr='Ese nick ya está en uso. Probá con otro.';render();return}
+    await FB.setNick(USER.uid,raw,ME?ME.nickLower:null);
+    ME={nick:raw,nickLower:nl};PROF[USER.uid]=ME;go({s:'home'})
+  }catch(e){v.nickErr='No se pudo guardar el nick: '+(e.code||e.message);render()}}
+function nickView(){return `<h1 class="logo disp">Elegí tu <b>nick</b></h1><p class="sub">Es el nombre con el que te van a ver tus amigos en PlayStats. Tiene que ser único.</p>${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}<input class="in" id="nk" placeholder="ej. virg0" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" style="width:100%;margin-top:12px;min-height:50px" onclick="saveNick()">Guardar nick</button><p class="note">3 a 16 caracteres: letras, números o guión bajo.</p>`}
+function profile(){return `<div class="top"><button class="ghost" onclick="go({s:'home',nickErr:''})">←</button><h2>Mi perfil</h2></div>
+<div class="card"><p class="note" style="margin:0">Tu nick</p><div class="disp" style="font-size:38px;color:var(--acc)">@${esc(ME.nick)}</div></div>
+${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}
+<div class="add"><input class="in" id="nk" placeholder="Nuevo nick" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" onclick="saveNick()">Cambiar</button></div>
+<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>`}
+function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
+function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
 const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
 const fromDoc=d=>{let x={};try{x=JSON.parse(d.json||'{}')}catch(e){}return{id:d.id,name:d.name||'Grupo',owner:d.owner,members:d.members||[],code:d.code||'',friends:x.friends||[],games:x.games||blank().games}};
 function saveG(g){FB.saveGroup(g.id,{name:g.name,json:gData(g),updated:Date.now()}).catch(e=>{v.err='No se pudo guardar: '+(e.code||e.message)})}
 function save(){if(!USER||!ready||!S)return;const g=S;clearTimeout(tms[g.id]);tms[g.id]=setTimeout(()=>saveG(g),400)}
 function saveUser(){if(USER)FB.setUser(USER.uid,{gids:R.groups.map(g=>g.id),cur:R.cur}).catch(()=>{})}
 async function createG(name,data){const gid=FB.newId();const b=blank();
-  const g={id:gid,name,owner:USER.uid,members:[USER.uid],code:'',friends:(data&&data.friends)||b.friends,games:(data&&data.games)||b.games};
+  const g={id:gid,name,owner:USER.uid,members:[USER.uid],code:'',friends:(data&&data.friends)||(ME?[{id:uid(),name:ME.nick,uid:USER.uid}]:b.friends),games:(data&&data.games)||b.games};
   g.code=await FB.createGroup(gid,{name,owner:USER.uid,members:[USER.uid],json:gData(g),updated:Date.now()},USER.uid);
   R.groups.push(g);return g}
 function softRender(){if(!S&&(v.s==='game'||v.s==='tour'))v.s='home';const a=document.activeElement;if(a&&a.matches&&a.matches('input,select'))return;render()}
@@ -113,21 +132,22 @@ function watch(g){if(subs[g.id])return;subs[g.id]=FB.watch(g.id,s=>{
   if(!s.exists()||s.metadata.hasPendingWrites)return;
   const d=s.data(),x=R.groups.find(q=>q.id===g.id);if(!x)return;let ch=false;
   if(x.name!==d.name){x.name=d.name;ch=true}
-  if((d.members||[]).length!==x.members.length){x.members=d.members||[];ch=true}
+  if((d.members||[]).length!==x.members.length){x.members=d.members||[];ch=true;loadProfiles().then(softRender).catch(()=>{})}
   if(d.code&&x.code!==d.code){x.code=d.code;ch=true}
   if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;normalize();ch=true}catch(e){}}
   if(ch)softRender()},()=>{dropLocal(g.id);afterDrop().then(softRender).catch(()=>{})})}
 async function loadAll(){
+  ME=await FB.getProfile(USER.uid);PROF={};if(ME)PROF[USER.uid]=ME;
   const ud=await FB.getUser(USER.uid);const gids=(ud&&ud.gids)||[];
   R={groups:[],cur:(ud&&ud.cur)||null};
   for(const id of gids){const d=await FB.getGroup(id);if(d)R.groups.push(fromDoc(d))}
   if(!gids.length&&ud&&ud.json){const old=migrate(JSON.parse(ud.json));for(const og of old.groups)await createG(og.name,{friends:og.friends,games:og.games})}
   if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id}
-  setS();normalize();R.groups.forEach(watch);saveUser();
+  setS();normalize();await loadProfiles();R.groups.forEach(watch);saveUser();
 }
 window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';
   Object.values(subs).forEach(f=>f());subs={};
-  if(!u){R={groups:[],cur:null};S=null;v.s='home';render();return}
+  if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};v.s='home';render();return}
   try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
   v.s='home';render()};
 function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar sesión: '+(e.code||e.message);render()})}
@@ -139,7 +159,7 @@ let v={s:'home',g:null,tab:'table',t:null,draft:{name:'',ps:[]}};
 const $=id=>document.getElementById(id);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc(f.name):'?'};
+const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
 const stat=(g,p)=>S.games[g].stats[p]||(S.games[g].stats[p]={c:0,d:0,t:0});
 const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);render();if(v.s+v.tab+v.t!==k)window.scrollTo(0,0)};
 
@@ -212,7 +232,7 @@ function delT2(rev){const t=curT(),G=S.games[v.g];
 /* vistas */
 function friendSelect(id,excl){
   const o=S.friends.filter(f=>!excl.includes(f.id));
-  return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
+  return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${nm(f.id)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
 
 async function addGroup(){const n=$('gn').value.trim();if(!n)return;v.err='';
   try{const g=await createG(n);R.cur=g.id;setS();watch(g);saveUser();go({s:'home',g:null})}catch(e){v.err='No se pudo crear el grupo: '+(e.code||e.message);render()}}
@@ -228,7 +248,7 @@ async function doJoin(){const c=$('jc').value.trim().toUpperCase();if(!c)return;
   try{const gid=await FB.join(c,USER.uid);
     if(R.groups.some(g=>g.id===gid)){v.err='Ya estás en ese grupo.';render();return}
     const d=await FB.getGroup(gid);if(!d)throw new Error('x');
-    const g=fromDoc(d);R.groups.push(g);R.cur=gid;setS();normalize();watch(g);saveUser();go({s:'home',g:null})
+    const g=fromDoc(d);R.groups.push(g);R.cur=gid;setS();normalize();await loadProfiles();watch(g);saveUser();go({s:'home',g:null})
   }catch(e){v.err='No se pudo unir. Revisá que el código esté bien escrito.';render()}}
 const invText=c=>'Sumate a mi grupo en PlayStats: '+location.href.split('#')[0]+' · Código: '+c;
 function copyInv(c){const f=()=>{v.msg='Código: '+c+' (copialo y pasalo a tus amigos)';render()};
@@ -243,7 +263,8 @@ ${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=g.game
  if(v.ren===g.id)return `<div class="card"><div class="add" style="margin:0"><input class="in" id="rn" value="${esc(g.name)}" onkeydown="if(event.key==='Enter')renGroup('${g.id}')"><button class="pri" onclick="renGroup('${g.id}')">Guardar</button></div></div>`;
  if(v.dg===g.id)return `<div class="card"><b>${own?'¿Eliminar':'¿Salir de'} "${esc(g.name)}"?</b><p class="note">${own?'Se borra para todos los miembros: amigos, torneos y tablas. No se puede deshacer.':'Dejás de ver este grupo. Podés volver a entrar con el código.'}</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">${own?'Eliminar grupo':'Salir del grupo'}</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
  return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.members.length} miembros · ${g.friends.length} jugadores · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div>
-<p class="note" style="margin:10px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
+<p class="note" style="margin:8px 0 0">Miembros: ${g.members.map(u=>esc('@'+memberNick(u))).join(', ')}</p>
+<p class="note" style="margin:4px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
 <div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button><button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button><button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div></div>`}).join('')}`}
 function home(){return `
 <h1 class="logo disp">Play<b>Stats</b></h1>
@@ -251,15 +272,18 @@ function home(){return `
 <button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
-<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Amigos (${S.friends.length})</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
+<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Amigos (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
 
-function friends(){return `
-<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Amigos</h2></div>
-<div class="add"><input class="in" id="fn" placeholder="Nombre del amigo" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar</button></div>
-${S.friends.length?`<div class="card">${S.friends.map(f=>`<div class="ctl" style="display:flex;justify-content:space-between;padding:6px 0"><b>${esc(f.name)}</b><button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></div>`).join('')}</div>`:'<div class="empty">Todavía no hay amigos. Agregá el primero para armar torneos.</div>'}`}
+function friends(){
+  const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
+  const free=S.members.filter(u=>!linked.has(u));
+  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Amigos</h2></div>
+${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
+<div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
+${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span></span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
 
 function supreme(){
-  const rows=S.friends.map(f=>{let c=0,d=0,t=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t}}return{n:esc(f.name),c,d,t}}).sort((a,b)=>b.c-a.c||a.d-b.d);
+  const rows=S.friends.map(f=>{let c=0,d=0,t=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t}}return{n:nm(f.id),c,d,t}}).sort((a,b)=>b.c-a.c||a.d-b.d);
   return `<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Tabla suprema</h2></div>
 ${rows.length&&rows[0].c?throne(rows[0].n,'Rey supremo de la cueva',rows[0].c+' campeonatos · '+rows[0].d+' descensos<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Ponete las pilas pibe',rows[worstIx(rows)].d+' descensos · A ponerse las pilas'):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}.</p>
 <div class="card wrap">${rows.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Descensos</th><th>Torneos jugados</th></tr>${rows.map((r,ix)=>`<tr class="${ix===0&&r.c?'top1':ix===worstIx(rows)?'last':''}"><td>${rk(ix,r.c>0,ix===worstIx(rows))}${r.n}</td><td>${r.c}</td><td>${r.d}</td><td>${r.t}</td></tr>`).join('')}</table>`:'<div class="empty">Sin jugadores todavía.</div>'}</div>`}
@@ -316,7 +340,7 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 function render(){
   const y=window.scrollY;
   document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
-  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():({home,friends,supreme,game,tour,groups})[v.s]();
+  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile})[v.s]();
   window.scrollTo(0,y);
 }
 render();
@@ -324,7 +348,7 @@ render();
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,onSnapshot,arrayUnion,arrayRemove} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,onSnapshot,arrayUnion,arrayRemove,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyAGXNLFqr5lJG64dVf1twqU0CuUb_lK1nA",
   authDomain: "playstats-44b04.firebaseapp.com",
@@ -339,6 +363,11 @@ const genCode=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i
 window.FB={
   login:()=>signInWithPopup(auth,new GoogleAuthProvider()),
   logout:()=>signOut(auth),
+  getProfile:async uid=>{const s=await getDoc(doc(fs,'profiles',uid));return s.exists()?s.data():null},
+  nickFree:async nl=>!(await getDoc(doc(fs,'nicks',nl))).exists(),
+  setNick:async(uid,nick,old)=>{const nl=nick.toLowerCase();const b=writeBatch(fs);
+    if(old!==nl){if(old)b.delete(doc(fs,'nicks',old));b.set(doc(fs,'nicks',nl),{uid})}
+    b.set(doc(fs,'profiles',uid),{nick,nickLower:nl,updated:Date.now()});await b.commit()},
   getUser:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data():null},
   setUser:(uid,d)=>setDoc(doc(fs,'users',uid),d,{merge:true}),
   newId:()=>doc(collection(fs,'groups')).id,
