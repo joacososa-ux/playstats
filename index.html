@@ -97,16 +97,48 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-let ME=null,PROF={};
+let ME=null,PROF={},FR=[],INV=[],socUnsub=[];
+function startSocial(){if(socUnsub.length||!USER||!ME)return;
+  socUnsub.push(FB.watchFr(USER.uid,l=>{FR=l;loadProfiles().then(softRender).catch(()=>softRender())}));
+  socUnsub.push(FB.watchInv(USER.uid,l=>{INV=l;softRender()}))}
+function stopSocial(){socUnsub.forEach(f=>f());socUnsub=[];FR=[];INV=[]}
+const frOf=u=>FR.find(f=>f.users.includes(u));
+const badge=()=>USER?FR.filter(f=>f.status==='pending'&&f.to===USER.uid).length+INV.length:0;
+async function searchNick(){const raw=$('sq').value.trim().replace(/^@/,'').toLowerCase();v.err='';v.msg='';v.found=null;
+  if(!raw){render();return}
+  if(raw===ME.nickLower){v.err='Ese sos vos 😄';render();return}
+  try{const u=await FB.nickUid(raw);if(!u){v.err='No existe ningún usuario con ese nick.';render();return}
+    const p=await FB.getProfile(u);if(p)PROF[u]=p;v.found=u;render()}catch(e){v.err='No se pudo buscar: '+(e.code||e.message);render()}}
+async function sendReq(u){try{await FB.sendReq(USER.uid,u);v.found=null;v.msg='Solicitud enviada a @'+memberNick(u)+'.'}catch(e){v.err='No se pudo enviar la solicitud: '+(e.code||e.message)}render()}
+async function frAct(op,id){try{if(op==='ok')await FB.acceptReq(id);else await FB.delReq(id)}catch(e){v.err='No se pudo completar: '+(e.code||e.message);render()}}
+async function invUser(u){v.err='';v.msg='';
+  try{await FB.sendInvite(S.id,S.name,USER.uid,ME.nick,u);v.msg='Invitación a "'+S.name+'" enviada a @'+memberNick(u)+'.'}catch(e){v.err='No se pudo invitar. Quizás ya le mandaste la invitación.'}render()}
+async function enterGroup(gid){const d=await FB.getGroup(gid);if(!d)throw new Error('x');const g=fromDoc(d);R.groups.push(g);R.cur=gid;setS();normalize();await loadProfiles();watch(g);saveUser();go({s:'home',g:null})}
+async function invAct(op,id){const inv=INV.find(i=>i.id===id);if(!inv)return;
+  try{if(op==='ok'&&!R.groups.some(g=>g.id===inv.gid)){await FB.joinGroup(inv.gid,USER.uid);await FB.delInvite(id);await enterGroup(inv.gid)}else await FB.delInvite(id)}
+  catch(e){v.err='No se pudo aceptar la invitación (quizás el grupo ya no existe).';render()}}
+function social(){const me=USER.uid;
+  const inc=FR.filter(f=>f.status==='pending'&&f.to===me),out=FR.filter(f=>f.status==='pending'&&f.from===me),ok=FR.filter(f=>f.status==='accepted');
+  const o=f=>f.users.find(u=>u!==me),nk=u=>esc('@'+memberNick(u));
+  const row=(l,r)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><b>${l}</b><span style="display:flex;gap:6px;flex-wrap:wrap">${r}</span></div>`;
+  const fu=v.found,fr=fu?frOf(fu):null;
+  return `<div class="top"><button class="ghost" onclick="go({s:'home',err:'',msg:'',found:null})">←</button><h2>Amigos</h2></div>
+${v.err?`<p class="warn" style="margin-bottom:10px">${esc(v.err)}</p>`:''}${v.msg?`<p class="note" style="color:var(--acc)">${esc(v.msg)}</p>`:''}
+<div class="add"><input class="in" id="sq" placeholder="Buscar por nick (ej. virg0)" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')searchNick()"><button class="pri" onclick="searchNick()">Buscar</button></div>
+${fu?`<div class="card">${row('@'+esc(memberNick(fu)),!fr?`<button class="pri" onclick="sendReq('${fu}')">Enviar solicitud</button>`:fr.status==='accepted'?'<span class="tag ok">Ya son amigos</span>':fr.to===me?`<button class="pri" onclick="frAct('ok','${fr.id}')">Aceptar solicitud</button>`:'<span class="tag">Solicitud enviada</span>')}</div>`:''}
+${INV.length?`<div class="card"><h3>Invitaciones a grupos</h3>${INV.map(i=>row(esc(i.gname)+' <small style="color:var(--mut);font-weight:400">de @'+esc(i.fromNick)+'</small>',`<button class="pri" onclick="invAct('ok','${i.id}')">Unirme</button><button class="ghost danger" onclick="invAct('no','${i.id}')">Rechazar</button>`)).join('')}</div>`:''}
+${inc.length?`<div class="card"><h3>Solicitudes de amistad</h3>${inc.map(f=>row(nk(o(f)),`<button class="pri" onclick="frAct('ok','${f.id}')">Aceptar</button><button class="ghost danger" onclick="frAct('no','${f.id}')">Rechazar</button>`)).join('')}</div>`:''}
+<div class="card"><h3>Mis amigos</h3>${ok.length?ok.map(f=>{const u=o(f);return row(nk(u),(S.members.includes(u)?`<span class="tag">En ${esc(S.name)}</span>`:`<button onclick="invUser('${u}')">Invitar a ${esc(S.name)}</button>`)+`<button class="ghost danger" onclick="frAct('no','${f.id}')">Quitar</button>`)}).join(''):'<div class="empty" style="padding:10px">Todavía no tenés amigos. Buscá a alguien por su nick.</div>'}</div>
+${out.length?`<div class="card"><h3>Solicitudes enviadas</h3>${out.map(f=>row(nk(o(f)),`<button class="ghost" onclick="frAct('no','${f.id}')">Cancelar</button>`)).join('')}</div>`:''}`}
 const memberNick=u=>(PROF[u]&&PROF[u].nick)||'usuario';
-async function loadProfiles(){const ids=[...new Set(R.groups.flatMap(g=>g.members||[]))].filter(id=>!PROF[id]);
+async function loadProfiles(){const ids=[...new Set([...R.groups.flatMap(g=>g.members||[]),...FR.flatMap(f=>f.users)])].filter(id=>!PROF[id]);
   const out=await Promise.all(ids.map(id=>FB.getProfile(id).catch(()=>null)));ids.forEach((id,i)=>{if(out[i])PROF[id]=out[i]})}
 async function saveNick(){const raw=$('nk').value.trim();v.nickErr='';
   if(!/^[A-Za-z0-9_]{3,16}$/.test(raw)){v.nickErr='Usá de 3 a 16 caracteres: letras, números o guión bajo.';render();return}
   const nl=raw.toLowerCase();
   try{if(!(ME&&ME.nickLower===nl)&&!(await FB.nickFree(nl))){v.nickErr='Ese nick ya está en uso. Probá con otro.';render();return}
     await FB.setNick(USER.uid,raw,ME?ME.nickLower:null);
-    ME={nick:raw,nickLower:nl};PROF[USER.uid]=ME;go({s:'home'})
+    ME={nick:raw,nickLower:nl};PROF[USER.uid]=ME;startSocial();go({s:'home'})
   }catch(e){v.nickErr='No se pudo guardar el nick: '+(e.code||e.message);render()}}
 function nickView(){return `<h1 class="logo disp">Elegí tu <b>nick</b></h1><p class="sub">Es el nombre con el que te van a ver tus amigos en PlayStats. Tiene que ser único.</p>${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}<input class="in" id="nk" placeholder="ej. virg0" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" style="width:100%;margin-top:12px;min-height:50px" onclick="saveNick()">Guardar nick</button><p class="note">3 a 16 caracteres: letras, números o guión bajo.</p>`}
 function profile(){return `<div class="top"><button class="ghost" onclick="go({s:'home',nickErr:''})">←</button><h2>Mi perfil</h2></div>
@@ -143,10 +175,10 @@ async function loadAll(){
   for(const id of gids){const d=await FB.getGroup(id);if(d)R.groups.push(fromDoc(d))}
   if(!gids.length&&ud&&ud.json){const old=migrate(JSON.parse(ud.json));for(const og of old.groups)await createG(og.name,{friends:og.friends,games:og.games})}
   if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id}
-  setS();normalize();await loadProfiles();R.groups.forEach(watch);saveUser();
+  setS();normalize();await loadProfiles();R.groups.forEach(watch);saveUser();startSocial();
 }
 window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';
-  Object.values(subs).forEach(f=>f());subs={};
+  Object.values(subs).forEach(f=>f());subs={};stopSocial();
   if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};v.s='home';render();return}
   try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
   v.s='home';render()};
@@ -272,12 +304,12 @@ function home(){return `
 <button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
-<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Amigos (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
+<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div><button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
 
 function friends(){
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
   const free=S.members.filter(u=>!linked.has(u));
-  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Amigos</h2></div>
+  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Jugadores</h2></div>
 ${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
 <div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
 ${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span></span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
@@ -340,7 +372,7 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 function render(){
   const y=window.scrollY;
   document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
-  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile})[v.s]();
+  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social})[v.s]();
   window.scrollTo(0,y);
 }
 render();
@@ -348,7 +380,7 @@ render();
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,onSnapshot,arrayUnion,arrayRemove,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,collection,onSnapshot,arrayUnion,arrayRemove,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyAGXNLFqr5lJG64dVf1twqU0CuUb_lK1nA",
   authDomain: "playstats-44b04.firebaseapp.com",
@@ -368,6 +400,15 @@ window.FB={
   setNick:async(uid,nick,old)=>{const nl=nick.toLowerCase();const b=writeBatch(fs);
     if(old!==nl){if(old)b.delete(doc(fs,'nicks',old));b.set(doc(fs,'nicks',nl),{uid})}
     b.set(doc(fs,'profiles',uid),{nick,nickLower:nl,updated:Date.now()});await b.commit()},
+  nickUid:async nl=>{const s=await getDoc(doc(fs,'nicks',nl));return s.exists()?s.data().uid:null},
+  watchFr:(uid,cb)=>onSnapshot(query(collection(fs,'friendships'),where('users','array-contains',uid)),s=>cb(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{}),
+  watchInv:(uid,cb)=>onSnapshot(query(collection(fs,'invites'),where('to','==',uid)),s=>cb(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{}),
+  sendReq:(me,other)=>{const u=[me,other].sort();return setDoc(doc(fs,'friendships',u.join('_')),{users:u,from:me,to:other,status:'pending'})},
+  acceptReq:id=>updateDoc(doc(fs,'friendships',id),{status:'accepted'}),
+  delReq:id=>deleteDoc(doc(fs,'friendships',id)),
+  sendInvite:(gid,gname,from,fromNick,to)=>setDoc(doc(fs,'invites',gid+'_'+to),{gid,gname,from,fromNick,to}),
+  delInvite:id=>deleteDoc(doc(fs,'invites',id)),
+  joinGroup:(gid,uid)=>updateDoc(doc(fs,'groups',gid),{members:arrayUnion(uid)}),
   getUser:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data():null},
   setUser:(uid,d)=>setDoc(doc(fs,'users',uid),d,{merge:true}),
   newId:()=>doc(collection(fs,'groups')).id,
