@@ -153,11 +153,42 @@ async function saveNick(){const raw=$('nk').value.trim();v.nickErr='';
     ME={nick:raw,nickLower:nl};PROF[USER.uid]=ME;startSocial();go({s:'home'})
   }catch(e){v.nickErr='No se pudo guardar el nick: '+(e.code||e.message);render()}}
 function nickView(){return `<h1 class="logo disp">Elegí tu <b>nick</b></h1><p class="sub">Es el nombre con el que te van a ver tus amigos en PlayStats. Tiene que ser único.</p>${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}<input class="in" id="nk" placeholder="ej. virg0" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" style="width:100%;margin-top:12px;min-height:50px" onclick="saveNick()">Guardar nick</button><p class="note">3 a 16 caracteres: letras, números o guión bajo.</p>`}
-function profile(){return `<div class="top"><button class="ghost" onclick="go({s:'home',nickErr:''})">←</button><h2>Mi perfil</h2></div>
+function backupFile(){
+  const data={app:'PlayStats',v:1,exportedAt:new Date().toISOString(),by:ME?ME.nick:'',groups:R.groups.map(g=>({id:g.id,name:g.name,friends:g.friends,games:g.games}))};
+  return new File([JSON.stringify(data,null,1)],'playstats-copia-'+new Date().toISOString().slice(0,10)+'.json',{type:'application/json'})}
+function dlBackup(quiet){const f=backupFile();const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);if(!quiet){v.bmsg='Copia descargada: '+f.name;render()}}
+function canShareFiles(){try{return !!(navigator.canShare&&navigator.canShare({files:[new File(['x'],'a.json',{type:'application/json'})]}))}catch(e){return false}}
+async function shareBackup(){const f=backupFile();try{await navigator.share({files:[f],title:'Copia de PlayStats'});v.bmsg='Copia lista.';render()}catch(e){if(!e||e.name!=='AbortError'){v.bmsg='No se pudo compartir. Probá con "Descargar copia".';render()}}}
+function pickBackup(inp){const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);
+      if(!d||d.app!=='PlayStats'||!Array.isArray(d.groups)||!d.groups.length)throw 0;
+      d.groups.forEach(g=>{if(!g||!Array.isArray(g.friends)||!g.games||!g.games.fifa||!g.games.brawl||!Array.isArray(g.games.fifa.tours)||!Array.isArray(g.games.brawl.tours))throw 0});
+      v.bk=d;v.bmsg='';v.rc=null}catch(e){v.bk=null;v.bmsg='Ese archivo no es una copia válida de PlayStats.'}render()};
+  rd.readAsText(f)}
+async function restoreNew(i){const g=v.bk.groups[i];
+  try{const n=R.groups.some(x=>x.name===g.name)?g.name+' (restaurado)':g.name;
+    const ng=await createG(n,{friends:g.friends,games:g.games});normalize();R.cur=ng.id;setS();watch(ng);saveUser();
+    v.bk=null;v.rc=null;v.bmsg='Listo: "'+ng.name+'" se restauró como grupo nuevo.'}catch(e){v.bmsg='No se pudo restaurar: '+(e.code||e.message)}render()}
+function restoreReplace(i){const b=v.bk.groups[i];const g=R.groups.find(x=>x.id===b.id);if(!g)return;
+  dlBackup(true);g.friends=b.friends;g.games=b.games;normalize();saveG(g);
+  v.bk=null;v.rc=null;v.bmsg='Listo: se reemplazaron los datos de "'+g.name+'". Además se descargó una copia de cómo estaba antes.';render()}
+function backupCard(){const bk=v.bk;
+  return `<div class="card" style="margin-top:14px"><h3>Copia de seguridad</h3>
+<p class="note">Guardá un archivo con todos tus grupos, torneos y tablas. Conviene hacerlo antes de cada actualización grande.</p>
+<div class="row2" style="flex-wrap:wrap"><button class="pri" onclick="dlBackup()">Descargar copia</button>${canShareFiles()?'<button onclick="shareBackup()">Compartir / guardar en…</button>':''}</div>
+${v.bmsg?`<p class="note" style="color:var(--acc)">${esc(v.bmsg)}</p>`:''}
+<p class="note" style="margin-top:16px">Restaurar desde una copia (elegí el archivo .json):</p>
+<input class="in" type="file" accept=".json,application/json" onchange="pickBackup(this)">
+${bk?`<p class="note">Copia del ${esc(bk.exportedAt?new Date(bk.exportedAt).toLocaleDateString('es-AR'):'?')}${bk.by?' · de @'+esc(bk.by):''}</p>`+bk.groups.map((g,i)=>{const ex=R.groups.find(x=>x.id===g.id);const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
+ return `<div style="border-top:1px solid var(--line);padding:10px 0"><b>${esc(g.name)}</b><div class="note" style="margin:2px 0 8px">${g.friends.length} jugadores · ${nt} torneos</div>
+${v.rc===i?`<p class="warn" style="margin-bottom:8px">Se van a reemplazar los datos actuales de este grupo por los de la copia. Antes se descarga una copia de lo actual.</p><div class="row2"><button class="danger" onclick="restoreReplace(${i})">Sí, reemplazar</button><button onclick="go({rc:null})">Cancelar</button></div>`
+ :`<div class="row2" style="flex-wrap:wrap">${ex?`<button onclick="go({rc:${i}})">Reemplazar el grupo actual</button>`:''}<button class="${ex?'ghost':'pri'}" onclick="restoreNew(${i})">${ex?'Restaurar como grupo nuevo':'Restaurar como grupo nuevo'}</button></div>`}</div>`}).join(''):''}</div>`}
+function profile(){return `<div class="top"><button class="ghost" onclick="go({s:'home',nickErr:'',bk:null,bmsg:'',rc:null})">←</button><h2>Mi perfil</h2></div>
 <div class="card"><p class="note" style="margin:0">Tu nick</p><div class="disp" style="font-size:38px;color:var(--acc)">@${esc(ME.nick)}</div></div>
 ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}
 <div class="add"><input class="in" id="nk" placeholder="Nuevo nick" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" onclick="saveNick()">Cambiar</button></div>
-<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>`}
+<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${backupCard()}`}
 function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
 function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
 const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
