@@ -242,7 +242,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
 const stat=(g,p)=>{const o=S.games[g].stats;const x=o[p]||(o[p]={c:0,d:0,t:0,cp:0});if(x.cp===undefined)x.cp=0;return x};
 const copTxt=n=>n?' · '+n+(n===1?' copa':' copas'):'';
-const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);render();if(v.s+v.tab+v.t!==k)window.scrollTo(0,0)};
+const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);const ch=v.s+v.tab+v.t!==k;render(ch);if(ch)window.scrollTo(0,0)};
 
 function rounds(ids){
   const a=ids.slice();if(a.length%2)a.push(null);
@@ -488,10 +488,11 @@ ${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${all?'':'
 ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Este torneo ya sumó campeonato, descenso y torneo jugado a la tabla del juego.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo el torneo</button><button class="danger" onclick="delT2(true)">Torneo y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar torneo</button>`}`;
 }
 
-function render(){
-  const y=window.scrollY;
+function render(reset){
+  const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap')].map(e=>e.scrollLeft);
   document.body.className=(v.s==='game'||v.s==='tour')?v.g:'';
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?'<p class="empty">Cargando…</p>':(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h})[v.s]();
+  if(!reset)document.querySelectorAll('.wrap').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
 }
 render();
