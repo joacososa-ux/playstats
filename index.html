@@ -23,6 +23,8 @@ body.fifa{--acc:#2ee67a;--acc-tx:#04180c;--panel:#10201a;--panel2:#183027;--line
 body.brawl{--acc:#ff8a2b;--acc-tx:#1c0c00;--panel:#241612;--panel2:#33201a;--line:#5a3426;--bg:#120a08;--mut:#c0a090}
 body.fifa{background:radial-gradient(120% 60% at 50% -10%,#14402c 0%,var(--bg) 60%) fixed}
 body.brawl{background:radial-gradient(120% 60% at 50% -10%,#4a2210 0%,var(--bg) 60%) fixed}
+body.cr{--acc:#5aa9ff;--acc-tx:#04122b;--panel:#101a36;--panel2:#18264a;--line:#2b4382;--bg:#080e22;--mut:#9fb3de}
+body.cr{background:radial-gradient(120% 60% at 50% -10%,#1d3f9e 0%,var(--bg) 60%) fixed}
 #app{max-width:640px;margin:0 auto;padding:16px 16px 48px}
 h1,h2,h3,.disp{font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;margin:0;letter-spacing:.01em}
 .logo{font-size:44px;line-height:1;margin:20px 0 4px}
@@ -42,10 +44,12 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .big .em{position:absolute;right:14px;top:10px;font-size:64px;opacity:.9}
 .b-fifa{background:linear-gradient(135deg,#0f3d27,#15683f);border-color:#2ee67a}
 .b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
+.b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
+.b-cr .disp{font-size:32px;padding-right:70px}
 .row2{display:flex;gap:10px}
 .row2 button{flex:1}
 .tabs{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);padding:4px;border-radius:12px}
-.tabs button{flex:1;border:0;background:transparent;color:var(--mut)}
+.tabs button{flex:1;border:0;background:transparent;color:var(--mut);padding-left:6px;padding-right:6px}
 .tabs button.on{background:var(--acc);color:var(--acc-tx);font-weight:700}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
 .in{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:42px}
@@ -101,8 +105,8 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 <body>
 <div id="app"></div>
 <script>
-const GAMES={fifa:{n:'FIFA',e:'⚽',u:'Goles'},brawl:{n:'BrawlHalla',e:'⚔️',u:'Puntos'}};
-const blank=()=>({friends:[],games:{fifa:{players:[],tours:[],stats:{}},brawl:{players:[],tours:[],stats:{}}}});
+const GAMES={fifa:{n:'FIFA',e:'⚽',u:'Goles'},brawl:{n:'BrawlHalla',e:'⚔️',u:'Puntos'},cr:{n:'Clash Royale',e:'🏰',u:'Coronas'}};
+const blank=()=>({friends:[],games:{fifa:{players:[],tours:[],stats:{}},brawl:{players:[],tours:[],stats:{}},cr:{players:[],tours:[],stats:{}}}});
 let R={groups:[],cur:null};
 const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
@@ -183,7 +187,7 @@ function backupCard(){const bk=v.bk;
 ${v.bmsg?`<p class="note" style="color:var(--acc)">${esc(v.bmsg)}</p>`:''}
 <p class="note" style="margin-top:16px">Restaurar desde una copia (elegí el archivo .json):</p>
 <input class="in" type="file" accept=".json,application/json" onchange="pickBackup(this)">
-${bk?`<p class="note">Copia del ${esc(bk.exportedAt?new Date(bk.exportedAt).toLocaleDateString('es-AR'):'?')}${bk.by?' · de @'+esc(bk.by):''}</p>`+bk.groups.map((g,i)=>{const ex=R.groups.find(x=>x.id===g.id);const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
+${bk?`<p class="note">Copia del ${esc(bk.exportedAt?new Date(bk.exportedAt).toLocaleDateString('es-AR'):'?')}${bk.by?' · de @'+esc(bk.by):''}</p>`+bk.groups.map((g,i)=>{const ex=R.groups.find(x=>x.id===g.id);const nt=Object.values(g.games).reduce((a,x)=>a+(x.tours?x.tours.length:0),0);
  return `<div style="border-top:1px solid var(--line);padding:10px 0"><b>${esc(g.name)}</b><div class="note" style="margin:2px 0 8px">${g.friends.length} jugadores · ${nt} torneos</div>
 ${v.rc===i?`<p class="warn" style="margin-bottom:8px">Se van a reemplazar los datos actuales de este grupo por los de la copia. Antes se descarga una copia de lo actual.</p><div class="row2"><button class="danger" onclick="restoreReplace(${i})">Sí, reemplazar</button><button onclick="go({rc:null})">Cancelar</button></div>`
  :`<div class="row2" style="flex-wrap:wrap">${ex?`<button onclick="go({rc:${i}})">Reemplazar el grupo actual</button>`:''}<button class="${ex?'ghost':'pri'}" onclick="restoreNew(${i})">${ex?'Restaurar como grupo nuevo':'Restaurar como grupo nuevo'}</button></div>`}</div>`}).join(''):''}</div>`}
@@ -241,6 +245,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
 const stat=(g,p)=>{const o=S.games[g].stats;const x=o[p]||(o[p]={c:0,d:0,t:0,cp:0});if(x.cp===undefined)x.cp=0;return x};
+const dTxt=n=>n+(n===1?' descenso':' descensos');
 const copTxt=n=>n?' · '+n+(n===1?' copa':' copas'):'';
 const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);const ch=v.s+v.tab+v.t!==k;render(ch);if(ch)window.scrollTo(0,0)};
 
@@ -253,7 +258,8 @@ function rounds(ids){
   }
   return out;
 }
-function normalize(){for(const gr of R.groups)for(const g in gr.games)gr.games[g].tours.forEach(t=>t.matches.forEach(m=>{if(m.pa===undefined){m.pa=null;m.pb=null;m.ka=0;m.kb=0}}))}
+function normalize(){for(const gr of R.groups)if(!gr.games.cr)gr.games.cr={players:[],tours:[],stats:{}};
+  for(const gr of R.groups)for(const g in gr.games)gr.games[g].tours.forEach(t=>t.matches.forEach(m=>{if(m.pa===undefined){m.pa=null;m.pb=null;m.ka=0;m.kb=0}}))}
 function isDone(m,g){return g==='brawl'?(m.pa>0&&m.pb>0&&m.pa!==m.pb):(m.sa!==null&&m.sb!==null)}
 function standings(t,g=v.g){return g==='brawl'?standingsB(t):standingsF(t)}
 function standingsB(t){
@@ -306,7 +312,7 @@ function worstIx(a){const i=a.length-1;return a.length>1&&a[i].d>0?i:-1}
 function worstG(G,g){const sp=sortedPlayers(G,g);const i=worstIx(sp.map(p=>stat(g,p)));return i>=0?sp[i]:null}
 const rk=(ix,ok,bad)=>bad?'<span class="crown">🔻</span>':ix===0&&ok?'<span class="crown">👑</span>':'<span class="rk">'+(ix+1)+'</span>';
 function throneG(){const G=S.games[v.g];const p=sortedPlayers(G,v.g)[0];if(!p)return'';const s=stat(v.g,p);if(score(s)<=0)return'';
-  return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+copTxt(s.cp)+' · '+s.d+' descensos<br>Vení, bajame si podés')}
+  return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+copTxt(s.cp)+' · '+dTxt(s.d)+'<br>Vení, bajame si podés')}
 function delT2(rev){const t=curT(),G=S.games[v.g];
   if(rev&&t.done&&t.mode==='copa'){t.players.forEach(p=>{const x=stat(v.g,p);x.t=Math.max(0,x.t-1)});const a=stat(v.g,t.champ);a.cp=Math.max(0,a.cp-1);if(t.desc){const b=stat(v.g,t.desc);b.d=Math.max(0,b.d-1)}}
   else if(rev&&t.done){const st=standings(t);st.forEach(r=>{const s=stat(v.g,r.p);s.t=Math.max(0,s.t-1)});
@@ -343,7 +349,7 @@ function groups(){return `<div class="top"><button class="ghost" onclick="go({s:
 ${v.err?`<p class="warn" style="margin-bottom:10px">${esc(v.err)}</p>`:''}${v.msg?`<p class="note" style="color:var(--acc)">${esc(v.msg)}</p>`:''}
 <div class="add"><input class="in" id="gn" placeholder="Nombre del nuevo grupo" onkeydown="if(event.key==='Enter')addGroup()"><button class="pri" onclick="addGroup()">Crear grupo</button></div>
 <div class="add"><input class="in" id="jc" placeholder="Código de invitación" maxlength="8" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')doJoin()"><button onclick="doJoin()">Unirme</button></div>
-${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=g.games.fifa.tours.length+g.games.brawl.tours.length;
+${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=Object.values(g.games).reduce((a,x)=>a+(x.tours?x.tours.length:0),0);
  if(v.ren===g.id)return `<div class="card"><div class="add" style="margin:0"><input class="in" id="rn" value="${esc(g.name)}" onkeydown="if(event.key==='Enter')renGroup('${g.id}')"><button class="pri" onclick="renGroup('${g.id}')">Guardar</button></div></div>`;
  if(v.dg===g.id)return `<div class="card"><b>${own?'¿Eliminar':'¿Salir de'} "${esc(g.name)}"?</b><p class="note">${own?'Se borra para todos los miembros: amigos, torneos y tablas. No se puede deshacer.':'Dejás de ver este grupo. Podés volver a entrar con el código.'}</p><div class="row2"><button class="danger" onclick="delGroup('${g.id}')">${own?'Eliminar grupo':'Salir del grupo'}</button><button onclick="go({dg:null})">Cancelar</button></div></div>`;
  return `<div class="card" style="${cur?'border-color:var(--acc)':''}"><div class="t-item" style="margin:0;padding:0"><span><b>${esc(g.name)}</b><br><small style="color:var(--mut)">${g.members.length} miembros · ${g.friends.length} jugadores · ${nt} torneos</small></span>${cur?'<span class="tag ok">Actual</span>':`<button class="pri" onclick="pickGroup('${g.id}')">Abrir</button>`}</div>
@@ -356,6 +362,7 @@ function home(){return `
 <button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
+<button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${S.games.cr.tours.length} torneos · ${S.games.cr.players.length} jugadores</small></button>
 <div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
 
 function friends(){
@@ -371,15 +378,15 @@ function h2hOpts(){const out=[],seen=new Set();
   else S.friends.forEach(f=>out.push({k:f.uid?'u:'+f.uid:'g:'+S.id+':'+f.id,l:nm(f.id)}));
   return out}
 function h2hCalc(ka,kb){
-  const groups=v.hs==='all'?R.groups:[S],games=v.hg==='all'?['fifa','brawl']:[v.hg];
+  const groups=v.hs==='all'?R.groups:[S],games=v.hg==='all'?['fifa','brawl','cr']:[v.hg];
   const key=(g,fid)=>{const f=g.friends.find(x=>x.id===fid);return f?(f.uid?'u:'+f.uid:'g:'+g.id+':'+fid):null};
-  const res={fifa:{pj:0,a:0,e:0,b:0,ga:0,gb:0},brawl:{pj:0,a:0,b:0,ka:0,kb:0},tor:{n:0,a:0,b:0},list:[]};
+  const res={fifa:{pj:0,a:0,e:0,b:0,ga:0,gb:0},cr:{pj:0,a:0,e:0,b:0,ga:0,gb:0},brawl:{pj:0,a:0,b:0,ka:0,kb:0},tor:{n:0,a:0,b:0},list:[]};
   groups.forEach(g=>games.forEach(gm=>g.games[gm].tours.forEach(t=>{
     t.matches.forEach(m=>{
       const k1=key(g,m.a),k2=key(g,m.b);let sw;
       if(k1===ka&&k2===kb)sw=false;else if(k1===kb&&k2===ka)sw=true;else return;
       if(!isDone(m,gm))return;
-      if(gm==='fifa'){const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res.fifa;r.pj++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,ts:m.ts||0})}
+      if(gm!=='brawl'){const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res[gm];r.pj++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,ts:m.ts||0})}
       else{const x=sw?m.pb:m.pa,y=sw?m.pa:m.pb,A=sw?m.kb:m.ka,B=sw?m.ka:m.kb,r=res.brawl;r.pj++;r.ka+=A;r.kb+=B;if(x<y)r.a++;else r.b++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,A,B,ts:m.ts||0})}
     });
     if(t.done&&t.mode!=='copa'){const st=standings(t,gm);const ia=st.findIndex(s=>key(g,s.p)===ka),ib=st.findIndex(s=>key(g,s.p)===kb);
@@ -392,28 +399,28 @@ function h2h(){v.hs=v.hs||'grp';v.hg=v.hg||'all';
   if(!opts.some(o=>o.k===kb)||kb===ka)kb=(opts.find(o=>o.k!==ka)||{}).k;
   const top=`<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Mano a mano</h2></div>
 <div class="tabs"><button class="${v.hs==='grp'?'on':''}" onclick="go({hs:'grp'})">Este grupo</button><button class="${v.hs==='all'?'on':''}" onclick="go({hs:'all'})">Todos mis grupos</button></div>
-<div class="tabs"><button class="${v.hg==='all'?'on':''}" onclick="go({hg:'all'})">Todos</button><button class="${v.hg==='fifa'?'on':''}" onclick="go({hg:'fifa'})">FIFA</button><button class="${v.hg==='brawl'?'on':''}" onclick="go({hg:'brawl'})">BrawlHalla</button></div>`;
+<div class="tabs"><button class="${v.hg==='all'?'on':''}" onclick="go({hg:'all'})">Todos</button><button class="${v.hg==='fifa'?'on':''}" onclick="go({hg:'fifa'})">FIFA</button><button class="${v.hg==='brawl'?'on':''}" onclick="go({hg:'brawl'})">BrawlHalla</button><button class="${v.hg==='cr'?'on':''}" onclick="go({hg:'cr'})">Clash</button></div>`;
   if(opts.length<2||!ka||!kb)return top+`<div class="empty">${v.hs==='all'?'Para el historial global necesitás al menos 2 jugadores con cuenta vinculada (Jugadores → Agregar como jugador / Vincular).':'Necesitás al menos 2 jugadores en este grupo.'}</div>`;
   const sel=(cur,fn)=>`<select class="in" onchange="go({${fn}:this.value})">${opts.map(o=>`<option value="${o.k}" ${o.k===cur?'selected':''}>${o.l}</option>`).join('')}</select>`;
   const la=opts.find(o=>o.k===ka).l,lb=opts.find(o=>o.k===kb).l;
-  const r=h2hCalc(ka,kb),f=r.fifa,b=r.brawl;
-  const wa=f.a+b.a,wb=f.b+b.b,pj=f.pj+b.pj;
+  const r=h2hCalc(ka,kb),f=r.fifa,b=r.brawl,c=r.cr;
+  const wa=f.a+b.a+c.a,wb=f.b+b.b+c.b,pj=f.pj+b.pj+c.pj;
   const col=(x,y)=>x>y?'var(--gold)':'var(--tx)';
   const sc=`<div class="card" style="text-align:center"><div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end">
 <div><div class="note" style="margin:0">${la}</div><div class="disp" style="font-size:64px;line-height:1;color:${col(wa,wb)}">${wa}</div></div>
-<div><div class="note" style="margin:0">${v.hg==='brawl'?'Partidos':'Empates'}</div><div class="disp" style="font-size:34px;color:var(--mut)">${v.hg==='brawl'?pj:f.e}</div></div>
+<div><div class="note" style="margin:0">${v.hg==='brawl'?'Partidos':'Empates'}</div><div class="disp" style="font-size:34px;color:var(--mut)">${v.hg==='brawl'?pj:f.e+c.e}</div></div>
 <div><div class="note" style="margin:0">${lb}</div><div class="disp" style="font-size:64px;line-height:1;color:${col(wb,wa)}">${wb}</div></div></div>
 <p class="note" style="margin:10px 0 0">${pj?pj+(pj===1?' partido jugado':' partidos jugados')+(wa===wb?' · Parejo':' · Domina '+(wa>wb?la:lb)):'Todavía no jugaron entre sí.'}</p></div>`;
   let det='';
-  if(pj){det=`<div class="card">${f.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚽ FIFA</b><span>${f.pj} PJ · ${f.a}-${f.e}-${f.b} · goles ${f.ga}-${f.gb}</span></div>`:''}${b.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚔️ BrawlHalla</b><span>${b.pj} PJ · ${b.a}-${b.b} · KOs ${b.ka}-${b.kb}</span></div>`:''}
+  if(pj){det=`<div class="card">${f.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚽ FIFA</b><span>${f.pj} PJ · ${f.a}-${f.e}-${f.b} · goles ${f.ga}-${f.gb}</span></div>`:''}${b.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>⚔️ BrawlHalla</b><span>${b.pj} PJ · ${b.a}-${b.b} · KOs ${b.ka}-${b.kb}</span></div>`:''}${c.pj?`<div style="display:flex;justify-content:space-between;padding:4px 0"><b>🏰 Clash Royale</b><span>${c.pj} PJ · ${c.a}-${c.e}-${c.b} · coronas ${c.ga}-${c.gb}</span></div>`:''}
 ${r.tor.n?`<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--line);margin-top:6px"><b>🏆 Torneos cerrados juntos</b><span>${r.tor.n} · mejor ubicado: ${r.tor.a}-${r.tor.b}</span></div>`:''}</div>`;
-    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${m.gm==='fifa'?'⚽':'⚔️'} ${esc(m.t)} · Fecha ${m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm==='fifa'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b></div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
+    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)} · Fecha ${m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b></div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
   return top+`<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0">${sel(ka,'ha')}<b class="disp" style="font-size:22px;color:var(--mut)">VS</b>${sel(kb,'hb')}</div>${sc}${det}
 <p class="note">${v.hs==='all'?'En el historial global solo cuentan jugadores con cuenta vinculada. Los invitados aparecen solo dentro de su grupo.':'Cuenta solo lo jugado en este grupo.'} En BrawlHalla gana quien termina mejor ubicado en cada partido.</p>`}
 function supreme(){
   const rows=S.friends.map(f=>{let c=0,d=0,t=0,cp=0;for(const g in S.games){const s=S.games[g].stats[f.id];if(s){c+=s.c;d+=s.d;t+=s.t;cp+=s.cp||0}}return{n:nm(f.id),c,d,t,cp}}).sort((a,b)=>score(b)-score(a)||b.c-a.c||a.d-b.d||b.t-a.t);
   return `<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Tabla suprema</h2></div>
-${rows.length&&score(rows[0])>0?throne(rows[0].n,'Agarrá un libro pibe',rows[0].c+' campeonatos'+copTxt(rows[0].cp)+' · '+rows[0].d+' descensos<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Mucho descenso, poca copa…',rows[worstIx(rows)].d+' descensos · '+rows[worstIx(rows)].c+(rows[worstIx(rows)].c===1?' campeonato':' campeonatos')):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}. Orden: cada campeonato suma 3, cada copa suma 2 y cada descenso resta 2. Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden.</p>
+${rows.length&&score(rows[0])>0?throne(rows[0].n,'Agarrá un libro pibe',rows[0].c+' campeonatos'+copTxt(rows[0].cp)+' · '+dTxt(rows[0].d)+'<br>Vení, bajame si podés'):''}${worstIx(rows)>=0?shame(rows[worstIx(rows)].n,'Mucho descenso, poca copa…',dTxt(rows[worstIx(rows)].d)+' · '+rows[worstIx(rows)].c+(rows[worstIx(rows)].c===1?' campeonato':' campeonatos')):''}<p class="note">Suma de todos los juegos en ${esc(S.name)}. Orden: cada campeonato suma 3, cada copa suma 2 y cada descenso resta 2. Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden.</p>
 <div class="card wrap">${rows.length?`<table><tr><th>Jugador</th><th>Campeonatos</th><th>Copas</th><th>Descensos</th><th>Torneos jugados</th></tr>${rows.map((r,ix)=>`<tr class="${ix===0&&score(r)>0?'top1':ix===worstIx(rows)?'last':''}"><td>${rk(ix,score(r)>0,ix===worstIx(rows))}${r.n}<small class="bal">${balTxt(r)}</small></td><td>${r.c}</td><td>${r.cp}</td><td>${r.d}</td><td>${r.t}</td></tr>`).join('')}</table>`:'<div class="empty">Sin jugadores todavía.</div>'}</div>`}
 
 function game(){
@@ -426,7 +433,7 @@ ${S.friends.length?'':'<p class="note">Primero cargá amigos desde el inicio.</p
 <div class="card wrap">${G.players.length?`<table><tr><th>Jugador</th><th>Campeonatos</th>${v.g==='fifa'?'<th>Copas</th>':''}<th>Descensos</th><th>Torneos jugados</th><th></th></tr>
 ${sortedPlayers(G,v.g).map((p,ix)=>{const s=stat(v.g,p);const c=(k)=>`<span class="ctl"><button onclick="bump('${p}','${k}',-1)" aria-label="menos">−</button><span>${s[k]}</span><button onclick="bump('${p}','${k}',1)" aria-label="más">+</button></span>`;
 return `<tr class="${ix===0&&score(s)>0?'top1':p===wid?'last':''}"><td>${rk(ix,score(s)>0,p===wid)}${nm(p)}<small class="bal">${balTxt(s)}</small></td><td>${c('c')}</td>${v.g==='fifa'?`<td>${c('cp')}</td>`:''}<td>${c('d')}</td><td>${c('t')}</td><td><button class="ghost" onclick="rmFromTable('${p}')" aria-label="Quitar">✕</button></td></tr>`}).join('')}</table>`:'<div class="empty">Tabla vacía. Sumá jugadores con la lista de arriba.</div>'}</div>
-${wid?shame(nm(wid),'Mucho descenso, poca copa…',stat(v.g,wid).d+' descensos · '+stat(v.g,wid).c+(stat(v.g,wid).c===1?' campeonato':' campeonatos')):''}<p class="note">Orden: cada campeonato suma 3, cada copa suma 2 y cada descenso resta 2 (balance). Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden. Se actualiza sola al cerrar un torneo y podés corregirla con − y +.</p>`;
+${wid?shame(nm(wid),'Mucho descenso, poca copa…',dTxt(stat(v.g,wid).d)+' · '+stat(v.g,wid).c+(stat(v.g,wid).c===1?' campeonato':' campeonatos')):''}<p class="note">Orden: cada campeonato suma 3, cada copa suma 2 y cada descenso resta 2 (balance). Si hay empate, gana quien tiene más campeonatos. El promedio (prom.) es el balance por torneo jugado y no cambia el orden. Se actualiza sola al cerrar un torneo y podés corregirla con − y +.</p>`;
   }else if(v.tab==='tours'){
     body=G.tours.length?G.tours.slice().reverse().map(t=>`<button class="card t-item" onclick="go({s:'tour',t:'${t.id}'})"><span><b>${esc(t.name)}</b><br><small style="color:var(--mut)">${t.players.length} jugadores · ${t.mode==='copa'?'Copa':t.matches.filter(m=>isDone(m,v.g)).length+'/'+t.matches.length+' partidos'}</small></span><span class="tag ${t.done?'ok':''}">${t.done?'🏆 '+nm(t.champ):(()=>{const s=standings(t,v.g)[0];return s&&s.pts?'Líder: '+nm(s.p)+' · '+s.pts+' pts':'En juego'})()}</span></button>`).join(''):'<div class="empty">Sin torneos. Creá uno en la pestaña Nuevo.</div>';
   }else{
@@ -483,7 +490,7 @@ function tour(){
 ${t.done?throne(nm(t.champ),'Campeón del torneo','Descenso: '+nm(st[st.length-1].p)):''}
 ${st[0]&&st[0].pts&&!t.done?throne(nm(st[0].p),'Líder del torneo',st[0].pts+' pts'):''}<div class="card wrap"><table>${v.g==='brawl'?'<tr><th>Jugador</th><th>PJ</th><th>1°</th><th>KOs</th><th>Pts</th></tr>':'<tr><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th></tr>'}
 ${st.map((r,ix)=>v.g==='brawl'?`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.ko}</td><td><b>${r.pts}</b></td></tr>`:`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.l}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table></div>
-${lw>=0?shame(nm(st[lw].p),'Ponete las pilas pibe','Vas último con '+st[lw].pts+' pts · el descenso te espera'):''}<div class="card"><h3>Fixture</h3><p class="note">${v.g==='brawl'?'Cada partido es de 2 jugadores y 2 bots. Elegí el puesto final (1° a 4°) de cada uno y sus KOs. Puntos: 1° = 4, 2° = 3, 3° = 2, 4° = 1.':'Cargá el resultado de cada partido. Victoria 3 pts, empate 1.'}</p>${fx}</div>
+${lw>=0?shame(nm(st[lw].p),'Ponete las pilas pibe','Vas último con '+st[lw].pts+' pts · el descenso te espera'):''}<div class="card"><h3>Fixture</h3><p class="note">${v.g==='brawl'?'Cada partido es de 2 jugadores y 2 bots. Elegí el puesto final (1° a 4°) de cada uno y sus KOs. Puntos: 1° = 4, 2° = 3, 3° = 2, 4° = 1.':v.g==='cr'?'Cargá las coronas de cada jugador en cada partido. Victoria 3 pts, empate 1.':'Cargá el resultado de cada partido. Victoria 3 pts, empate 1.'}</p>${fx}</div>
 ${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${all?'':'opacity:.5'}" ${all?'':'disabled'} onclick="finishT()">Cerrar torneo y sumar a la tabla</button><p class="note">${all?'El primero suma un campeonato, el último un descenso y todos un torneo jugado.':'Completá todos los partidos para cerrar el torneo.'}</p>`}
 ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Este torneo ya sumó campeonato, descenso y torneo jugado a la tabla del juego.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo el torneo</button><button class="danger" onclick="delT2(true)">Torneo y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar torneo</button>`}`;
 }
