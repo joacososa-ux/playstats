@@ -97,6 +97,10 @@ tr.top1 td:first-child{border-left:1px solid var(--gold);border-radius:12px 0 0 
 tr.top1 td:last-child{border-right:1px solid var(--gold);border-radius:0 12px 12px 0}
 .rk{display:inline-block;width:30px;color:var(--mut);font-weight:500;font-size:13px}
 .crown{display:inline-block;width:30px;font-size:1.05em;vertical-align:middle}
+.st{min-width:0}
+.st th,.st td{padding-left:3px;padding-right:3px}
+.st th:first-child,.st td:first-child{padding-left:12px}
+.st th{font-size:14px}
 .bal{display:block;white-space:nowrap;margin-left:30px;color:var(--mut);font-size:11px;font-weight:400;line-height:1.3}
 .zocalo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--bad);color:#2a0007;border-radius:12px;border-left:8px solid #7a0016;padding:10px 14px;margin:0 0 12px}
 .zocalo b{font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:28px;line-height:1}
@@ -117,6 +121,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
+const APP_V='30-oct-2026 · b';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -273,7 +278,7 @@ function rounds(ids){
 }
 function normalize(){for(const gr of R.groups)if(!gr.games.cr)gr.games.cr={players:[],tours:[],stats:{}};
   for(const gr of R.groups)for(const g in gr.games)gr.games[g].tours.forEach(t=>t.matches.forEach(m=>{if(m.pa===undefined){m.pa=null;m.pb=null;m.ka=0;m.kb=0}}))}
-function isDone(m,g){return g==='brawl'?(m.pa>0&&m.pb>0&&m.pa!==m.pb):(m.sa!==null&&m.sb!==null)}
+function isDone(m,g){return g==='brawl'?(m.pa>0&&m.pb>0&&m.pa!==m.pb):g==='cr'?(m.sa!==null&&m.sb!==null&&m.sa!==m.sb):(m.sa!==null&&m.sb!==null)}
 function standings(t,g=v.g){return g==='brawl'?standingsB(t):standingsF(t)}
 function standingsB(t){
   const m={};t.players.forEach(p=>m[p]={p,pj:0,g:0,ko:0,pts:0});
@@ -311,7 +316,7 @@ function createT(){const d=v.draft;if(d.ps.length<2)return;const cup=v.g==='fifa
 function curT(){return S.games[v.g].tours.find(t=>t.id===v.t)}
 const stamp=m=>{if(isDone(m,v.g))m.ts=m.ts||Date.now();else delete m.ts};
 function setScore(i,side,val){const m=curT().matches[i];
-  m[side]=val===''?null:Math.max(0,parseInt(val)||0);stamp(m);save();render()}
+  m[side]=val===''?null:Math.min(v.g==='cr'?3:1e6,Math.max(0,parseInt(val)||0));stamp(m);save();render()}
 function setB(i,k,val){const m=curT().matches[i];
   if(k==='pa'||k==='pb')m[k]=val===''?null:parseInt(val);else m[k]=Math.max(0,parseInt(val)||0);
   stamp(m);save();render()}
@@ -377,7 +382,7 @@ function home(){return `
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
 <button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${S.games.cr.tours.length} torneos · ${S.games.cr.players.length} jugadores</small></button>
-<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button>`}
+<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button><p class="note" style="text-align:center;opacity:.6;margin-top:14px">PlayStats · versión ${APP_V}</p>`}
 
 function friends(){
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
@@ -422,7 +427,7 @@ function h2h(){v.hs=v.hs||'grp';v.hg=v.hg||'all';
   const col=(x,y)=>x>y?'var(--gold)':'var(--tx)';
   const sc=`<div class="card" style="text-align:center"><div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end">
 <div><div class="note" style="margin:0">${la}</div><div class="disp" style="font-size:64px;line-height:1;color:${col(wa,wb)}">${wa}</div></div>
-<div><div class="note" style="margin:0">${v.hg==='brawl'?'Partidos':'Empates'}</div><div class="disp" style="font-size:34px;color:var(--mut)">${v.hg==='brawl'?pj:f.e+c.e}</div></div>
+<div><div class="note" style="margin:0">${v.hg==='brawl'||v.hg==='cr'?'Partidos':'Empates'}</div><div class="disp" style="font-size:34px;color:var(--mut)">${v.hg==='brawl'||v.hg==='cr'?pj:f.e}</div></div>
 <div><div class="note" style="margin:0">${lb}</div><div class="disp" style="font-size:64px;line-height:1;color:${wb>wa?'var(--acc)':'var(--tx)'}">${wb}</div></div></div>
 ${pj?`<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin:12px 0 0;background:var(--line)"><span style="width:${wa/pj*100}%;background:var(--gold)"></span><span style="width:${(pj-wa-wb)/pj*100}%;background:var(--mut);opacity:.5"></span><span style="width:${wb/pj*100}%;background:var(--acc)"></span></div>`:''}<p class="note" style="margin:10px 0 0">${pj?pj+(pj===1?' partido jugado':' partidos jugados')+(wa===wb?' · Parejo':' · Domina '+(wa>wb?la:lb)):'Todavía no jugaron entre sí.'}</p></div>`;
   let det='';
@@ -433,7 +438,7 @@ ${pj?`<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;mar
     const pl=n=>n+(n===1?' partido':' partidos');
     const nt=t=>`<p class="note" style="text-align:center;margin:8px 0 0">${t}</p>`;
     if(f.pj)det+=card('⚽ FIFA · '+pl(f.pj),cmp(f.a,'Victorias',f.b)+cmp(f.ga,'Goles',f.gb),nt('Empates: '+f.e));
-    if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('Empates: '+c.e));
+    if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('En Clash Royale no hay empates.'));
     if(b.pj)det+=card('⚔️ BrawlHalla · '+pl(b.pj),cmp(b.a,'Victorias',b.b)+cmp(b.ka,'KOs',b.kb),nt('Gana quien termina mejor ubicado en cada partida.'));
     if(r.tor.n)det+=card('🏆 Torneos terminados · '+r.tor.n,cmp(r.tor.a,'Terminó mejor ubicado',r.tor.b),nt('Cuenta los torneos de liga ya cerrados en los que jugaron los dos.'));
     det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)} · Fecha ${m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b></div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
@@ -505,14 +510,14 @@ function tour(){
     if(m.r!==lr){lr=m.r;fx+=`<div class="rd">Fecha ${lr}</div>`}
     const dn=isDone(m,v.g);if(v.g==='brawl'){fx+=brawlMatch(m,i,t,dn);return}
     fx+=`<div class="match ${dn?'done':''}"><span class="n ${dn&&m.sa>m.sb?'w':''}">${nm(m.a)}</span>
-<input type="number" inputmode="numeric" min="0" aria-label="${M.u} local" value="${m.sa===null?'':m.sa}" ${t.done?'disabled':''} onchange="setScore(${i},'sa',this.value)"><span style="text-align:center">-</span>
-<input type="number" inputmode="numeric" min="0" aria-label="${M.u} visitante" value="${m.sb===null?'':m.sb}" ${t.done?'disabled':''} onchange="setScore(${i},'sb',this.value)"><span class="n ${dn&&m.sb>m.sa?'w':''}">${nm(m.b)}</span></div>`;
+<input type="number" inputmode="numeric" min="0" ${v.g==='cr'?'max="3"':''} aria-label="${M.u} local" value="${m.sa===null?'':m.sa}" ${t.done?'disabled':''} onchange="setScore(${i},'sa',this.value)"><span style="text-align:center">-</span>
+<input type="number" inputmode="numeric" min="0" ${v.g==='cr'?'max="3"':''} aria-label="${M.u} visitante" value="${m.sb===null?'':m.sb}" ${t.done?'disabled':''} onchange="setScore(${i},'sb',this.value)"><span class="n ${dn&&m.sb>m.sa?'w':''}">${nm(m.b)}</span>${v.g==='cr'&&m.sa!==null&&m.sa===m.sb?'<div class="warn" style="grid-column:1/-1;text-align:center">En Clash Royale no hay empates: tiene que haber un ganador.</div>':''}</div>`;
   });
   return `<div class="top"><button class="ghost" onclick="go({s:'game',tab:'tours'})">←</button><h2>${esc(t.name)}</h2></div>
 ${t.done?throne(nm(t.champ),'Campeón del torneo','Descenso: '+nm(st[st.length-1].p)):''}
-${st[0]&&st[0].pts&&!t.done?throne(nm(st[0].p),'Líder del torneo',st[0].pts+' pts'):''}<div class="card wrap"><table>${v.g==='brawl'?'<tr><th>Jugador</th><th>PJ</th><th>1°</th><th>KOs</th><th>Pts</th></tr>':'<tr><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th></tr>'}
-${st.map((r,ix)=>v.g==='brawl'?`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.ko}</td><td><b>${r.pts}</b></td></tr>`:`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.l}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table></div>
-${lw>=0?shame(nm(st[lw].p),'Ponete las pilas pibe','Vas último con '+st[lw].pts+' pts · el descenso te espera'):''}<div class="card"><h3>Fixture</h3><p class="note">${v.g==='brawl'?'Cada partido es de 2 jugadores y 2 bots. Elegí el puesto final (1° a 4°) de cada uno y sus KOs. Puntos: 1° = 4, 2° = 3, 3° = 2, 4° = 1.':v.g==='cr'?'Cargá las coronas de cada jugador en cada partido. Victoria 3 pts, empate 1.':'Cargá el resultado de cada partido. Victoria 3 pts, empate 1.'}</p>${fx}</div>
+${st[0]&&st[0].pts&&!t.done?throne(nm(st[0].p),'Líder del torneo',st[0].pts+' pts'):''}<div class="card wrap"><table class="st">${v.g==='brawl'?'<tr><th>Jugador</th><th>PJ</th><th>1°</th><th>KOs</th><th>Pts</th></tr>':v.g==='cr'?'<tr><th>Jugador</th><th>PJ</th><th>G</th><th>P</th><th>Coronas</th><th>Pts</th></tr>':'<tr><th>Jugador</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts</th></tr>'}
+${st.map((r,ix)=>v.g==='brawl'?`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.ko}</td><td><b>${r.pts}</b></td></tr>`:v.g==='cr'?`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.l}</td><td>${r.gf}</td><td><b>${r.pts}</b></td></tr>`:`<tr class="${ix===0&&r.pts?'top1':ix===lw?'last':''}"><td>${rk(ix,r.pts>0,ix===lw)}${nm(r.p)}</td><td>${r.pj}</td><td>${r.g}</td><td>${r.e}</td><td>${r.l}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table></div>
+${lw>=0?shame(nm(st[lw].p),'Ponete las pilas pibe','Vas último con '+st[lw].pts+' pts · el descenso te espera'):''}<div class="card"><h3>Fixture</h3><p class="note">${v.g==='brawl'?'Cada partido es de 2 jugadores y 2 bots. Elegí el puesto final (1° a 4°) de cada uno y sus KOs. Puntos: 1° = 4, 2° = 3, 3° = 2, 4° = 1.':v.g==='cr'?'Cargá las coronas de cada jugador (de 0 a 3). En Clash Royale no hay empates: gana quien tiene más coronas. Victoria 3 pts.':'Cargá el resultado de cada partido. Victoria 3 pts, empate 1.'}</p>${fx}</div>
 ${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${all?'':'opacity:.5'}" ${all?'':'disabled'} onclick="finishT()">Cerrar torneo y sumar a la tabla</button><p class="note">${all?'El primero suma un campeonato, el último un descenso y todos un torneo jugado.':'Completá todos los partidos para cerrar el torneo.'}</p>`}
 ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Este torneo ya sumó campeonato, descenso y torneo jugado a la tabla del juego.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo el torneo</button><button class="danger" onclick="delT2(true)">Torneo y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar torneo</button>`}`;
 }
@@ -577,6 +582,6 @@ window.FB={
 };
 onAuthStateChanged(auth,u=>window.onUser&&window.onUser(u));
 </script>
-<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{}));</script>
 </body>
 </html>
