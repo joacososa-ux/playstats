@@ -48,7 +48,13 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
 .b-cr .disp{font-size:32px;padding-right:70px}
 .av{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#fff3c4);color:var(--acc-tx);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:34px;font-weight:700;flex:none}
-.tchip{display:inline-block;background:linear-gradient(135deg,#ffe58a,#ffc933);color:#3a2a00;font-weight:700;font-size:13px;border-radius:99px;padding:5px 11px;margin:3px 4px 0 0}
+.tchip{display:inline-block;font-weight:700;font-size:13px;border-radius:99px;padding:5px 11px;margin:3px 4px 0 0}
+.tchip.oro{background:linear-gradient(135deg,#fff0a0,#ffc933 55%,#e0a100);color:#3a2a00;font-size:14.5px;box-shadow:0 0 14px rgba(255,201,51,.6)}
+.tchip.pos{background:linear-gradient(135deg,#b9f6ca,#3ddc84);color:#04210f}
+.tchip.neu{background:linear-gradient(135deg,#d7e6ff,#8fb2f5);color:#0b1d40}
+.tchip.neg{background:linear-gradient(135deg,#ffb3bf,#ff5d73);color:#3b0510}
+.tcd.oro{box-shadow:0 0 22px -4px rgba(255,201,51,.65);background:radial-gradient(100% 120% at 0% 0%,rgba(255,201,51,.16),transparent 60%),var(--panel)}
+.tcd.vac{opacity:.55}
 .cab{border:10px solid #6b4423;border-radius:14px;background:#0f0b08;box-shadow:inset 0 0 0 2px #3d2512,0 14px 30px -10px #000;position:relative;overflow:hidden}
 .cab::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.09) 0%,transparent 28%,transparent 62%,rgba(255,255,255,.06) 100%);pointer-events:none}
 .cabh{background:linear-gradient(#7b4f25,#5b3a1c);color:#ffe9b0;text-align:center;padding:9px 8px;font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:19px;font-weight:700}
@@ -150,7 +156,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='31-oct-2026 · d';
+const APP_V='31-oct-2026 · e';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -422,32 +428,32 @@ const GACC={fifa:'#2ee67a',brawl:'#ff8a2b',cr:'#5aa9ff'};
 const tourTs=t=>t.ts||Math.max(0,...(t.matches||[]).map(m=>m.ts||0))||0;
 const fDate=ts=>ts?new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'sin fecha';
 const TITLES=[
-{id:1,s:'Generales',n:'Champion of the Americas',d:'Más campeonatos de liga',v:p=>p.c,u:['campeonato','campeonatos']},
-{id:2,s:'Generales',n:'Traigan vino que copas sobran…',d:'Más copas ganadas',v:p=>p.cp,u:['copa','copas']},
-{id:3,s:'Generales',n:'El ascensor',d:'Más descensos',v:p=>p.d,u:['descenso','descensos']},
-{id:4,s:'Generales',n:'Vicio-nario',d:'Más torneos jugados',v:p=>p.t,u:['torneo','torneos']},
-{id:5,s:'Generales',n:'Siempre arriba, nunca abajo',d:'Menos descensos (mínimo 5 torneos jugados)',v:p=>p.t>=5?p.d:null,best:'min',u:['descenso','descensos']},
-{id:6,s:'Generales',n:'Alumno superior',d:'Mejor balance por torneo jugado (mínimo 5 torneos)',v:p=>p.t>=5?score(p)/p.t:null,dec:1,min:.01,u:['pto por torneo','ptos por torneo']},
-{id:7,s:'Generales',n:'Cebollita subcampeón',d:'Más veces subcampeón',v:p=>p.second,u:['vez','veces']},
-{id:8,s:'Generales',n:'Dictador',d:'Más torneos ganados seguidos (mínimo 2)',v:p=>p.dyn,min:2,u:['torneo seguido','torneos seguidos']},
-{id:9,s:'FIFA',n:'Harry Kane',d:'Más goles a favor',v:p=>p.fifa.gf,u:['gol','goles']},
-{id:10,s:'FIFA',n:'Hola Guardiola?',d:'Más goles por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gf/p.fifa.pj:null,dec:1,min:.01,u:['gol por partido','goles por partido']},
-{id:11,s:'FIFA',n:'Me Falcioni',d:'Menos goles en contra por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gc/p.fifa.pj:null,best:'min',dec:1,u:['gol en contra por partido','goles en contra por partido']},
-{id:12,s:'FIFA',n:'The GodFather',d:'Más victorias en FIFA',v:p=>p.fifa.w,u:['victoria','victorias']},
-{id:13,s:'FIFA',n:'Clásico rosarino',d:'Más empates en FIFA',v:p=>p.fifa.e,u:['empate','empates']},
-{id:14,s:'FIFA',n:'Bapuleador',d:'Mayor goleada en un partido (mínimo 3 goles de diferencia)',v:p=>p.fifa.big,min:3,u:['gol de diferencia','goles de diferencia']},
-{id:15,s:'BrawlHalla',n:'3 bombas Galati',d:'Más KOs en total',v:p=>p.brawl.ko,u:['KO','KOs']},
-{id:16,s:'BrawlHalla',n:'Maravilla Martínez',d:'Más KOs por partida (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.ko/p.brawl.pj:null,dec:1,min:.01,u:['KO por partida','KOs por partida']},
-{id:17,s:'BrawlHalla',n:'Si? Tyson?',d:'Más veces 1°',v:p=>p.brawl.first,u:['vez 1°','veces 1°']},
-{id:18,s:'BrawlHalla',n:'Goy',d:'Más veces último (4°)',v:p=>p.brawl.last,u:['vez último','veces último']},
-{id:19,s:'BrawlHalla',n:'Me Promiedos',d:'Mejor puesto promedio (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.pos/p.brawl.pj:null,best:'min',dec:1,u:['puesto promedio','puesto promedio']},
-{id:20,s:'Clash Royale',n:'Ponga huevo y vaya al frente',d:'Más coronas',v:p=>p.cr.gf,u:['corona','coronas']},
-{id:21,s:'Clash Royale',n:'Tu padre',d:'Más victorias en Clash Royale',v:p=>p.cr.w,u:['victoria','victorias']},
-{id:22,s:'Clash Royale',n:'Stephen Curry',d:'Más victorias por 3 a 0 (triple corona)',v:p=>p.cr.triple,u:['triple','triples']},
-{id:23,s:'Rachas',n:'Racha ganadora',d:'Más partidos ganados seguidos. Según la racha: River 2018 (3), River 2019 (5), Boca 2000 (7), Boca 2003 (intercalar) (10)',v:p=>p.sw,min:3,tiers:{th:[3,5,7,10],n:['River 2018','River 2019','Boca 2000','Boca 2003 (intercalar)']},u:['victoria seguida','victorias seguidas']},
-{id:24,s:'Rachas',n:'Racha perdedora',d:'Más partidos perdidos seguidos. Según la racha: River 2026 (3), River 2011 (5), Boca 2018 (7), Boca 2012 (intercalar) (10)',v:p=>p.sl,min:3,tiers:{th:[3,5,7,10],n:['River 2026','River 2011','Boca 2018','Boca 2012 (intercalar)']},u:['derrota seguida','derrotas seguidas']},
-{id:25,s:'Anti-títulos',n:'Burro total',d:'Más derrotas en total',v:p=>p.loss,u:['derrota','derrotas']},
-{id:26,s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,u:['torneo','torneos']}];
+{id:1,k:'oro',s:'Generales',n:'Champion of the Americas',d:'Más campeonatos de liga',v:p=>p.c,u:['campeonato','campeonatos']},
+{id:2,k:'oro',s:'Generales',n:'Traigan vino que copas sobran…',d:'Más copas ganadas',v:p=>p.cp,u:['copa','copas']},
+{id:3,k:'neg',s:'Generales',n:'El ascensor',d:'Más descensos',v:p=>p.d,u:['descenso','descensos']},
+{id:4,k:'neu',s:'Generales',n:'Vicio-nario',d:'Más torneos jugados',v:p=>p.t,u:['torneo','torneos']},
+{id:5,k:'pos',s:'Generales',n:'Siempre arriba, nunca abajo',d:'Menos descensos (mínimo 5 torneos jugados)',v:p=>p.t>=5?p.d:null,best:'min',u:['descenso','descensos']},
+{id:6,k:'pos',s:'Generales',n:'Alumno superior',d:'Mejor balance por torneo jugado (mínimo 5 torneos)',v:p=>p.t>=5?score(p)/p.t:null,dec:1,min:.01,u:['pto por torneo','ptos por torneo']},
+{id:7,k:'neu',s:'Generales',n:'Cebollita subcampeón',d:'Más veces subcampeón',v:p=>p.second,u:['vez','veces']},
+{id:8,k:'pos',s:'Generales',n:'Dictador',d:'Más torneos ganados seguidos (mínimo 2)',v:p=>p.dyn,min:2,u:['torneo seguido','torneos seguidos']},
+{id:9,k:'pos',s:'FIFA',n:'Harry Kane',d:'Más goles a favor',v:p=>p.fifa.gf,u:['gol','goles']},
+{id:10,k:'pos',s:'FIFA',n:'Hola Guardiola?',d:'Más goles por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gf/p.fifa.pj:null,dec:1,min:.01,u:['gol por partido','goles por partido']},
+{id:11,k:'pos',s:'FIFA',n:'Me Falcioni',d:'Menos goles en contra por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gc/p.fifa.pj:null,best:'min',dec:1,u:['gol en contra por partido','goles en contra por partido']},
+{id:12,k:'pos',s:'FIFA',n:'The GodFather',d:'Más victorias en FIFA',v:p=>p.fifa.w,u:['victoria','victorias']},
+{id:13,k:'neu',s:'FIFA',n:'Clásico rosarino',d:'Más empates en FIFA',v:p=>p.fifa.e,u:['empate','empates']},
+{id:14,k:'pos',s:'FIFA',n:'Bapuleador',d:'Mayor goleada en un partido (mínimo 3 goles de diferencia)',v:p=>p.fifa.big,min:3,u:['gol de diferencia','goles de diferencia']},
+{id:15,k:'pos',s:'BrawlHalla',n:'3 bombas Galati',d:'Más KOs en total',v:p=>p.brawl.ko,u:['KO','KOs']},
+{id:16,k:'pos',s:'BrawlHalla',n:'Maravilla Martínez',d:'Más KOs por partida (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.ko/p.brawl.pj:null,dec:1,min:.01,u:['KO por partida','KOs por partida']},
+{id:17,k:'pos',s:'BrawlHalla',n:'Si? Tyson?',d:'Más veces 1°',v:p=>p.brawl.first,u:['vez 1°','veces 1°']},
+{id:18,k:'neg',s:'BrawlHalla',n:'Goy',d:'Más veces último (4°)',v:p=>p.brawl.last,u:['vez último','veces último']},
+{id:19,k:'pos',s:'BrawlHalla',n:'Me Promiedos',d:'Mejor puesto promedio (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.pos/p.brawl.pj:null,best:'min',dec:1,u:['puesto promedio','puesto promedio']},
+{id:20,k:'pos',s:'Clash Royale',n:'Ponga huevo y vaya al frente',d:'Más coronas',v:p=>p.cr.gf,u:['corona','coronas']},
+{id:21,k:'pos',s:'Clash Royale',n:'Tu padre',d:'Más victorias en Clash Royale',v:p=>p.cr.w,u:['victoria','victorias']},
+{id:22,k:'pos',s:'Clash Royale',n:'Stephen Curry',d:'Más victorias por 3 a 0 (triple corona)',v:p=>p.cr.triple,u:['triple','triples']},
+{id:23,k:'pos',s:'Rachas',n:'Tiranía total',d:'Más partidos ganados seguidos (mínimo 3)',v:p=>p.sw,min:3,u:['victoria seguida','victorias seguidas']},
+{id:24,k:'neg',s:'Rachas',n:'Ferreada histórica',d:'Más partidos perdidos seguidos (mínimo 3)',v:p=>p.sl,min:3,u:['derrota seguida','derrotas seguidas']},
+{id:25,k:'neg',s:'Anti-títulos',n:'Burro total',d:'Más derrotas en total',v:p=>p.loss,u:['derrota','derrotas']},
+{id:26,k:'neg',s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,u:['torneo','torneos']}];
 function calcTitles(){
   const P={};
   S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,first:0,last:0,ko:0,pos:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
@@ -491,6 +497,9 @@ function calcTitles(){
     let name=T.n;if(T.tiers)T.tiers.th.forEach((th,i)=>{if(best>=th)name=T.tiers.n[i]});
     aw[T.id]={t:T,holders:hs,value:best,name};hs.forEach(id=>(by[id]=by[id]||[]).push(aw[T.id]))});
   return{P,aw,by}}
+const KC={oro:{e:'🥇',c:'#ffd24a',t:'#fff3c4'},pos:{e:'🏅',c:'#3ddc84',t:'#b9f6ca'},neu:{e:'🎖️',c:'#8fb2f5',t:'#d7e6ff'},neg:{e:'🔻',c:'#ff5d73',t:'#ffc2cb'}};
+const KORD={oro:0,pos:1,neu:2,neg:3};
+const byKind=a=>a.slice().sort((x,y)=>KORD[x.t.k]-KORD[y.t.k]||x.t.id-y.t.id);
 const fmtV=(T,x)=>T.dec?String(x.toFixed(2)).replace('.',',')+' '+T.u[1]:x+' '+(x===1?T.u[0]:T.u[1]);
 const rawName=id=>{const f=S.friends.find(x=>x.id===id);return f?((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
 function trophySvg(type,gm){const a=GACC[gm],em=GM.indexOf(gm)===0?'⚽':gm==='brawl'?'⚔️':'🏰';
@@ -499,7 +508,7 @@ function trophySvg(type,gm){const a=GACC[gm],em=GM.indexOf(gm)===0?'⚽':gm==='b
    ?`<path d="M18 6h28v16c0 11-6 18-14 18S18 33 18 22z" fill="${g}"/><path d="M18 11H8c0 10 4 16 12 18M46 11h10c0 10-4 16-12 18" fill="none" stroke="#d99a00" stroke-width="3.5" stroke-linecap="round"/><rect x="29" y="39" width="6" height="11" fill="${g}"/><rect x="21" y="49" width="22" height="6" rx="2" fill="${g}"/>`
    :`<path d="M14 6h36l-4 14c-2 8-8 13-14 13S20 28 18 20z" fill="${g}"/><path d="M32 11l2.6 5.3 5.8.8-4.2 4.1 1 5.8L32 24.2l-5.2 2.8 1-5.8-4.2-4.1 5.8-.8z" fill="#fff" opacity=".85"/><rect x="29" y="33" width="6" height="16" rx="2" fill="${g}"/><rect x="22" y="48" width="20" height="7" rx="3" fill="${g}"/>`;
   return `<svg viewBox="0 0 64 74" aria-hidden="true">${body}<rect x="14" y="55" width="36" height="14" rx="4" fill="${a}"/><text x="32" y="66" text-anchor="middle" font-size="10">${em}</text></svg>`}
-function titleLine(tc,id){const l=tc.by[id]||[];return l.length?`<small class="note" style="display:block;margin:3px 0 0;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏅 ${l.map(a=>esc(a.name)).join(' · ')}</small>`:''}
+function titleLine(tc,id){const l=byKind(tc.by[id]||[]);return l.length?`<small style="display:block;margin:3px 0 0;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.map(a=>`<span style="color:${KC[a.t.k].t}">${KC[a.t.k].e} ${esc(a.name)}</span>`).join(' · ')}</small>`:''}
 function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
   if(!p)return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div><div class="empty">No se encontró al jugador.</div>`;
   const f=S.friends.find(x=>x.id===v.pp),ts=tc.by[p.id]||[];
@@ -514,16 +523,17 @@ function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
   const riv=(cli||bes)?sec('Rivalidades',(cli?row('Su cliente',esc(rawName(cli[0]))+' · le ganó '+cli[1].w+(cli[1].w===1?' vez':' veces')):'')+(bes?row('Su bestia negra',esc(rawName(bes[0]))+' · perdió '+bes[1].l+(bes[1].l===1?' vez':' veces')):'')):'';
   return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div>
 <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px"><div class="av">${esc(rawName(p.id).charAt(0).toUpperCase())}</div><div><div class="disp" style="font-size:34px;line-height:1">${nm(p.id)}</div><div class="note" style="margin:4px 0 0">${f&&f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</div></div></div>
-<div style="margin-bottom:12px">${ts.length?ts.map(a=>`<span class="tchip">🏅 ${esc(a.name)}</span>`).join(''):'<span class="note">Todavía no tiene títulos.</span>'}</div>
+<div style="margin-bottom:12px">${ts.length?byKind(ts).map(a=>`<span class="tchip ${a.t.k}">${KC[a.t.k].e} ${esc(a.name)}</span>`).join(''):'<span class="note">Todavía no tiene títulos.</span>'}</div>
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">${box('Campeonatos',p.c)}${box('Copas',p.cp)}${box('Descensos',p.d)}${box('Torneos',p.t)}</div>
 ${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derrotas',p.sl))}${riv}
 <button class="pri" style="width:100%" onclick="go({s:'vitrina',vp:'${p.id}'})">🏆 Ver su vitrina (${p.trophies.length})</button>
 <p class="note">Las estadísticas salen de los partidos cargados en este grupo. Lo que se corrige a mano con − y + no suma a goles, KOs ni coronas.</p>`}
 function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s))];
   return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Salón de títulos</h2></div>
+<div style="margin:0 0 6px">${Object.keys(KC).map(k=>`<span class="tchip ${k}">${KC[k].e} ${{oro:'Oro',pos:'Positivo',neu:'Neutro',neg:'Negativo'}[k]}</span>`).join('')}</div>
 <p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
 ${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
-   return `<div class="card" style="${a?'border-color:var(--gold)':'opacity:.7'}"><div class="disp" style="font-size:24px;line-height:1.1;${a?'color:#fff3c4':''}">${a?'🏅 '+esc(a.name):esc(T.tiers?T.n:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:var(--gold)">${fmtV(T,a.value)}</span></div>`:'<div class="note" style="margin:0">Vacante</div>'}</div>`}).join('')).join('')}`}
+   const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${fmtV(T,a.value)}</span></div>`:'<div class="note" style="margin:0">Vacante</div>'}</div>`}).join('')).join('')}`}
 function vitrina(){const tc=calcTitles();const list=S.friends;
   let id=v.vp;if(!tc.P[id]){const me=list.find(f=>USER&&f.uid===USER.uid);id=(me||list[0]||{}).id}
   const defs=`<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffd24a"/><stop offset="1" stop-color="#c98a00"/></linearGradient><linearGradient id="tsilv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfd7e6"/><stop offset="1" stop-color="#8793aa"/></linearGradient></defs></svg>`;
