@@ -47,6 +47,19 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
 .b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
 .b-cr .disp{font-size:32px;padding-right:70px}
+.av{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#fff3c4);color:var(--acc-tx);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:34px;font-weight:700;flex:none}
+.tchip{display:inline-block;background:linear-gradient(135deg,#ffe58a,#ffc933);color:#3a2a00;font-weight:700;font-size:13px;border-radius:99px;padding:5px 11px;margin:3px 4px 0 0}
+.cab{border:10px solid #6b4423;border-radius:14px;background:#0f0b08;box-shadow:inset 0 0 0 2px #3d2512,0 14px 30px -10px #000;position:relative;overflow:hidden}
+.cab::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.09) 0%,transparent 28%,transparent 62%,rgba(255,255,255,.06) 100%);pointer-events:none}
+.cabh{background:linear-gradient(#7b4f25,#5b3a1c);color:#ffe9b0;text-align:center;padding:9px 8px;font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:19px;font-weight:700}
+.shelf{padding:10px 8px 0;border-bottom:8px solid #7b4f25;box-shadow:0 10px 12px -8px rgba(0,0,0,.7);background:radial-gradient(90% 100% at 50% 0%,rgba(255,225,150,.10),transparent 70%)}
+.shl{font-family:'Rajdhani','Arial Narrow',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px}.shl span{color:var(--mut);font-weight:500;font-size:13px;margin-left:6px}
+.trs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.tr{text-align:center;padding:2px 2px 10px}
+.tr svg{width:62px;height:72px;filter:drop-shadow(0 5px 4px rgba(0,0,0,.6))}
+.trn{font-size:12px;font-weight:700;line-height:1.15;word-break:break-word}
+.trd{font-size:11px;color:var(--mut);margin-top:2px}
+.trempty{color:var(--mut);font-size:13px;text-align:center;padding:16px 0 20px}
 .ld{min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .ld img{width:112px;height:112px;border-radius:26px;box-shadow:0 14px 44px -8px rgba(198,255,61,.45),0 0 0 1px rgba(255,255,255,.08);animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-9px) rotate(-3deg)}}
@@ -137,7 +150,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='30-oct-2026 · c';
+const APP_V='31-oct-2026 · d';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -339,7 +352,7 @@ function setB(i,k,val){const m=curT().matches[i];
   if(k==='pa'||k==='pb')m[k]=val===''?null:parseInt(val);else m[k]=Math.max(0,parseInt(val)||0);
   stamp(m);save();render()}
 function finishT(){const t=curT(),G=S.games[v.g];const st=standings(t);
-  t.done=true;t.champ=st[0].p;
+  t.done=true;t.champ=st[0].p;t.ts=Date.now();
   st.forEach(r=>stat(v.g,r.p).t++);stat(v.g,st[0].p).c++;stat(v.g,st[st.length-1].p).d++;
   save();render()}
 function throne(n,l,sub){return `<div class="throne"><div class="cr">👑</div><div class="tl">${l}</div><div class="tn">${n}</div><div class="ts">${sub}</div></div>`}
@@ -402,13 +415,138 @@ function home(){return `
 <button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${S.games.cr.tours.length} torneos · ${S.games.cr.players.length} jugadores</small></button>
 <div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button><p class="note" style="text-align:center;opacity:.6;margin-top:14px">PlayStats · versión ${APP_V}</p>`}
 
+
+/* ===== Títulos, perfil y vitrina ===== */
+const GM=['fifa','brawl','cr'];
+const GACC={fifa:'#2ee67a',brawl:'#ff8a2b',cr:'#5aa9ff'};
+const tourTs=t=>t.ts||Math.max(0,...(t.matches||[]).map(m=>m.ts||0))||0;
+const fDate=ts=>ts?new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'sin fecha';
+const TITLES=[
+{id:1,s:'Generales',n:'Champion of the Americas',d:'Más campeonatos de liga',v:p=>p.c,u:['campeonato','campeonatos']},
+{id:2,s:'Generales',n:'Traigan vino que copas sobran…',d:'Más copas ganadas',v:p=>p.cp,u:['copa','copas']},
+{id:3,s:'Generales',n:'El ascensor',d:'Más descensos',v:p=>p.d,u:['descenso','descensos']},
+{id:4,s:'Generales',n:'Vicio-nario',d:'Más torneos jugados',v:p=>p.t,u:['torneo','torneos']},
+{id:5,s:'Generales',n:'Siempre arriba, nunca abajo',d:'Menos descensos (mínimo 5 torneos jugados)',v:p=>p.t>=5?p.d:null,best:'min',u:['descenso','descensos']},
+{id:6,s:'Generales',n:'Alumno superior',d:'Mejor balance por torneo jugado (mínimo 5 torneos)',v:p=>p.t>=5?score(p)/p.t:null,dec:1,min:.01,u:['pto por torneo','ptos por torneo']},
+{id:7,s:'Generales',n:'Cebollita subcampeón',d:'Más veces subcampeón',v:p=>p.second,u:['vez','veces']},
+{id:8,s:'Generales',n:'Dictador',d:'Más torneos ganados seguidos (mínimo 2)',v:p=>p.dyn,min:2,u:['torneo seguido','torneos seguidos']},
+{id:9,s:'FIFA',n:'Harry Kane',d:'Más goles a favor',v:p=>p.fifa.gf,u:['gol','goles']},
+{id:10,s:'FIFA',n:'Hola Guardiola?',d:'Más goles por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gf/p.fifa.pj:null,dec:1,min:.01,u:['gol por partido','goles por partido']},
+{id:11,s:'FIFA',n:'Me Falcioni',d:'Menos goles en contra por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gc/p.fifa.pj:null,best:'min',dec:1,u:['gol en contra por partido','goles en contra por partido']},
+{id:12,s:'FIFA',n:'The GodFather',d:'Más victorias en FIFA',v:p=>p.fifa.w,u:['victoria','victorias']},
+{id:13,s:'FIFA',n:'Clásico rosarino',d:'Más empates en FIFA',v:p=>p.fifa.e,u:['empate','empates']},
+{id:14,s:'FIFA',n:'Bapuleador',d:'Mayor goleada en un partido (mínimo 3 goles de diferencia)',v:p=>p.fifa.big,min:3,u:['gol de diferencia','goles de diferencia']},
+{id:15,s:'BrawlHalla',n:'3 bombas Galati',d:'Más KOs en total',v:p=>p.brawl.ko,u:['KO','KOs']},
+{id:16,s:'BrawlHalla',n:'Maravilla Martínez',d:'Más KOs por partida (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.ko/p.brawl.pj:null,dec:1,min:.01,u:['KO por partida','KOs por partida']},
+{id:17,s:'BrawlHalla',n:'Si? Tyson?',d:'Más veces 1°',v:p=>p.brawl.first,u:['vez 1°','veces 1°']},
+{id:18,s:'BrawlHalla',n:'Goy',d:'Más veces último (4°)',v:p=>p.brawl.last,u:['vez último','veces último']},
+{id:19,s:'BrawlHalla',n:'Me Promiedos',d:'Mejor puesto promedio (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.pos/p.brawl.pj:null,best:'min',dec:1,u:['puesto promedio','puesto promedio']},
+{id:20,s:'Clash Royale',n:'Ponga huevo y vaya al frente',d:'Más coronas',v:p=>p.cr.gf,u:['corona','coronas']},
+{id:21,s:'Clash Royale',n:'Tu padre',d:'Más victorias en Clash Royale',v:p=>p.cr.w,u:['victoria','victorias']},
+{id:22,s:'Clash Royale',n:'Stephen Curry',d:'Más victorias por 3 a 0 (triple corona)',v:p=>p.cr.triple,u:['triple','triples']},
+{id:23,s:'Rachas',n:'Racha ganadora',d:'Más partidos ganados seguidos. Según la racha: River 2018 (3), River 2019 (5), Boca 2000 (7), Boca 2003 (intercalar) (10)',v:p=>p.sw,min:3,tiers:{th:[3,5,7,10],n:['River 2018','River 2019','Boca 2000','Boca 2003 (intercalar)']},u:['victoria seguida','victorias seguidas']},
+{id:24,s:'Rachas',n:'Racha perdedora',d:'Más partidos perdidos seguidos. Según la racha: River 2026 (3), River 2011 (5), Boca 2018 (7), Boca 2012 (intercalar) (10)',v:p=>p.sl,min:3,tiers:{th:[3,5,7,10],n:['River 2026','River 2011','Boca 2018','Boca 2012 (intercalar)']},u:['derrota seguida','derrotas seguidas']},
+{id:25,s:'Anti-títulos',n:'Burro total',d:'Más derrotas en total',v:p=>p.loss,u:['derrota','derrotas']},
+{id:26,s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,u:['torneo','torneos']}];
+function calcTitles(){
+  const P={};
+  S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,first:0,last:0,ko:0,pos:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
+  for(const gm of GM){const G=S.games[gm];if(!G)continue;
+    for(const id in G.stats){const p=P[id],x=G.stats[id];if(p){p.c+=x.c||0;p.cp+=x.cp||0;p.d+=x.d||0;p.t+=x.t||0}}
+    const ev=[];let k=0;
+    G.tours.forEach(t=>t.matches.forEach(m=>{if(isDone(m,gm))ev.push({m,k:k++})}));
+    ev.sort((a,b)=>(a.m.ts||0)-(b.m.ts||0)||a.k-b.k);
+    const seq={};
+    ev.forEach(({m})=>{const A=P[m.a],B=P[m.b];if(!A||!B)return;let ra,rb;
+      if(gm==='brawl'){ra=m.pa<m.pb?'W':'L';rb=ra==='W'?'L':'W';
+        A.brawl.pj++;B.brawl.pj++;A.brawl.ko+=m.ka||0;B.brawl.ko+=m.kb||0;A.brawl.pos+=m.pa;B.brawl.pos+=m.pb;
+        if(m.pa===1)A.brawl.first++;if(m.pb===1)B.brawl.first++;if(m.pa===4)A.brawl.last++;if(m.pb===4)B.brawl.last++}
+      else{ra=m.sa>m.sb?'W':m.sa<m.sb?'L':'D';rb=ra==='W'?'L':ra==='L'?'W':'D';
+        const X=gm==='fifa'?[A.fifa,B.fifa]:[A.cr,B.cr];
+        X[0].pj++;X[1].pj++;X[0].gf+=m.sa;X[0].gc+=m.sb;X[1].gf+=m.sb;X[1].gc+=m.sa;
+        if(ra==='W'){X[0].w++;X[1].l++;if(gm==='fifa')X[0].big=Math.max(X[0].big,m.sa-m.sb);else if(m.sa===3&&m.sb===0)X[0].triple++}
+        else if(ra==='L'){X[1].w++;X[0].l++;if(gm==='fifa')X[1].big=Math.max(X[1].big,m.sb-m.sa);else if(m.sb===3&&m.sa===0)X[1].triple++}
+        else if(gm==='fifa'){X[0].e++;X[1].e++}}
+      if(ra==='L')A.loss++;if(rb==='L')B.loss++;
+      const v1=A.vs[B.id]||(A.vs[B.id]={w:0,l:0}),v2=B.vs[A.id]||(B.vs[A.id]={w:0,l:0});
+      if(ra==='W'){v1.w++;v2.l++}else if(ra==='L'){v1.l++;v2.w++}
+      (seq[A.id]=seq[A.id]||[]).push(ra);(seq[B.id]=seq[B.id]||[]).push(rb)});
+    for(const id in seq){let w=0,l=0;seq[id].forEach(r=>{w=r==='W'?w+1:0;l=r==='L'?l+1:0;P[id].sw=Math.max(P[id].sw,w);P[id].sl=Math.max(P[id].sl,l)})}
+    const dn=G.tours.map((t,i)=>({t,i})).filter(x=>x.t.done&&x.t.champ).sort((a,b)=>(tourTs(a.t)-tourTs(b.t))||a.i-b.i);
+    let last=null,run=0;
+    dn.forEach(({t})=>{const cup=t.mode==='copa';
+      if(P[t.champ])P[t.champ].trophies.push({gm,type:cup?'copa':'liga',name:t.name,ts:tourTs(t)});
+      let sec=null;if(cup)sec=t.runner;else{const st=standings(t,gm);if(st.length>1)sec=st[1].p}
+      if(sec&&P[sec])P[sec].second++;
+      run=t.champ===last?run+1:1;last=t.champ;if(P[t.champ])P[t.champ].dyn=Math.max(P[t.champ].dyn,run)})}
+  const aw={},by={};
+  if(S.friends.length>=2)TITLES.forEach(T=>{
+    const el=[];S.friends.forEach(f=>{const x=T.v(P[f.id]);if(x!=null&&isFinite(x))el.push([f.id,Math.round(x*1e4)/1e4])});
+    if(!el.length)return;const mn=T.best==='min';
+    const best=mn?Math.min(...el.map(e=>e[1])):Math.max(...el.map(e=>e[1]));
+    if(!mn&&best<(T.min||1))return;
+    const hs=el.filter(e=>e[1]===best).map(e=>e[0]);
+    if(el.length>1&&hs.length===el.length)return;
+    if(el.length<2&&mn)return;
+    let name=T.n;if(T.tiers)T.tiers.th.forEach((th,i)=>{if(best>=th)name=T.tiers.n[i]});
+    aw[T.id]={t:T,holders:hs,value:best,name};hs.forEach(id=>(by[id]=by[id]||[]).push(aw[T.id]))});
+  return{P,aw,by}}
+const fmtV=(T,x)=>T.dec?String(x.toFixed(2)).replace('.',',')+' '+T.u[1]:x+' '+(x===1?T.u[0]:T.u[1]);
+const rawName=id=>{const f=S.friends.find(x=>x.id===id);return f?((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
+function trophySvg(type,gm){const a=GACC[gm],em=GM.indexOf(gm)===0?'⚽':gm==='brawl'?'⚔️':'🏰';
+  const g=type==='liga'?'url(#tgold)':'url(#tsilv)';
+  const body=type==='liga'
+   ?`<path d="M18 6h28v16c0 11-6 18-14 18S18 33 18 22z" fill="${g}"/><path d="M18 11H8c0 10 4 16 12 18M46 11h10c0 10-4 16-12 18" fill="none" stroke="#d99a00" stroke-width="3.5" stroke-linecap="round"/><rect x="29" y="39" width="6" height="11" fill="${g}"/><rect x="21" y="49" width="22" height="6" rx="2" fill="${g}"/>`
+   :`<path d="M14 6h36l-4 14c-2 8-8 13-14 13S20 28 18 20z" fill="${g}"/><path d="M32 11l2.6 5.3 5.8.8-4.2 4.1 1 5.8L32 24.2l-5.2 2.8 1-5.8-4.2-4.1 5.8-.8z" fill="#fff" opacity=".85"/><rect x="29" y="33" width="6" height="16" rx="2" fill="${g}"/><rect x="22" y="48" width="20" height="7" rx="3" fill="${g}"/>`;
+  return `<svg viewBox="0 0 64 74" aria-hidden="true">${body}<rect x="14" y="55" width="36" height="14" rx="4" fill="${a}"/><text x="32" y="66" text-anchor="middle" font-size="10">${em}</text></svg>`}
+function titleLine(tc,id){const l=tc.by[id]||[];return l.length?`<small class="note" style="display:block;margin:3px 0 0;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏅 ${l.map(a=>esc(a.name)).join(' · ')}</small>`:''}
+function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
+  if(!p)return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div><div class="empty">No se encontró al jugador.</div>`;
+  const f=S.friends.find(x=>x.id===v.pp),ts=tc.by[p.id]||[];
+  const box=(l,n)=>`<div class="card" style="text-align:center;margin:0;padding:10px 4px"><div class="disp" style="font-size:30px;line-height:1">${n}</div><div class="note" style="margin:3px 0 0;font-size:12px">${l}</div></div>`;
+  const row=(l,x)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)"><span class="note" style="margin:0">${l}</span><b style="text-align:right">${x}</b></div>`;
+  const sec=(t,rows)=>`<div class="card"><h3>${t}</h3>${rows}</div>`;
+  const F=p.fifa,C=p.cr,B=p.brawl;let g='';
+  if(F.pj)g+=sec('⚽ FIFA',row('Partidos',F.pj)+row('Ganados · empatados · perdidos',F.w+' · '+F.e+' · '+F.l)+row('Goles a favor · en contra',F.gf+' · '+F.gc)+(F.big?row('Mayor goleada','+'+F.big):''));
+  if(B.pj)g+=sec('⚔️ BrawlHalla',row('Partidas',B.pj)+row('Veces 1° · veces último',B.first+' · '+B.last)+row('KOs en total',B.ko)+row('KOs por partida',(B.ko/B.pj).toFixed(1).replace('.',','))+row('Puesto promedio',(B.pos/B.pj).toFixed(1).replace('.',',')));
+  if(C.pj)g+=sec('🏰 Clash Royale',row('Partidos',C.pj)+row('Ganados · perdidos',C.w+' · '+C.l)+row('Coronas',C.gf)+(C.triple?row('Triples (3-0)',C.triple):''));
+  const rv=Object.entries(p.vs);const cli=rv.filter(x=>x[1].w>0).sort((a,b)=>b[1].w-a[1].w)[0],bes=rv.filter(x=>x[1].l>0).sort((a,b)=>b[1].l-a[1].l)[0];
+  const riv=(cli||bes)?sec('Rivalidades',(cli?row('Su cliente',esc(rawName(cli[0]))+' · le ganó '+cli[1].w+(cli[1].w===1?' vez':' veces')):'')+(bes?row('Su bestia negra',esc(rawName(bes[0]))+' · perdió '+bes[1].l+(bes[1].l===1?' vez':' veces')):'')):'';
+  return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div>
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:6px"><div class="av">${esc(rawName(p.id).charAt(0).toUpperCase())}</div><div><div class="disp" style="font-size:34px;line-height:1">${nm(p.id)}</div><div class="note" style="margin:4px 0 0">${f&&f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</div></div></div>
+<div style="margin-bottom:12px">${ts.length?ts.map(a=>`<span class="tchip">🏅 ${esc(a.name)}</span>`).join(''):'<span class="note">Todavía no tiene títulos.</span>'}</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">${box('Campeonatos',p.c)}${box('Copas',p.cp)}${box('Descensos',p.d)}${box('Torneos',p.t)}</div>
+${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derrotas',p.sl))}${riv}
+<button class="pri" style="width:100%" onclick="go({s:'vitrina',vp:'${p.id}'})">🏆 Ver su vitrina (${p.trophies.length})</button>
+<p class="note">Las estadísticas salen de los partidos cargados en este grupo. Lo que se corrige a mano con − y + no suma a goles, KOs ni coronas.</p>`}
+function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s))];
+  return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Salón de títulos</h2></div>
+<p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
+${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
+   return `<div class="card" style="${a?'border-color:var(--gold)':'opacity:.7'}"><div class="disp" style="font-size:24px;line-height:1.1;${a?'color:#fff3c4':''}">${a?'🏅 '+esc(a.name):esc(T.tiers?T.n:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:var(--gold)">${fmtV(T,a.value)}</span></div>`:'<div class="note" style="margin:0">Vacante</div>'}</div>`}).join('')).join('')}`}
+function vitrina(){const tc=calcTitles();const list=S.friends;
+  let id=v.vp;if(!tc.P[id]){const me=list.find(f=>USER&&f.uid===USER.uid);id=(me||list[0]||{}).id}
+  const defs=`<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffd24a"/><stop offset="1" stop-color="#c98a00"/></linearGradient><linearGradient id="tsilv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfd7e6"/><stop offset="1" stop-color="#8793aa"/></linearGradient></defs></svg>`;
+  const top=`<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Vitrina</h2></div>${defs}`;
+  if(!list.length)return top+'<div class="empty">Todavía no hay jugadores en el grupo.</div>';
+  const p=tc.P[id];
+  const sel=`<select class="in" style="margin-bottom:12px" onchange="go({vp:this.value})">${list.map(f=>`<option value="${f.id}" ${f.id===id?'selected':''}>${nm(f.id)}</option>`).join('')}</select>`;
+  const names={fifa:'⚽ FIFA',brawl:'⚔️ BrawlHalla',cr:'🏰 Clash Royale'};
+  const shelves=GM.map(gm=>{const tr=p.trophies.filter(x=>x.gm===gm).sort((a,b)=>b.ts-a.ts||0);
+    const nl=tr.filter(x=>x.type==='liga').length,nc=tr.length-nl;
+    return `<div class="shelf"><div class="shl" style="color:${GACC[gm]}">${names[gm]} <span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div>${tr.length?`<div class="trs">${tr.map(x=>`<div class="tr">${trophySvg(x.type,gm)}<div class="trn">${esc(x.name)}</div><div class="trd">${x.type==='liga'?'Liga':'Copa'} · ${fDate(x.ts)}</div></div>`).join('')}</div>`:'<div class="trempty">Estante vacío</div>'}</div>`}).join('');
+  return top+sel+`<div class="cab"><div class="cabh">🏆 Vitrina de ${nm(id)} · ${p.trophies.length} ${p.trophies.length===1?'trofeo':'trofeos'}</div>${shelves}</div>
+<p class="note">Cada liga y cada copa ganada deja su trofeo con el nombre del torneo y la fecha en que se cerró. Los torneos cerrados antes de esta versión pueden aparecer sin fecha.</p>`}
+
 function friends(){
+  const tc=calcTitles();
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
   const free=S.members.filter(u=>!linked.has(u));
   return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Jugadores</h2></div>
+<div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina'})">🏆 Vitrina</button><button onclick="go({s:'salon'})">🏅 Salón de títulos</button></div>
 ${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
 <div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
-${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span></span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
+${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span style="cursor:pointer;flex:1;min-width:140px" onclick="go({s:'pp',pp:'${f.id}'})"><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span> <span style="color:var(--mut)">›</span>${titleLine(tc,f.id)}</span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
 
 function h2hOpts(){const out=[],seen=new Set();
   if(v.hs==='all'){R.groups.forEach(g=>g.friends.forEach(f=>{if(f.uid&&!seen.has(f.uid)){seen.add(f.uid);out.push({k:'u:'+f.uid,l:esc('@'+memberNick(f.uid))})}}))}
@@ -501,7 +639,7 @@ function finishCup(){const t=curT();const c=$('cc').value,r=$('cr').value,d=$('c
   if(!c){v.cerr='Elegí al campeón.';render();return}
   if(r&&r===c){v.cerr='El subcampeón no puede ser el campeón.';render();return}
   if(d&&d===c){v.cerr='El campeón no puede descender.';render();return}
-  t.done=true;t.champ=c;t.runner=r||null;t.desc=d||null;
+  t.done=true;t.champ=c;t.runner=r||null;t.desc=d||null;t.ts=Date.now();
   t.players.forEach(p=>stat(v.g,p).t++);stat(v.g,c).cp++;if(d)stat(v.g,d).d++;
   save();render()}
 function cupView(t){
@@ -544,7 +682,7 @@ function render(reset){
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'');
-  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h})[v.s]();
+  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
