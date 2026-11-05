@@ -54,6 +54,40 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .strip b{font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:32px;line-height:1.05;color:#fff3c4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .strip em{font-style:normal;color:var(--mut);font-size:13px;margin-top:2px}
 @media (prefers-reduced-motion:reduce){.strip .crn{animation:none}}
+.vstrip{margin-top:12px;border-color:var(--line);background:radial-gradient(100% 140% at 0% 0%,rgba(90,169,255,.18),transparent 65%),var(--panel);box-shadow:0 0 26px -10px rgba(90,169,255,.6)}
+.vstrip small{color:var(--acc)}
+.vstrip b{font-size:28px}
+.vsw{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 16px 14px;margin:0 -16px;scrollbar-width:none}
+.vsw::-webkit-scrollbar{display:none}
+.vcab{flex:0 0 90%;scroll-snap-align:center;position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#1a1d24,#0c0d11 55%,#14161c);border:1px solid #2c303b;box-shadow:0 18px 34px -14px #000,inset 0 0 0 4px #0a0b0e,inset 0 0 0 5px #343947}
+.vcab::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 1px,transparent 1px 4px);pointer-events:none}
+.vcab::after{content:"";position:absolute;inset:0;background:linear-gradient(112deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.03) 22%,transparent 38%,transparent 64%,rgba(255,255,255,.05) 78%,transparent 90%);pointer-events:none;z-index:5}
+.vled{height:5px;margin:6px 6px 0;border-radius:99px;background:linear-gradient(90deg,transparent,var(--led) 18%,var(--led) 82%,transparent);box-shadow:0 0 14px var(--led),0 8px 26px -2px var(--led);position:relative;z-index:2}
+.vhd{display:flex;align-items:center;gap:6px;padding:10px 10px 6px;position:relative;z-index:3}
+.vtt{flex:1;min-width:0;text-align:center;background:linear-gradient(180deg,#3a3f4b,#262a33);border:1px solid #4a505e;border-radius:10px;padding:5px 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 6px rgba(0,0,0,.5)}
+.vtt b{display:block;font-size:26px;line-height:1.05;color:#f3f4f8;letter-spacing:.04em;text-shadow:0 1px 0 #000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vtt b small{font-size:13px;color:var(--led)}
+.vtt span{display:block;font-size:12px;color:#aab0bf}
+.vnav{width:34px;height:34px;min-height:0;padding:0;border-radius:50%;background:#1d2027;border:1px solid #3a3f4b;font-size:20px;line-height:1;color:var(--led);flex:none}
+.vwall{position:relative;margin:4px 8px 0;padding:14px 4px 0;background:radial-gradient(90% 90% at 50% 0%,color-mix(in srgb,var(--led) 20%,transparent),transparent 70%),linear-gradient(#0d0e12,#08090c);border-radius:8px 8px 0 0;box-shadow:inset 0 10px 22px -8px #000;z-index:1}
+.vrow{display:flex;align-items:flex-end;gap:6px;overflow-x:auto;padding:6px 8px 0;min-height:216px;scrollbar-width:none}
+.vrow::-webkit-scrollbar{display:none}
+.vtr{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;border:0;background:transparent;padding:0 2px;min-height:0;max-width:104px}
+.vtr img{height:128px;width:auto;display:block;position:relative;z-index:1;-webkit-box-reflect:below 1px linear-gradient(transparent 70%,rgba(255,255,255,.16));filter:drop-shadow(0 6px 5px rgba(0,0,0,.6))}
+.vglow{position:absolute;left:-14px;right:-14px;top:-6px;height:140px;z-index:0;pointer-events:none}
+.vpl{position:relative;z-index:2;margin-top:6px;width:96px;border-radius:5px;padding:3px 5px;background:linear-gradient(180deg,#ffe58a,#d9a21b 55%,#f6cf5a);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 4px rgba(0,0,0,.6);color:#3a2700;font-size:10.5px;font-weight:700;line-height:1.15;text-align:center}
+.vpl i{font-style:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.vdt{position:relative;z-index:2;font-size:10px;color:#9aa1b2;margin:3px 0 4px;white-space:nowrap}
+.vempty{flex:1;text-align:center;color:#7d8394;padding:50px 0 34px;font-size:15px}
+.vempty small{display:block;font-size:12px;margin-top:4px;opacity:.8}
+.vshelf{height:14px;margin:0 -4px;background:linear-gradient(180deg,rgba(210,235,255,.55),rgba(120,160,190,.25) 45%,rgba(20,28,36,.9));border-top:1px solid rgba(255,255,255,.55);box-shadow:0 10px 18px -6px color-mix(in srgb,var(--led) 55%,#000);position:relative;z-index:3}
+.vfoot{height:16px;margin-top:2px;background:linear-gradient(180deg,#1a1d24,#0a0b0e)}
+.vd{display:flex;justify-content:center;gap:7px;margin:-2px 0 6px}
+.vd i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all .2s}
+.vd i.on{width:20px;border-radius:99px;background:var(--acc)}
+.vsheet{position:fixed;z-index:41;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));text-align:center;box-shadow:0 -20px 50px -10px #000;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.vsheet{animation:none}}
 .hbar{display:flex;align-items:center;justify-content:space-between;margin:14px 0 0}
 .mbtn{position:relative;width:48px;height:48px;border-radius:14px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--panel2)}
 .mbtn svg{width:24px;height:24px}
@@ -177,7 +211,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='4-nov-2026 · g';
+const APP_V='5-nov-2026 · h';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -459,6 +493,8 @@ function home(){return `<div class="hbar"><h1 class="logo disp" style="margin:0"
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${cnt(S.games.brawl.tours.length,'torneo','torneos')} · ${cnt(S.games.brawl.players.length,'jugador','jugadores')}</small></button>
 <button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${cnt(S.games.cr.tours.length,'torneo','torneos')} · ${cnt(S.games.cr.players.length,'jugador','jugadores')}</small></button>
 ${(()=>{const L=supLeader();return L?`<button class="strip" onclick="go({s:'supreme'})"><span class="crn">👑</span><span class="stx"><small>Agarrá un libro pibe</small><b>${nm(L.id)}</b><em>${cnt(L.c,'campeonato','campeonatos')}${copTxt(L.cp)} · ${dTxt(L.d)}</em></span><span class="mic">›</span></button>`:''})()}
+${(()=>{const tc=calcTitles();const all=Object.values(tc.P);const tot=all.reduce((a,p)=>a+p.trophies.length,0);const top=all.slice().sort((a,b)=>b.trophies.length-a.trophies.length)[0];
+  return `<button class="strip vstrip" onclick="go({s:'vitrina',vb:'home',vp:null,vsc:false,vt:null})"><span class="crn" style="animation:none">🏆</span><span class="stx"><small>Vitrina de trofeos</small><b>${cnt(tot,'trofeo','trofeos')}</b><em>${top&&top.trophies.length?'Más trofeos: '+nm(top.id)+' ('+top.trophies.length+')':'Todavía no hay trofeos en el grupo'}</em></span><span class="mic">›</span></button>`})()}
 ${v.menu?menuPanel():''}`}
 
 
@@ -466,6 +502,7 @@ ${v.menu?menuPanel():''}`}
 const GM=['fifa','brawl','cr'];
 const GACC={fifa:'#2ee67a',brawl:'#ff8a2b',cr:'#5aa9ff'};
 const tourTs=t=>t.ts||Math.max(0,...(t.matches||[]).map(m=>m.ts||0))||0;
+const fDateS=ts=>ts?new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}).replace(/\./g,''):'sin fecha';
 const fDate=ts=>ts?new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'sin fecha';
 const TITLES=[
 {id:1,k:'oro',s:'Generales',n:'Champion of the Americas',d:'Más campeonatos de liga',v:p=>p.c,u:['campeonato','campeonatos']},
@@ -544,12 +581,6 @@ const KORD={oro:0,pos:1,neu:2,neg:3};
 const byKind=a=>a.slice().sort((x,y)=>KORD[x.t.k]-KORD[y.t.k]||x.t.id-y.t.id);
 const fmtV=(T,x)=>T.dec?String(x.toFixed(2)).replace('.',',')+' '+T.u[1]:x+' '+(x===1?T.u[0]:T.u[1]);
 const rawName=id=>{const f=S.friends.find(x=>x.id===id);return f?((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
-function trophySvg(type,gm){const a=GACC[gm],em=GM.indexOf(gm)===0?'⚽':gm==='brawl'?'⚔️':'🏰';
-  const g=type==='liga'?'url(#tgold)':'url(#tsilv)';
-  const body=type==='liga'
-   ?`<path d="M18 6h28v16c0 11-6 18-14 18S18 33 18 22z" fill="${g}"/><path d="M18 11H8c0 10 4 16 12 18M46 11h10c0 10-4 16-12 18" fill="none" stroke="#d99a00" stroke-width="3.5" stroke-linecap="round"/><rect x="29" y="39" width="6" height="11" fill="${g}"/><rect x="21" y="49" width="22" height="6" rx="2" fill="${g}"/>`
-   :`<path d="M14 6h36l-4 14c-2 8-8 13-14 13S20 28 18 20z" fill="${g}"/><path d="M32 11l2.6 5.3 5.8.8-4.2 4.1 1 5.8L32 24.2l-5.2 2.8 1-5.8-4.2-4.1 5.8-.8z" fill="#fff" opacity=".85"/><rect x="29" y="33" width="6" height="16" rx="2" fill="${g}"/><rect x="22" y="48" width="20" height="7" rx="3" fill="${g}"/>`;
-  return `<svg viewBox="0 0 64 74" aria-hidden="true">${body}<rect x="14" y="55" width="36" height="14" rx="4" fill="${a}"/><text x="32" y="66" text-anchor="middle" font-size="10">${em}</text></svg>`}
 function titleLine(tc,id){const l=byKind(tc.by[id]||[]);return l.length?`<small style="display:block;margin:3px 0 0;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.map(a=>`<span style="color:${KC[a.t.k].t}">${KC[a.t.k].e} ${esc(a.name)}</span>`).join(' · ')}</small>`:''}
 function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
   if(!p)return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div><div class="empty">No se encontró al jugador.</div>`;
@@ -568,7 +599,7 @@ function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
 <div style="margin-bottom:12px">${ts.length?byKind(ts).map(a=>`<span class="tchip ${a.t.k}">${KC[a.t.k].e} ${esc(a.name)}</span>`).join(''):'<span class="note">Todavía no tiene títulos.</span>'}</div>
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">${box('Campeonatos',p.c)}${box('Copas',p.cp)}${box('Descensos',p.d)}${box('Torneos',p.t)}</div>
 ${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derrotas',p.sl))}${riv}
-<button class="pri" style="width:100%" onclick="go({s:'vitrina',vp:'${p.id}'})">🏆 Ver su vitrina (${p.trophies.length})</button>
+<button class="pri" style="width:100%" onclick="go({s:'vitrina',vb:'pp',vp:'${p.id}',vsc:true,vt:null})">🏆 Ver su vitrina (${p.trophies.length})</button>
 <p class="note">Las estadísticas salen de los partidos cargados en este grupo. Lo que se corrige a mano con − y + no suma a goles, KOs ni coronas.</p>`}
 function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s))];
   return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Salón de títulos</h2></div>
@@ -576,26 +607,42 @@ function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s)
 <p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
 ${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
    const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${fmtV(T,a.value)}</span></div>`:`<div class="note" style="margin:0">${(tc.gates[T.gm||'all']<(T.mt||1))?'🔒 Se activa tras '+T.mt+' torneos cerrados'+(T.gm?' de '+{fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'}[T.gm]:'')+' (van '+tc.gates[T.gm||'all']+')':'Vacante'}</div>`}</div>`}).join('')).join('')}`}
-function vitrina(){const tc=calcTitles();const list=S.friends;
-  let id=v.vp;if(!tc.P[id]){const me=list.find(f=>USER&&f.uid===USER.uid);id=(me||list[0]||{}).id}
-  const defs=`<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffd24a"/><stop offset="1" stop-color="#c98a00"/></linearGradient><linearGradient id="tsilv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfd7e6"/><stop offset="1" stop-color="#8793aa"/></linearGradient></defs></svg>`;
-  const top=`<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Vitrina</h2></div>${defs}`;
-  if(!list.length)return top+'<div class="empty">Todavía no hay jugadores en el grupo.</div>';
-  const p=tc.P[id];
-  const sel=`<select class="in" style="margin-bottom:12px" onchange="go({vp:this.value})">${list.map(f=>`<option value="${f.id}" ${f.id===id?'selected':''}>${nm(f.id)}</option>`).join('')}</select>`;
-  const names={fifa:'⚽ FIFA',brawl:'⚔️ BrawlHalla',cr:'🏰 Clash Royale'};
-  const shelves=GM.map(gm=>{const tr=p.trophies.filter(x=>x.gm===gm).sort((a,b)=>b.ts-a.ts||0);
-    const nl=tr.filter(x=>x.type==='liga').length,nc=tr.length-nl;
-    return `<div class="shelf"><div class="shl" style="color:${GACC[gm]}">${names[gm]} <span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div>${tr.length?`<div class="trs">${tr.map(x=>`<div class="tr">${trophySvg(x.type,gm)}<div class="trn">${esc(x.name)}</div><div class="trd">${x.type==='liga'?'Liga':'Copa'} · ${fDate(x.ts)}</div></div>`).join('')}</div>`:'<div class="trempty">Estante vacío</div>'}</div>`}).join('');
-  return top+sel+`<div class="cab"><div class="cabh">🏆 Vitrina de ${nm(id)} · ${p.trophies.length} ${p.trophies.length===1?'trofeo':'trofeos'}</div>${shelves}</div>
-<p class="note">Cada liga y cada copa ganada deja su trofeo con el nombre del torneo y la fecha en que se cerró. Los torneos cerrados antes de esta versión pueden aparecer sin fecha.</p>`}
+const GNAME={fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'};
+const trList=p=>p.trophies.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)||a.name.localeCompare(b.name));
+function vOrder(tc){const me=S.friends.find(f=>USER&&f.uid===USER.uid);
+  return S.friends.slice().sort((a,b)=>(a===me?-1:b===me?1:0)||tc.P[b.id].trophies.length-tc.P[a.id].trophies.length||rawName(a.id).localeCompare(rawName(b.id))).map(f=>f.id)}
+function ledOf(p){const c={fifa:0,brawl:0,cr:0};p.trophies.forEach(t=>c[t.gm]++);const best=GM.slice().sort((a,b)=>c[b]-c[a])[0];return c[best]?GACC[best]:'#ffd24a'}
+function vDots(el){if(!el||!el.firstElementChild)return;const w=el.firstElementChild.offsetWidth+12;const i=Math.max(0,Math.round(el.scrollLeft/w));const d=el.nextElementSibling;
+  if(d&&d.classList.contains('vd'))[...d.children].forEach((x,k)=>x.classList.toggle('on',k===i))}
+function vGo(btn,dir){const el=btn.closest('.vsw');el.scrollBy({left:dir*(el.firstElementChild.offsetWidth+12),behavior:'smooth'})}
+function trophyOpen(pid,idx){v.vt=pid+':'+idx;render()}
+function trophySheet(tc){const [pid,ix]=v.vt.split(':');const p=tc.P[pid];if(!p)return'';const t=trList(p)[+ix];if(!t)return'';
+  const lg=t.type==='liga';
+  return `<div class="mbg" onclick="go({vt:null})"></div><div class="vsheet" role="dialog"><img src="trofeo-${t.type}-${t.gm}.webp" alt="" style="height:120px;filter:drop-shadow(0 0 18px ${GACC[t.gm]}88)">
+<div class="disp" style="font-size:28px;line-height:1.1;margin-top:8px;color:#fff3c4">${esc(t.name)}</div>
+<div style="margin:10px 0 2px"><span class="tchip ${lg?'oro':'neu'}">${lg?'Campeonato de liga':'Copa'}</span> <span class="tchip pos" style="background:${GACC[t.gm]};color:#06130c">${GAMES[t.gm].e} ${GNAME[t.gm]}</span></div>
+<div class="note" style="margin:8px 0 0">Ganador: <b style="color:var(--tx)">${nm(pid)}</b></div>
+<div class="note" style="margin:2px 0 12px">Se cerró el <b style="color:var(--tx)">${fDate(t.ts)}</b></div>
+<button class="pri" style="width:100%" onclick="go({vt:null})">Cerrar</button></div>`}
+function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
+  const top=`<div class="top"><button class="ghost" onclick="go({s:'${v.vb||'friends'}',vt:null})">←</button><h2>Vitrina</h2></div>`;
+  if(!ord.length)return top+'<div class="empty">Todavía no hay jugadores en el grupo.</div>';
+  const cabs=ord.map((id,pi)=>{const p=tc.P[id],list=trList(p),led=ledOf(p);
+    const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
+    const trs=list.length?list.map((t,k)=>`<button class="vtr" onclick="trophyOpen('${id}',${k})" aria-label="${esc(t.name)}"><span class="vglow" style="background:radial-gradient(closest-side,${GACC[t.gm]}55,transparent)"></span><img src="trofeo-${t.type}-${t.gm}.webp" alt="" loading="lazy"><span class="vpl"><i>${esc(t.name)}</i></span><span class="vdt">${fDateS(t.ts)}</span></button>`).join(''):'<div class="vempty">Estante vacío<small>Todavía no ganó ningún torneo</small></div>';
+    return `<section class="vcab" style="--led:${led}"><div class="vled"></div>
+<header class="vhd"><button class="vnav" aria-label="Anterior" onclick="vGo(this,-1)">‹</button><div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div><button class="vnav" aria-label="Siguiente" onclick="vGo(this,1)">›</button></header>
+<div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
+  const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
+  return top+`<div class="vsw" data-start="${st}" onscroll="vDots(this)">${cabs}</div><div class="vd">${ord.map((_,k)=>`<i class="${k===st?'on':''}"></i>`).join('')}</div>
+<p class="note" style="text-align:center">Deslizá para ver la vitrina de cada jugador. Tocá un trofeo para ver el detalle.</p>${v.vt?trophySheet(tc):''}`}
 
 function friends(){
   const tc=calcTitles();
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
   const free=S.members.filter(u=>!linked.has(u));
   return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Jugadores</h2></div>
-<div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina'})">🏆 Vitrina</button><button onclick="go({s:'salon'})">🏅 Salón de títulos</button></div>
+<div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina',vb:'friends',vp:null,vsc:false,vt:null})">🏆 Vitrina</button><button onclick="go({s:'salon'})">🏅 Salón de títulos</button></div>
 ${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
 <div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
 ${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span style="cursor:pointer;flex:1;min-width:140px" onclick="go({s:'pp',pp:'${f.id}'})"><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span> <span style="color:var(--mut)">›</span>${titleLine(tc,f.id)}</span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
@@ -731,12 +778,13 @@ ${v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t
 }
 
 function render(reset){
-  const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap')].map(e=>e.scrollLeft);
+  const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
-  if(!reset)document.querySelectorAll('.wrap').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
+  if(!reset)document.querySelectorAll('.wrap,.vsw').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
+  document.querySelectorAll('.vsw').forEach(e=>{if(v.vsc||reset){const k=+e.dataset.start||0;if(e.firstElementChild)e.scrollLeft=k*(e.firstElementChild.offsetWidth+12);v.vsc=false}vDots(e)});
   window.scrollTo(0,y);
 }
 ['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','delT2','addMember','linkFriend'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
