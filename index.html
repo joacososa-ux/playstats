@@ -47,6 +47,20 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
 .b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
 .b-cr .disp{font-size:32px;padding-right:70px}
+.hbar{display:flex;align-items:center;justify-content:space-between;margin:14px 0 0}
+.mbtn{position:relative;width:48px;height:48px;border-radius:14px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--panel2)}
+.mbtn svg{width:24px;height:24px}
+.mdot{position:absolute;top:7px;right:7px;width:12px;height:12px;border-radius:50%;background:var(--bad);border:2px solid var(--bg)}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40}
+.mnu{position:fixed;z-index:41;top:calc(env(safe-area-inset-top,0px) + 80px);right:max(12px,calc((100vw - 640px)/2 + 12px));width:min(330px,calc(100vw - 24px));max-height:calc(100vh - 110px - env(safe-area-inset-top,0px));overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 20px 50px -10px #000;animation:pop .16s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.97)}}
+.mhd{display:flex;align-items:center;gap:12px;padding:4px 4px 8px}
+.msec{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:12px 6px 4px}
+.mit{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:transparent;border-radius:12px;min-height:50px;padding:8px 10px;font-size:16px}
+.mit:active,.mit:hover{background:var(--panel2)}
+.mie{font-size:22px;width:28px;text-align:center}.mil{flex:1}.mic{color:var(--mut)}
+.mbd{background:var(--bad);color:#2a0007;font-weight:700;border-radius:99px;padding:2px 9px;font-size:13px}
+@media (prefers-reduced-motion:reduce){.mnu{animation:none}}
 .av{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#fff3c4);color:var(--acc-tx);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:34px;font-weight:700;flex:none}
 .tchip{display:inline-block;font-weight:700;font-size:13px;border-radius:99px;padding:5px 11px;margin:3px 4px 0 0}
 .tchip.oro{background:linear-gradient(135deg,#fff0a0,#ffc933 55%,#e0a100);color:#3a2a00;font-size:14.5px;box-shadow:0 0 14px rgba(255,201,51,.6)}
@@ -156,7 +170,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='31-oct-2026 · e';
+const APP_V='1-nov-2026 · f';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -164,10 +178,11 @@ function toast(m){let e=document.getElementById('toast');if(!e){e=document.creat
 async function toggleAdmin(gid,u){const g=R.groups.find(x=>x.id===gid);if(!g||g.owner!==USER.uid)return;v.err='';v.msg='';
   const cur=g.admins||[];const nx=cur.includes(u)?cur.filter(x=>x!==u):[...cur,u];
   try{await FB.setAdmins(gid,nx);g.admins=nx;v.msg='Listo: '+(nx.includes(u)?'@'+memberNick(u)+' ahora es administrador.':'@'+memberNick(u)+' ya no es administrador.')}catch(e){v.err='No se pudo cambiar el rol: '+(e.code||e.message)}render()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&v.menu)go({menu:false})});
 let INST=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();INST=e;if(typeof softRender==='function'&&v.s==='home')softRender()});
 window.addEventListener('appinstalled',()=>{INST=null;render()});
-function installApp(){if(!INST)return;INST.prompt();INST.userChoice.finally(()=>{INST=null;render()})}
+function installApp(){if(!INST)return;v.menu=false;INST.prompt();INST.userChoice.finally(()=>{INST=null;render()})}
 let ME=null,PROF={},FR=[],INV=[],socUnsub=[];
 function startSocial(){if(socUnsub.length||!USER||!ME)return;
   socUnsub.push(FB.watchFr(USER.uid,l=>{FR=l;loadProfiles().then(softRender).catch(()=>softRender())}));
@@ -280,7 +295,7 @@ async function loadAll(){
   if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id}
   setS();normalize();await loadProfiles();R.groups.forEach(watch);saveUser();startSocial();
 }
-window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';
+window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';v.menu=false;
   Object.values(subs).forEach(f=>f());subs={};stopSocial();
   if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};v.s='home';render();return}
   try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
@@ -412,14 +427,30 @@ ${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=Object
 <p class="note" style="margin:2px 0 0">${own?'Sos el creador del grupo.':isAdminOf(g)?'Sos administrador.':'Sos miembro: podés ver, pero no cargar datos.'}</p>
 <p class="note" style="margin:4px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
 <div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button>${own?`<button class="ghost" onclick="go({adm:v.adm==='${g.id}'?null:'${g.id}'})">🛡️ Administradores</button>`:''}${isAdminOf(g)?`<button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button>`:''}<button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div>${own&&v.adm===g.id?`<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px"><p class="note" style="margin:0 0 6px">Los administradores pueden cargar resultados, crear y borrar torneos y editar jugadores. Los demás miembros solo pueden ver.</p>${g.members.filter(u=>u!==g.owner).map(u=>{const ad=(g.admins||[]).includes(u);return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0"><b>@${esc(memberNick(u))}</b><button class="${ad?'ghost':'pri'}" onclick="toggleAdmin('${g.id}','${u}')">${ad?'Quitar admin':'Hacer admin'}</button></div>`}).join('')||'<p class="note">Todavía no hay otros miembros.</p>'}</div>`:''}</div>`}).join('')}`}
-function home(){return `
-<h1 class="logo disp">Play<b>Stats</b></h1>
-<p class="sub">Elegí el juego y llevá la cuenta de los torneos.</p>
-<button class="ghost" style="width:100%;margin:-8px 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
-<button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${S.games.fifa.tours.length} torneos · ${S.games.fifa.players.length} jugadores</small></button>
-<button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${S.games.brawl.tours.length} torneos · ${S.games.brawl.players.length} jugadores</small></button>
-<button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${S.games.cr.tours.length} torneos · ${S.games.cr.players.length} jugadores</small></button>
-<div class="row2"><button onclick="go({s:'supreme'})">🏆 Tabla suprema</button><button onclick="go({s:'friends'})">👥 Jugadores (${S.friends.length})</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'h2h'})">⚔️ Mano a mano</button></div><div class="row2" style="margin-top:10px"><button onclick="go({s:'profile'})">👤 ${ME?'@'+esc(ME.nick):'Mi perfil'}</button><button onclick="go({s:'social',err:'',msg:'',found:null})">🤝 Amigos${badge()?` <b style="color:var(--bad)">· ${badge()}</b>`:''}</button></div>${INST?`<button class="pri" style="margin-top:14px;width:100%" onclick="installApp()">📲 Instalar app</button>`:''}<button class="ghost" style="margin-top:14px;width:100%" onclick="doLogout()">Cerrar sesión · ${esc(USER?USER.email||'':'')}</button><p class="note" style="text-align:center;opacity:.6;margin-top:14px">PlayStats · versión ${APP_V}</p>`}
+const cnt=(n,a,b)=>n+' '+(n===1?a:b);
+function menuPanel(){const nb=badge();
+  const it=(e,l,act,x)=>`<button class="mit" role="menuitem" onclick="${act}"><span class="mie">${e}</span><span class="mil">${l}</span>${x||'<span class="mic">›</span>'}</button>`;
+  const bd=n=>n?`<span class="mbd">${n}</span>`:'<span class="mic">›</span>';
+  return `<div class="mbg" onclick="go({menu:false})"></div><div class="mnu" role="menu">
+<div class="mhd"><div class="av" style="width:44px;height:44px;font-size:24px">${esc(ME?ME.nick.charAt(0).toUpperCase():'?')}</div><div><b>${ME?'@'+esc(ME.nick):'Mi cuenta'}</b><div class="note" style="margin:0;font-size:12px">${esc(S.name)}</div></div></div>
+<div class="msec">Grupo</div>
+${it('🏆','Tabla suprema',"go({s:'supreme',menu:false})")}
+${it('👥','Jugadores <span class="note" style="margin:0">('+S.friends.length+')</span>',"go({s:'friends',menu:false})")}
+${it('⚔️','Mano a mano',"go({s:'h2h',menu:false})")}
+<div class="msec">Social</div>
+${it('🤝','Amigos',"go({s:'social',err:'',msg:'',found:null,menu:false})",bd(nb))}
+<div class="msec">Cuenta</div>
+${it('👤','Mi perfil y copia de seguridad',"go({s:'profile',menu:false})")}
+${INST?it('📲','Instalar app',"installApp()"):''}
+${it('↪','Cerrar sesión',"doLogout()",'<span class="mic"></span>')}
+<div class="note" style="text-align:center;opacity:.6;margin:10px 0 2px;font-size:12px">PlayStats · versión ${APP_V}</div></div>`}
+function home(){return `<div class="hbar"><h1 class="logo disp" style="margin:0">Play<b>Stats</b></h1><button class="mbtn" aria-label="Abrir menú" aria-expanded="${!!v.menu}" onclick="go({menu:!v.menu})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>${badge()?'<i class="mdot"></i>':''}</button></div>
+<p class="sub" style="margin:6px 0 16px">Elegí el juego y llevá la cuenta de los torneos.</p>
+<button class="ghost" style="width:100%;margin:0 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
+<button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${cnt(S.games.fifa.tours.length,'torneo','torneos')} · ${cnt(S.games.fifa.players.length,'jugador','jugadores')}</small></button>
+<button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${cnt(S.games.brawl.tours.length,'torneo','torneos')} · ${cnt(S.games.brawl.players.length,'jugador','jugadores')}</small></button>
+<button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${cnt(S.games.cr.tours.length,'torneo','torneos')} · ${cnt(S.games.cr.players.length,'jugador','jugadores')}</small></button>
+${v.menu?menuPanel():''}`}
 
 
 /* ===== Títulos, perfil y vitrina ===== */
