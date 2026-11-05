@@ -57,13 +57,12 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .vstrip{margin-top:12px;border-color:var(--line);background:radial-gradient(100% 140% at 0% 0%,rgba(90,169,255,.18),transparent 65%),var(--panel);box-shadow:0 0 26px -10px rgba(90,169,255,.6)}
 .vstrip small{color:var(--acc)}
 .vstrip b{font-size:28px}
-.vsw{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 16px 14px;margin:0 -16px;scrollbar-width:none}
-.vsw::-webkit-scrollbar{display:none}
-.vcab{flex:0 0 90%;scroll-snap-align:center;position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#1a1d24,#0c0d11 55%,#14161c);border:1px solid #2c303b;box-shadow:0 18px 34px -14px #000,inset 0 0 0 4px #0a0b0e,inset 0 0 0 5px #343947}
+.vsw{display:flex;flex-direction:column;gap:18px;padding:4px 0 10px}
+.vcab{flex:none;width:100%;position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#1a1d24,#0c0d11 55%,#14161c);border:1px solid #2c303b;box-shadow:0 18px 34px -14px #000,inset 0 0 0 4px #0a0b0e,inset 0 0 0 5px #343947}
 .vcab::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 1px,transparent 1px 4px);pointer-events:none}
 .vcab::after{content:"";position:absolute;inset:0;background:linear-gradient(112deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.03) 22%,transparent 38%,transparent 64%,rgba(255,255,255,.05) 78%,transparent 90%);pointer-events:none;z-index:5}
 .vled{height:5px;margin:6px 6px 0;border-radius:99px;background:linear-gradient(90deg,transparent,var(--led) 18%,var(--led) 82%,transparent);box-shadow:0 0 14px var(--led),0 8px 26px -2px var(--led);position:relative;z-index:2}
-.vhd{display:flex;align-items:center;gap:6px;padding:10px 10px 6px;position:relative;z-index:3}
+.vhd{display:flex;align-items:center;gap:6px;padding:12px 12px 6px;position:relative;z-index:3}
 .vtt{flex:1;min-width:0;text-align:center;background:linear-gradient(180deg,#3a3f4b,#262a33);border:1px solid #4a505e;border-radius:10px;padding:5px 8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 6px rgba(0,0,0,.5)}
 .vtt b{display:block;font-size:26px;line-height:1.05;color:#f3f4f8;letter-spacing:.04em;text-shadow:0 1px 0 #000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vtt b small{font-size:13px;color:var(--led)}
@@ -211,7 +210,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='5-nov-2026 · h';
+const APP_V='5-nov-2026 · i';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -357,7 +356,7 @@ const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.u
 const stat=(g,p)=>{const o=S.games[g].stats;const x=o[p]||(o[p]={c:0,d:0,t:0,cp:0});if(x.cp===undefined)x.cp=0;return x};
 const dTxt=n=>n+(n===1?' descenso':' descensos');
 const copTxt=n=>n?' · '+n+(n===1?' copa':' copas'):'';
-const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);const ch=v.s+v.tab+v.t!==k;render(ch);if(ch)window.scrollTo(0,0)};
+const go=o=>{const k=v.s+v.tab+v.t;Object.assign(v,o);const ch=v.s+v.tab+v.t!==k;if(ch)window.scrollTo(0,0);render(ch)};
 
 function rounds(ids){
   const a=ids.slice();if(a.length%2)a.push(null);
@@ -631,11 +630,11 @@ function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
     const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
     const trs=list.length?list.map((t,k)=>`<button class="vtr" onclick="trophyOpen('${id}',${k})" aria-label="${esc(t.name)}"><span class="vglow" style="background:radial-gradient(closest-side,${GACC[t.gm]}55,transparent)"></span><img src="trofeo-${t.type}-${t.gm}.webp" alt="" loading="lazy"><span class="vpl"><i>${esc(t.name)}</i></span><span class="vdt">${fDateS(t.ts)}</span></button>`).join(''):'<div class="vempty">Estante vacío<small>Todavía no ganó ningún torneo</small></div>';
     return `<section class="vcab" style="--led:${led}"><div class="vled"></div>
-<header class="vhd"><button class="vnav" aria-label="Anterior" onclick="vGo(this,-1)">‹</button><div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div><button class="vnav" aria-label="Siguiente" onclick="vGo(this,1)">›</button></header>
+<header class="vhd"><div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
 <div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
   const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
-  return top+`<div class="vsw" data-start="${st}" onscroll="vDots(this)">${cabs}</div><div class="vd">${ord.map((_,k)=>`<i class="${k===st?'on':''}"></i>`).join('')}</div>
-<p class="note" style="text-align:center">Deslizá para ver la vitrina de cada jugador. Tocá un trofeo para ver el detalle.</p>${v.vt?trophySheet(tc):''}`}
+  return top+`<div class="vsw" data-start="${st}">${cabs}</div>
+<p class="note" style="text-align:center">Tocá un trofeo para ver el detalle. Si un jugador tiene muchos, deslizá su estante hacia el costado.</p>${v.vt?trophySheet(tc):''}`}
 
 function friends(){
   const tc=calcTitles();
@@ -784,8 +783,8 @@ function render(reset){
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap,.vsw').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
-  document.querySelectorAll('.vsw').forEach(e=>{if(v.vsc||reset){const k=+e.dataset.start||0;if(e.firstElementChild)e.scrollLeft=k*(e.firstElementChild.offsetWidth+12);v.vsc=false}vDots(e)});
   window.scrollTo(0,y);
+  if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
 ['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','delT2','addMember','linkFriend'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
