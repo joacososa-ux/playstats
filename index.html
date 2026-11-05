@@ -47,6 +47,13 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .b-brawl{background:linear-gradient(135deg,#4a1f0c,#9a4412);border-color:#ff8a2b}
 .b-cr{background:linear-gradient(135deg,#14275c,#2a4fb8);border-color:#5aa9ff}
 .b-cr .disp{font-size:32px;padding-right:70px}
+.strip{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin-top:2px;padding:14px 16px;border-radius:18px;border:1px solid var(--gold);background:radial-gradient(100% 140% at 0% 0%,rgba(255,210,74,.22),transparent 65%),var(--panel);box-shadow:0 0 26px -8px rgba(255,210,74,.6)}
+.strip .crn{font-size:40px;line-height:1;animation:flo 3s ease-in-out infinite}
+.strip .stx{flex:1;display:flex;flex-direction:column;min-width:0}
+.strip small{color:var(--gold);font-weight:700;font-size:13px}
+.strip b{font-family:'Rajdhani','Arial Narrow',sans-serif;font-size:32px;line-height:1.05;color:#fff3c4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip em{font-style:normal;color:var(--mut);font-size:13px;margin-top:2px}
+@media (prefers-reduced-motion:reduce){.strip .crn{animation:none}}
 .hbar{display:flex;align-items:center;justify-content:space-between;margin:14px 0 0}
 .mbtn{position:relative;width:48px;height:48px;border-radius:14px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--panel2)}
 .mbtn svg{width:24px;height:24px}
@@ -170,7 +177,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='1-nov-2026 · f';
+const APP_V='4-nov-2026 · g';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -428,6 +435,7 @@ ${R.groups.map(g=>{const cur=g.id===R.cur,own=g.owner===USER.uid;const nt=Object
 <p class="note" style="margin:4px 0 0">Código de invitación: <b style="color:var(--tx);letter-spacing:.12em">${esc(g.code)}</b></p>
 <div class="row2" style="margin-top:10px;flex-wrap:wrap"><button onclick="copyInv('${g.code}')">Copiar invitación</button><button onclick="waInv('${g.code}')">WhatsApp</button>${own?`<button class="ghost" onclick="go({adm:v.adm==='${g.id}'?null:'${g.id}'})">🛡️ Administradores</button>`:''}${isAdminOf(g)?`<button class="ghost" onclick="go({ren:'${g.id}'})">Renombrar</button>`:''}<button class="ghost danger" onclick="go({dg:'${g.id}'})">${own?'Eliminar':'Salir'}</button></div>${own&&v.adm===g.id?`<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:8px"><p class="note" style="margin:0 0 6px">Los administradores pueden cargar resultados, crear y borrar torneos y editar jugadores. Los demás miembros solo pueden ver.</p>${g.members.filter(u=>u!==g.owner).map(u=>{const ad=(g.admins||[]).includes(u);return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0"><b>@${esc(memberNick(u))}</b><button class="${ad?'ghost':'pri'}" onclick="toggleAdmin('${g.id}','${u}')">${ad?'Quitar admin':'Hacer admin'}</button></div>`}).join('')||'<p class="note">Todavía no hay otros miembros.</p>'}</div>`:''}</div>`}).join('')}`}
 const cnt=(n,a,b)=>n+' '+(n===1?a:b);
+function supLeader(){const rows=S.friends.map(f=>{let c=0,d=0,t=0,cp=0;for(const g in S.games){const x=S.games[g].stats[f.id];if(x){c+=x.c||0;d+=x.d||0;t+=x.t||0;cp+=x.cp||0}}return{id:f.id,c,d,t,cp}}).sort((a,b)=>score(b)-score(a)||b.c-a.c||a.d-b.d||b.t-a.t);return rows[0]&&score(rows[0])>0?rows[0]:null}
 function menuPanel(){const nb=badge();
   const it=(e,l,act,x)=>`<button class="mit" role="menuitem" onclick="${act}"><span class="mie">${e}</span><span class="mil">${l}</span>${x||'<span class="mic">›</span>'}</button>`;
   const bd=n=>n?`<span class="mbd">${n}</span>`:'<span class="mic">›</span>';
@@ -450,6 +458,7 @@ function home(){return `<div class="hbar"><h1 class="logo disp" style="margin:0"
 <button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${cnt(S.games.fifa.tours.length,'torneo','torneos')} · ${cnt(S.games.fifa.players.length,'jugador','jugadores')}</small></button>
 <button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${cnt(S.games.brawl.tours.length,'torneo','torneos')} · ${cnt(S.games.brawl.players.length,'jugador','jugadores')}</small></button>
 <button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${cnt(S.games.cr.tours.length,'torneo','torneos')} · ${cnt(S.games.cr.players.length,'jugador','jugadores')}</small></button>
+${(()=>{const L=supLeader();return L?`<button class="strip" onclick="go({s:'supreme'})"><span class="crn">👑</span><span class="stx"><small>Agarrá un libro pibe</small><b>${nm(L.id)}</b><em>${cnt(L.c,'campeonato','campeonatos')}${copTxt(L.cp)} · ${dTxt(L.d)}</em></span><span class="mic">›</span></button>`:''})()}
 ${v.menu?menuPanel():''}`}
 
 
@@ -462,34 +471,34 @@ const TITLES=[
 {id:1,k:'oro',s:'Generales',n:'Champion of the Americas',d:'Más campeonatos de liga',v:p=>p.c,u:['campeonato','campeonatos']},
 {id:2,k:'oro',s:'Generales',n:'Traigan vino que copas sobran…',d:'Más copas ganadas',v:p=>p.cp,u:['copa','copas']},
 {id:3,k:'neg',s:'Generales',n:'El ascensor',d:'Más descensos',v:p=>p.d,u:['descenso','descensos']},
-{id:4,k:'neu',s:'Generales',n:'Vicio-nario',d:'Más torneos jugados',v:p=>p.t,u:['torneo','torneos']},
-{id:5,k:'pos',s:'Generales',n:'Siempre arriba, nunca abajo',d:'Menos descensos (mínimo 5 torneos jugados)',v:p=>p.t>=5?p.d:null,best:'min',u:['descenso','descensos']},
-{id:6,k:'pos',s:'Generales',n:'Alumno superior',d:'Mejor balance por torneo jugado (mínimo 5 torneos)',v:p=>p.t>=5?score(p)/p.t:null,dec:1,min:.01,u:['pto por torneo','ptos por torneo']},
-{id:7,k:'neu',s:'Generales',n:'Cebollita subcampeón',d:'Más veces subcampeón',v:p=>p.second,u:['vez','veces']},
-{id:8,k:'pos',s:'Generales',n:'Dictador',d:'Más torneos ganados seguidos (mínimo 2)',v:p=>p.dyn,min:2,u:['torneo seguido','torneos seguidos']},
-{id:9,k:'pos',s:'FIFA',n:'Harry Kane',d:'Más goles a favor',v:p=>p.fifa.gf,u:['gol','goles']},
-{id:10,k:'pos',s:'FIFA',n:'Hola Guardiola?',d:'Más goles por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gf/p.fifa.pj:null,dec:1,min:.01,u:['gol por partido','goles por partido']},
-{id:11,k:'pos',s:'FIFA',n:'Me Falcioni',d:'Menos goles en contra por partido (mínimo 5 partidos)',v:p=>p.fifa.pj>=5?p.fifa.gc/p.fifa.pj:null,best:'min',dec:1,u:['gol en contra por partido','goles en contra por partido']},
-{id:12,k:'pos',s:'FIFA',n:'The GodFather',d:'Más victorias en FIFA',v:p=>p.fifa.w,u:['victoria','victorias']},
-{id:13,k:'neu',s:'FIFA',n:'Clásico rosarino',d:'Más empates en FIFA',v:p=>p.fifa.e,u:['empate','empates']},
-{id:14,k:'pos',s:'FIFA',n:'Bapuleador',d:'Mayor goleada en un partido (mínimo 3 goles de diferencia)',v:p=>p.fifa.big,min:3,u:['gol de diferencia','goles de diferencia']},
-{id:15,k:'pos',s:'BrawlHalla',n:'3 bombas Galati',d:'Más KOs en total',v:p=>p.brawl.ko,u:['KO','KOs']},
-{id:16,k:'pos',s:'BrawlHalla',n:'Maravilla Martínez',d:'Más KOs por partida (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.ko/p.brawl.pj:null,dec:1,min:.01,u:['KO por partida','KOs por partida']},
-{id:17,k:'pos',s:'BrawlHalla',n:'Si? Tyson?',d:'Más veces 1°',v:p=>p.brawl.first,u:['vez 1°','veces 1°']},
-{id:18,k:'neg',s:'BrawlHalla',n:'Goy',d:'Más veces último (4°)',v:p=>p.brawl.last,u:['vez último','veces último']},
-{id:19,k:'pos',s:'BrawlHalla',n:'Me Promiedos',d:'Mejor puesto promedio (mínimo 5 partidas)',v:p=>p.brawl.pj>=5?p.brawl.pos/p.brawl.pj:null,best:'min',dec:1,u:['puesto promedio','puesto promedio']},
-{id:20,k:'pos',s:'Clash Royale',n:'Ponga huevo y vaya al frente',d:'Más coronas',v:p=>p.cr.gf,u:['corona','coronas']},
-{id:21,k:'pos',s:'Clash Royale',n:'Tu padre',d:'Más victorias en Clash Royale',v:p=>p.cr.w,u:['victoria','victorias']},
-{id:22,k:'pos',s:'Clash Royale',n:'Stephen Curry',d:'Más victorias por 3 a 0 (triple corona)',v:p=>p.cr.triple,u:['triple','triples']},
-{id:23,k:'pos',s:'Rachas',n:'Tiranía total',d:'Más partidos ganados seguidos (mínimo 3)',v:p=>p.sw,min:3,u:['victoria seguida','victorias seguidas']},
-{id:24,k:'neg',s:'Rachas',n:'Ferreada histórica',d:'Más partidos perdidos seguidos (mínimo 3)',v:p=>p.sl,min:3,u:['derrota seguida','derrotas seguidas']},
-{id:25,k:'neg',s:'Anti-títulos',n:'Burro total',d:'Más derrotas en total',v:p=>p.loss,u:['derrota','derrotas']},
-{id:26,k:'neg',s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,u:['torneo','torneos']}];
+{id:4,k:'neu',s:'Generales',n:'Vicio-nario',d:'Más torneos jugados',v:p=>p.t,mt:3,u:['torneo','torneos']},
+{id:5,k:'pos',s:'Generales',n:'Siempre arriba, nunca abajo',d:'Menos descensos (mínimo 5 torneos jugados)',v:p=>p.t>=5?p.d:null,best:'min',mt:5,u:['descenso','descensos']},
+{id:6,k:'pos',s:'Generales',n:'Alumno superior',d:'Mejor balance por torneo jugado (mínimo 5 torneos)',v:p=>p.t>=5?score(p)/p.t:null,dec:1,min:.01,mt:5,u:['pto por torneo','ptos por torneo']},
+{id:7,k:'neu',s:'Generales',n:'Cebollita subcampeón',d:'Más veces subcampeón (mínimo 2)',v:p=>p.second,min:2,mt:2,u:['vez','veces']},
+{id:8,k:'pos',s:'Generales',n:'Dictador',d:'Más torneos ganados seguidos (mínimo 2)',v:p=>p.dyn,min:2,mt:2,u:['torneo seguido','torneos seguidos']},
+{id:9,k:'pos',s:'FIFA',gm:'fifa',n:'Harry Kane',d:'Más goles a favor',v:p=>p.fifa.gf,u:['gol','goles']},
+{id:10,k:'pos',s:'FIFA',gm:'fifa',n:'Hola Guardiola?',d:'Más goles por partido (mínimo 3 torneos jugados en FIFA)',v:p=>p.tg.fifa>=3&&p.fifa.pj>0?p.fifa.gf/p.fifa.pj:null,dec:1,min:.01,mt:3,u:['gol por partido','goles por partido']},
+{id:11,k:'pos',s:'FIFA',gm:'fifa',n:'Me Falcioni',d:'Menos goles en contra por partido (mínimo 3 torneos jugados en FIFA)',v:p=>p.tg.fifa>=3&&p.fifa.pj>0?p.fifa.gc/p.fifa.pj:null,best:'min',dec:1,mt:3,u:['gol en contra por partido','goles en contra por partido']},
+{id:12,k:'pos',s:'FIFA',gm:'fifa',n:'The GodFather',d:'Más victorias en FIFA',v:p=>p.fifa.w,mt:3,u:['victoria','victorias']},
+{id:13,k:'neu',s:'FIFA',gm:'fifa',n:'Clásico rosarino',d:'Más empates en FIFA',v:p=>p.fifa.e,mt:3,u:['empate','empates']},
+{id:14,k:'pos',s:'FIFA',gm:'fifa',n:'Bapuleador',d:'Mayor goleada en un partido (mínimo 3 goles de diferencia)',v:p=>p.fifa.big,min:3,mt:2,u:['gol de diferencia','goles de diferencia']},
+{id:15,k:'pos',s:'BrawlHalla',gm:'brawl',n:'3 bombas Galati',d:'Más KOs en total',v:p=>p.brawl.ko,mt:2,u:['KO','KOs']},
+{id:16,k:'pos',s:'BrawlHalla',gm:'brawl',n:'Maravilla Martínez',d:'Más KOs por partida (mínimo 3 torneos jugados en BrawlHalla)',v:p=>p.tg.brawl>=3&&p.brawl.pj>0?p.brawl.ko/p.brawl.pj:null,dec:1,min:.01,mt:3,u:['KO por partida','KOs por partida']},
+{id:17,k:'pos',s:'BrawlHalla',gm:'brawl',n:'Si? Tyson?',d:'Más veces 1°',v:p=>p.brawl.first,mt:3,u:['vez 1°','veces 1°']},
+{id:18,k:'neg',s:'BrawlHalla',gm:'brawl',n:'Goy',d:'Más veces último (4°)',v:p=>p.brawl.last,mt:3,u:['vez último','veces último']},
+{id:19,k:'pos',s:'BrawlHalla',gm:'brawl',n:'Me Promiedos',d:'Mejor puesto promedio (mínimo 3 torneos jugados en BrawlHalla)',v:p=>p.tg.brawl>=3&&p.brawl.pj>0?p.brawl.pos/p.brawl.pj:null,best:'min',dec:1,mt:3,u:['puesto promedio','puesto promedio']},
+{id:20,k:'pos',s:'Clash Royale',gm:'cr',n:'Ponga huevo y vaya al frente',d:'Más coronas',v:p=>p.cr.gf,mt:2,u:['corona','coronas']},
+{id:21,k:'pos',s:'Clash Royale',gm:'cr',n:'Tu padre',d:'Más victorias en Clash Royale',v:p=>p.cr.w,mt:3,u:['victoria','victorias']},
+{id:22,k:'pos',s:'Clash Royale',gm:'cr',n:'Stephen Curry',d:'Más victorias por 3 a 0 (triple corona)',v:p=>p.cr.triple,mt:3,u:['triple','triples']},
+{id:23,k:'pos',s:'Rachas',n:'Tiranía total',d:'Más partidos ganados seguidos (mínimo 5)',v:p=>p.sw,min:5,u:['victoria seguida','victorias seguidas']},
+{id:24,k:'neg',s:'Rachas',n:'Ferreada histórica',d:'Más partidos perdidos seguidos (mínimo 5)',v:p=>p.sl,min:5,u:['derrota seguida','derrotas seguidas']},
+{id:25,k:'neg',s:'Anti-títulos',n:'Burro total',d:'Más derrotas en total',v:p=>p.loss,mt:3,u:['derrota','derrotas']},
+{id:26,k:'neg',s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,mt:3,u:['torneo','torneos']}];
 function calcTitles(){
   const P={};
-  S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,first:0,last:0,ko:0,pos:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
+  S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,first:0,last:0,ko:0,pos:0},tg:{fifa:0,brawl:0,cr:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
   for(const gm of GM){const G=S.games[gm];if(!G)continue;
-    for(const id in G.stats){const p=P[id],x=G.stats[id];if(p){p.c+=x.c||0;p.cp+=x.cp||0;p.d+=x.d||0;p.t+=x.t||0}}
+    for(const id in G.stats){const p=P[id],x=G.stats[id];if(p){p.c+=x.c||0;p.cp+=x.cp||0;p.d+=x.d||0;p.t+=x.t||0;p.tg[gm]+=x.t||0}}
     const ev=[];let k=0;
     G.tours.forEach(t=>t.matches.forEach(m=>{if(isDone(m,gm))ev.push({m,k:k++})}));
     ev.sort((a,b)=>(a.m.ts||0)-(b.m.ts||0)||a.k-b.k);
@@ -516,8 +525,10 @@ function calcTitles(){
       let sec=null;if(cup)sec=t.runner;else{const st=standings(t,gm);if(st.length>1)sec=st[1].p}
       if(sec&&P[sec])P[sec].second++;
       run=t.champ===last?run+1:1;last=t.champ;if(P[t.champ])P[t.champ].dyn=Math.max(P[t.champ].dyn,run)})}
+  const G3={fifa:0,brawl:0,cr:0};for(const gm of GM)if(S.games[gm])G3[gm]=S.games[gm].tours.filter(t=>t.done).length;G3.all=G3.fifa+G3.brawl+G3.cr;
   const aw={},by={};
   if(S.friends.length>=2)TITLES.forEach(T=>{
+    if(G3[T.gm||'all']<(T.mt||1))return;
     const el=[];S.friends.forEach(f=>{const x=T.v(P[f.id]);if(x!=null&&isFinite(x))el.push([f.id,Math.round(x*1e4)/1e4])});
     if(!el.length)return;const mn=T.best==='min';
     const best=mn?Math.min(...el.map(e=>e[1])):Math.max(...el.map(e=>e[1]));
@@ -527,7 +538,7 @@ function calcTitles(){
     if(el.length<2&&mn)return;
     let name=T.n;if(T.tiers)T.tiers.th.forEach((th,i)=>{if(best>=th)name=T.tiers.n[i]});
     aw[T.id]={t:T,holders:hs,value:best,name};hs.forEach(id=>(by[id]=by[id]||[]).push(aw[T.id]))});
-  return{P,aw,by}}
+  return{P,aw,by,gates:G3}}
 const KC={oro:{e:'🥇',c:'#ffd24a',t:'#fff3c4'},pos:{e:'🏅',c:'#3ddc84',t:'#b9f6ca'},neu:{e:'🎖️',c:'#8fb2f5',t:'#d7e6ff'},neg:{e:'🔻',c:'#ff5d73',t:'#ffc2cb'}};
 const KORD={oro:0,pos:1,neu:2,neg:3};
 const byKind=a=>a.slice().sort((x,y)=>KORD[x.t.k]-KORD[y.t.k]||x.t.id-y.t.id);
@@ -564,7 +575,7 @@ function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s)
 <div style="margin:0 0 6px">${Object.keys(KC).map(k=>`<span class="tchip ${k}">${KC[k].e} ${{oro:'Oro',pos:'Positivo',neu:'Neutro',neg:'Negativo'}[k]}</span>`).join('')}</div>
 <p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
 ${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
-   const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${fmtV(T,a.value)}</span></div>`:'<div class="note" style="margin:0">Vacante</div>'}</div>`}).join('')).join('')}`}
+   const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${fmtV(T,a.value)}</span></div>`:`<div class="note" style="margin:0">${(tc.gates[T.gm||'all']<(T.mt||1))?'🔒 Se activa tras '+T.mt+' torneos cerrados'+(T.gm?' de '+{fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'}[T.gm]:'')+' (van '+tc.gates[T.gm||'all']+')':'Vacante'}</div>`}</div>`}).join('')).join('')}`}
 function vitrina(){const tc=calcTitles();const list=S.friends;
   let id=v.vp;if(!tc.P[id]){const me=list.find(f=>USER&&f.uid===USER.uid);id=(me||list[0]||{}).id}
   const defs=`<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffd24a"/><stop offset="1" stop-color="#c98a00"/></linearGradient><linearGradient id="tsilv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#cfd7e6"/><stop offset="1" stop-color="#8793aa"/></linearGradient></defs></svg>`;
