@@ -300,6 +300,27 @@ body.glass .vtt b{text-shadow:0 1px 8px rgba(0,0,0,.65),0 0 2px rgba(0,0,0,.5)}b
 @media (prefers-reduced-motion:reduce){.fx,.avx[class*="fr-"]::after,.vfr{animation:none!important}}
 .vtt b .fx{font-size:inherit;display:inline;color:transparent;font-weight:inherit;letter-spacing:inherit;opacity:1}
 
+
+/* movimiento */
+@keyframes scrIn{from{opacity:0;transform:translateY(14px)}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-12px)}}
+@keyframes dropIn{0%{opacity:0;transform:translateY(-36px) scale(.9)}60%{opacity:1;transform:translateY(5px) scale(1.02)}100%{transform:none}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes mitIn{from{opacity:0;transform:translateX(10px)}}
+#app.enter>:not(.mbg):not(.mnu):not(.vsheet):not(.toast){animation:scrIn .36s cubic-bezier(.2,.8,.2,1) backwards}
+#app.enter>:nth-child(2){animation-delay:.04s}#app.enter>:nth-child(3){animation-delay:.08s}#app.enter>:nth-child(4){animation-delay:.12s}#app.enter>:nth-child(5){animation-delay:.16s}#app.enter>:nth-child(6){animation-delay:.2s}#app.enter>:nth-child(n+7){animation-delay:.24s}
+#app.enter table tr{animation:rowIn .34s cubic-bezier(.2,.8,.2,1) backwards}
+#app.enter table tr:nth-child(2){animation-delay:.12s}#app.enter table tr:nth-child(3){animation-delay:.16s}#app.enter table tr:nth-child(4){animation-delay:.2s}#app.enter table tr:nth-child(5){animation-delay:.24s}#app.enter table tr:nth-child(6){animation-delay:.28s}#app.enter table tr:nth-child(7){animation-delay:.32s}#app.enter table tr:nth-child(n+8){animation-delay:.36s}
+#app.enter .vtr{animation:dropIn .6s cubic-bezier(.3,1.2,.5,1) backwards}
+#app.enter .vtr:nth-child(2){animation-delay:.1s}#app.enter .vtr:nth-child(3){animation-delay:.2s}#app.enter .vtr:nth-child(n+4){animation-delay:.3s}
+.mbg{animation:fadeIn .2s ease-out}
+.mnu{transform-origin:top right}
+.mnu .mit{animation:mitIn .26s cubic-bezier(.2,.8,.2,1) backwards}
+.mnu .mit:nth-child(2){animation-delay:.03s}.mnu .mit:nth-child(3){animation-delay:.06s}.mnu .mit:nth-child(4){animation-delay:.09s}.mnu .mit:nth-child(5){animation-delay:.12s}.mnu .mit:nth-child(6){animation-delay:.15s}.mnu .mit:nth-child(n+7){animation-delay:.18s}
+button{transition:transform .14s cubic-bezier(.3,1.5,.5,1),filter .15s}
+button:not(:disabled):active{transform:scale(.955);filter:brightness(1.12)}
+.mnu .mit:active{transform:scale(.98)}
+@media (prefers-reduced-motion:reduce){#app.enter>*,#app.enter table tr,#app.enter .vtr,.mnu .mit,.mbg{animation:none!important}button:active{transform:none}}
 /* skins por juego */
 .avx.fr-cesped{--frb:repeating-conic-gradient(from 0deg,#1f8f3a 0 15deg,#58d36b 15deg 30deg);box-shadow:0 0 10px #3ddc8466}
 .avx.fr-lava{--frb:conic-gradient(from 0deg,#ff3b1f,#ffb02e,#7a0d00,#ff6a1a,#ff3b1f);box-shadow:0 0 12px #ff3b1f88}
@@ -331,7 +352,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · v';
+const APP_V='6-nov-2026 · w';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -1177,11 +1198,14 @@ function cosCheck(){if(!USER||!ready||!S||!ME||Date.now()-cosT<15000)return;cosT
   if(!Array.isArray(old)){if(ids.length)toast('🎉 Ya tenés '+ids.length+(ids.length===1?' cosmético desbloqueado':' cosméticos desbloqueados')+'. Mirá Mi perfil → Marcos y efectos.')}
   else{const nw=all.filter(a=>!old.includes(a[1]));if(nw.length)toast('🎉 ¡Desbloqueaste '+nw[0][0]+(nw.length>1?' y '+(nw.length-1)+' más':'')+'! Equipalo en Mi perfil.')}}
 
+let LSK='';
 function render(reset){RN++;
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'');
+  const A=$('app'),sk=(!authChecked||(USER&&!ready&&!loginErr))?'L':(!USER||!ready)?'G':!ME?'N':'A',ent=!!reset||sk!==LSK;LSK=sk;A.classList.remove('enter');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
+  if(ent&&sk!=='L'){void A.offsetWidth;A.classList.add('enter')}
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap,.vsw,.brs').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
