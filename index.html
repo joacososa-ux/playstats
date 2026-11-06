@@ -262,6 +262,9 @@ body.glass .pbn{height:136px}
 body.glass .pid{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.07));-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5),0 14px 34px -10px rgba(0,0,0,.6);border-radius:20px;padding:10px 14px;margin:-58px 10px 12px;align-items:center}
 body.glass .pid .avx{border-color:var(--ac,rgba(255,255,255,.65));background:rgba(0,0,0,.3)}
 @media (prefers-reduced-transparency:reduce){body.glass .vsheet,body.glass .brsh,body.glass .imgp,body.glass .mnu,body.glass .pid,body.glass #toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--panel)}}
+body.glass .vtt{background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.07));-webkit-backdrop-filter:blur(14px) saturate(1.7);backdrop-filter:blur(14px) saturate(1.7);border:1px solid rgba(255,255,255,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.1),0 8px 20px -6px rgba(0,0,0,.65)}
+body.glass .vtt b{text-shadow:0 1px 8px rgba(0,0,0,.65),0 0 2px rgba(0,0,0,.5)}body.glass .vtt span{color:#e7eaf2;text-shadow:0 1px 5px rgba(0,0,0,.7)}
+@media (prefers-reduced-transparency:reduce){body.glass .vtt{-webkit-backdrop-filter:none;backdrop-filter:none}}
 </style>
 </head>
 <body>
@@ -274,7 +277,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · q';
+const APP_V='6-nov-2026 · r';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -700,7 +703,7 @@ function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
     const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
     const trs=list.length?list.map((t,k)=>`<button class="vtr" onclick="trophyOpen('${id}',${k})" aria-label="${esc(t.name)}"><span class="vglow" style="background:radial-gradient(closest-side,${GACC[t.gm]}55,transparent)"></span><img src="trofeo-${t.type}-${t.gm}.webp" alt="" loading="lazy"><span class="vpl"><i>${esc(t.name)}</i></span><span class="vdt">${fDateS(t.ts)}</span></button>`).join(''):'<div class="vempty">Estante vacío<small>Todavía no ganó ningún torneo</small></div>';
     return `<section class="vcab" style="--led:${led}"><div class="vled"></div>
-<header class="vhd" style="${bn?`background:linear-gradient(#0007,#000b),url(${bn}) center/cover`:''}">${avHTML(id,42)}<div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
+<header class="vhd" style="${bn?`background:linear-gradient(${GLASS?'#0001,#0004':'#0007,#000b'}),url(${bn}) center/cover`:''}">${avHTML(id,42)}<div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
 <div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
   const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
   return top+`<div class="vsw" data-start="${st}">${cabs}</div>
