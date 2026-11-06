@@ -299,6 +299,19 @@ body.glass .vtt b{text-shadow:0 1px 8px rgba(0,0,0,.65),0 0 2px rgba(0,0,0,.5)}b
 .fx-ferreada{background-image:linear-gradient(90deg,#8190a8,#d5deee,#8190a8);animation-duration:6s}
 @media (prefers-reduced-motion:reduce){.fx,.avx[class*="fr-"]::after,.vfr{animation:none!important}}
 .vtt b .fx{font-size:inherit;display:inline;color:transparent;font-weight:inherit;letter-spacing:inherit;opacity:1}
+
+/* skins por juego */
+.avx.fr-cesped{--frb:repeating-conic-gradient(from 0deg,#1f8f3a 0 15deg,#58d36b 15deg 30deg);box-shadow:0 0 10px #3ddc8466}
+.avx.fr-lava{--frb:conic-gradient(from 0deg,#ff3b1f,#ffb02e,#7a0d00,#ff6a1a,#ff3b1f);box-shadow:0 0 12px #ff3b1f88}
+.avx.fr-lava::after,.avx.fr-electrico::after{animation:frspin 3s linear infinite}
+.avx.fr-electrico{--frb:conic-gradient(from 0deg,#0a4bff,#7df9ff,#0a4bff,#ffffff,#0a4bff);box-shadow:0 0 12px #3da5ff99}
+.cab-cesped{--frb:repeating-linear-gradient(90deg,#1f8f3a 0 14px,#58d36b 14px 28px);box-shadow:0 18px 34px -14px #000,0 0 22px #3ddc8444}
+.cab-lava{--frb:linear-gradient(110deg,#7a0d00,#ff3b1f,#ffb02e,#ff3b1f,#7a0d00);box-shadow:0 18px 34px -14px #000,0 0 26px #ff3b1f66}
+.cab-electrico{--frb:linear-gradient(110deg,#0a4bff,#7df9ff,#ffffff,#7df9ff,#0a4bff);box-shadow:0 18px 34px -14px #000,0 0 26px #3da5ff77}
+.cab-lava .vfr,.cab-electrico .vfr{animation:fxflow 3s linear infinite}
+.fx-cesped{background-image:linear-gradient(90deg,#1f9d3f,#b8ff9a,#1f9d3f);filter:drop-shadow(0 0 5px #3ddc8466)}
+.fx-lava{background-image:linear-gradient(90deg,#ff2d00,#ffd02e,#ff2d00);animation-duration:2.2s;filter:drop-shadow(0 0 6px #ff3b1faa)}
+.fx-electrico{background-image:linear-gradient(90deg,#1a5bff,#9ffcff,#ffffff,#1a5bff);animation-duration:1.8s;filter:drop-shadow(0 0 6px #3da5ffaa)}
 /* selector */
 .cosg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .cos{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--tx);text-align:center;min-height:0;font-weight:600}
@@ -318,7 +331,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · u';
+const APP_V='6-nov-2026 · v';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -647,7 +660,7 @@ const TITLES=[
 {id:26,k:'neg',s:'Anti-títulos',n:'El viewer del grupo',d:'Más torneos jugados sin ganar ninguno (mínimo 3)',v:p=>(p.c+p.cp===0&&p.t>=3)?p.t:null,mt:3,u:['torneo','torneos']}];
 function calcTitles(){
   const P={};
-  S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,first:0,last:0,ko:0,pos:0},tg:{fifa:0,brawl:0,cr:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
+  S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,w:0,first:0,last:0,ko:0,pos:0},tg:{fifa:0,brawl:0,cr:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
   for(const gm of GM){const G=S.games[gm];if(!G)continue;
     for(const id in G.stats){const p=P[id],x=G.stats[id];if(p){p.c+=x.c||0;p.cp+=x.cp||0;p.d+=x.d||0;p.t+=x.t||0;p.tg[gm]+=x.t||0}}
     const ev=[];let k=0;
@@ -664,6 +677,7 @@ function calcTitles(){
         if(ra==='W'){X[0].w++;X[1].l++;if(gm==='fifa')X[0].big=Math.max(X[0].big,m.sa-m.sb);else if(m.sa===3&&m.sb===0)X[0].triple++}
         else if(ra==='L'){X[1].w++;X[0].l++;if(gm==='fifa')X[1].big=Math.max(X[1].big,m.sb-m.sa);else if(m.sb===3&&m.sa===0)X[1].triple++}
         else if(gm==='fifa'){X[0].e++;X[1].e++}}
+      if(gm==='brawl'){if(ra==='W')A.brawl.w++;else B.brawl.w++}
       if(ra==='L')A.loss++;if(rb==='L')B.loss++;
       const v1=A.vs[B.id]||(A.vs[B.id]={w:0,l:0}),v2=B.vs[A.id]||(B.vs[A.id]={w:0,l:0});
       if(ra==='W'){v1.w++;v2.l++}else if(ra==='L'){v1.l++;v2.w++}
@@ -1112,11 +1126,17 @@ function lookCard(){const u=USER.uid,L=lookOf(u),mf=S&&S.friends.find(f=>f.uid==
 let RN=0,CC={n:-1},COSHIDE=false,cosT=0;try{COSHIDE=localStorage.getItem('ps_cos')==='0'}catch(e){}
 const cosCtx=()=>{if(CC.n!==RN)CC={n:RN,tc:calcTitles()};return CC.tc};
 const pjOf=p=>p.fifa.pj+p.cr.pj+p.brawl.pj,trOf=p=>p.trophies.length,ligOf=p=>p.trophies.filter(t=>t.type==='liga').length;
+const GSK=[
+ {id:'cesped',n:'Césped',gn:'FIFA',gm:'fifa',d:'1 liga o copa de FIFA, o 10 victorias'},
+ {id:'lava',n:'Lava',gn:'BrawlHalla',gm:'brawl',d:'1 liga o copa de BrawlHalla, o 10 victorias'},
+ {id:'electrico',n:'Eléctrico',gn:'Clash Royale',gm:'cr',d:'1 liga o copa de Clash Royale, o 10 victorias'}];
+const gTr=(p,gm)=>p.trophies.filter(t=>t.gm===gm).length,gW=(p,gm)=>gm==='brawl'?p.brawl.w:p[gm].w;
 const FRAMES=[
  {id:'bronce',n:'Bronce',d:'10 partidos jugados',need:10,u:'partidos',v:pjOf},
  {id:'plata',n:'Plata',d:'2 trofeos',need:2,u:'trofeos',v:trOf},
  {id:'oro',n:'Oro',d:'5 trofeos',need:5,u:'trofeos',v:trOf},
- {id:'leyenda',n:'Leyenda',d:'10 trofeos',need:10,u:'trofeos',v:trOf}];
+ {id:'leyenda',n:'Leyenda',d:'10 trofeos',need:10,u:'trofeos',v:trOf},
+ ...GSK.map(g=>({id:g.id,n:g.n+' · '+g.gn,d:g.d,gm:g.gm}))];
 const FXS=[
  {id:'brillo',n:'Brillo',d:'25 partidos jugados',need:25,u:'partidos',v:pjOf},
  {id:'degrade',n:'Degradé',d:'1 liga ganada',need:1,u:'ligas',v:ligOf},
@@ -1124,10 +1144,11 @@ const FXS=[
  {id:'arcoiris',n:'Arcoíris',d:'10 trofeos',need:10,u:'trofeos',v:trOf},
  {id:'tirania',n:'Tiranía',d:'Mientras tengas el título «Tiranía total»',title:23},
  {id:'vino',n:'Vino',d:'Mientras tengas el título «Traigan vino que copas sobran…»',title:2},
- {id:'ferreada',n:'Ferreada',d:'Mientras tengas el título «Ferreada histórica»',title:24}];
+ {id:'ferreada',n:'Ferreada',d:'Mientras tengas el título «Ferreada histórica»',title:24},
+ ...GSK.map(g=>({id:g.id,n:g.n+' · '+g.gn,d:g.d,gm:g.gm}))];
 const heldOf=(tc,fid)=>new Set((tc.by[fid]||[]).map(a=>a.t.id));
-function cosOk(fid,it,tc){const p=tc.P[fid];if(!p)return false;return it.title?heldOf(tc,fid).has(it.title):it.v(p)>=it.need}
-function cosProg(fid,it,tc){const p=tc.P[fid];if(!p)return'';if(it.title)return heldOf(tc,fid).has(it.title)?'':'Lo tenés si ganás ese título';return'Llevás '+Math.min(it.v(p),it.need)+' de '+it.need+' '+it.u}
+function cosOk(fid,it,tc){const p=tc.P[fid];if(!p)return false;if(it.gm)return gTr(p,it.gm)>=1||gW(p,it.gm)>=10;return it.title?heldOf(tc,fid).has(it.title):it.v(p)>=it.need}
+function cosProg(fid,it,tc){const p=tc.P[fid];if(!p)return'';if(it.gm)return'Llevás '+gTr(p,it.gm)+' de 1 trofeo o '+Math.min(gW(p,it.gm),10)+' de 10 victorias';if(it.title)return heldOf(tc,fid).has(it.title)?'':'Lo tenés si ganás ese título';return'Llevás '+Math.min(it.v(p),it.need)+' de '+it.need+' '+it.u}
 function cosOf(fid,kind){if(COSHIDE||!S)return'';const u=fUid(fid);if(!u)return'';const id=lookOf(u)[kind];if(!id)return'';
   const it=(kind==='fr'?FRAMES:FXS).find(x=>x.id===id);return it&&cosOk(fid,it,cosCtx())?id:''}
 function equip(kind,id){const me=S.friends.find(f=>f.uid===USER.uid);
@@ -1144,7 +1165,7 @@ function cosCard(){const me=S&&S.friends.find(f=>f.uid===USER.uid);
   return `<div class="card"><h3>Marcos y efectos</h3>
 <p class="note" style="margin:0 0 6px">Marco de foto y vitrina</p><div class="cosg">${none('fr')}${FRAMES.map(i=>item(i,'fr')).join('')}</div>
 <p class="note" style="margin:14px 0 6px">Efecto de nick</p><div class="cosg">${none('fx')}${FXS.map(i=>item(i,'fx')).join('')}</div>
-<p class="note" style="margin:12px 0 8px">Se desbloquean jugando en este grupo. Los demás solo ven los que realmente ganaste.</p>
+<p class="note" style="margin:12px 0 8px">Los de cada juego (Césped, Lava, Eléctrico) se desbloquean con 1 liga o copa de ese juego, o con 10 victorias. Se desbloquean jugando en este grupo. Los demás solo ven los que realmente ganaste.</p>
 <button class="ghost" onclick="setCos(${COSHIDE})">${COSHIDE?'👁 Mostrar marcos y efectos de todos':'🙈 Ocultar marcos y efectos de todos'}</button>
 <p class="note" style="margin:6px 0 0">Esta opción es solo para tu pantalla.</p></div>`}
 function cosCheck(){if(!USER||!ready||!S||!ME||Date.now()-cosT<15000)return;cosT=Date.now();
