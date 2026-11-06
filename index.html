@@ -269,6 +269,42 @@ body.glass .vtt b{text-shadow:0 1px 8px rgba(0,0,0,.65),0 0 2px rgba(0,0,0,.5)}b
 .mprof:active{background:rgba(255,255,255,.08)}.mprof b{font-size:17px}
 .tstrip{background:radial-gradient(100% 140% at 0% 0%,rgba(255,200,60,.2),transparent 65%),var(--panel);box-shadow:0 0 26px -10px rgba(255,200,60,.55)}
 .tstrip small{color:#ffd24a}
+
+/* marcos */
+.avx[class*="fr-"]{position:relative;border-width:0!important}
+.avx[class*="fr-"]::after{content:'';position:absolute;inset:0;border-radius:50%;pointer-events:none;background:var(--frb);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 3.5px),#000 calc(100% - 3px))}
+.avx.fr-bronce{--frb:conic-gradient(from 30deg,#8a4b1a,#e0a064,#8a4b1a,#c47a3a,#8a4b1a)}
+.avx.fr-plata{--frb:conic-gradient(from 30deg,#8e99ab,#f4f7fb,#8e99ab,#dfe6f0,#8e99ab)}
+.avx.fr-oro{--frb:conic-gradient(from 0deg,#a67300,#ffe27a,#a67300,#ffcc33,#a67300);box-shadow:0 0 10px #f5c54266}
+.avx.fr-oro::after{animation:frspin 5s linear infinite}
+.avx.fr-leyenda{--frb:conic-gradient(from 0deg,#ff5db1,#ffd24a,#3ddc84,#35e0d6,#8f6bff,#ff5db1);box-shadow:0 0 14px #b985ff88}
+.avx.fr-leyenda::after{animation:frspin 2.4s linear infinite}
+@keyframes frspin{to{transform:rotate(360deg)}}
+.vfr{position:absolute;inset:0;border-radius:18px;pointer-events:none;z-index:6;padding:4px;background:var(--frb);background-size:300% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.cab-bronce{--frb:linear-gradient(110deg,#8a4b1a,#e0a064,#8a4b1a,#c47a3a,#8a4b1a)}
+.cab-plata{--frb:linear-gradient(110deg,#8e99ab,#f4f7fb,#8e99ab,#dfe6f0,#8e99ab)}
+.cab-oro{--frb:linear-gradient(110deg,#a67300,#ffe27a,#a67300,#ffcc33,#a67300);box-shadow:0 18px 34px -14px #000,0 0 22px #f5c54255}
+.cab-leyenda{--frb:linear-gradient(110deg,#ff5db1,#ffd24a,#3ddc84,#35e0d6,#8f6bff,#ff5db1);box-shadow:0 18px 34px -14px #000,0 0 26px #b985ff66}
+.cab-oro .vfr,.cab-leyenda .vfr{animation:fxflow 4s linear infinite}
+/* efectos de nick */
+.fx{-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none;background-size:300% 100%;animation:fxflow 3.2s linear infinite}
+@keyframes fxflow{to{background-position:300% 0}}
+.fx-brillo{background-image:linear-gradient(100deg,#c9d1e2 0,#c9d1e2 40%,#fff 50%,#c9d1e2 60%,#c9d1e2 100%);animation-duration:2.6s}
+.fx-degrade{background-image:linear-gradient(90deg,#5aa9ff,#c86bff,#5aa9ff);animation:none;background-size:100% 100%}
+.fx-oroliq{background-image:linear-gradient(90deg,#b8860b,#ffe27a,#f5c542,#fff3b0,#b8860b);filter:drop-shadow(0 0 5px #f5c54277)}
+.fx-arcoiris{background-image:linear-gradient(90deg,#ff5d73,#ffd24a,#3ddc84,#35e0d6,#5aa9ff,#b985ff,#ff5d73);animation-duration:4s}
+.fx-tirania{background-image:linear-gradient(90deg,#ff2d2d,#ffb02e,#ff2d2d);animation-duration:1.5s;filter:drop-shadow(0 0 6px #ff3b1f99)}
+.fx-vino{background-image:linear-gradient(90deg,#8a1538,#e0407a,#8a1538);animation-duration:3.6s;filter:drop-shadow(0 0 5px #d1316a77)}
+.fx-ferreada{background-image:linear-gradient(90deg,#8190a8,#d5deee,#8190a8);animation-duration:6s}
+@media (prefers-reduced-motion:reduce){.fx,.avx[class*="fr-"]::after,.vfr{animation:none!important}}
+.vtt b .fx{font-size:inherit;display:inline;color:transparent;font-weight:inherit;letter-spacing:inherit;opacity:1}
+/* selector */
+.cosg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cos{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--tx);text-align:center;min-height:0;font-weight:600}
+.cos.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.cos .cpv{position:relative;display:grid;place-items:center;min-height:50px}
+.cos.lock .cpv{opacity:.45}.cos .lk{position:absolute;font-style:normal;font-size:18px;right:-14px;bottom:-4px}
+.cos small{font-size:11px;font-weight:400;color:var(--mut);line-height:1.25}
 </style>
 </head>
 <body>
@@ -281,7 +317,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · s';
+const APP_V='6-nov-2026 · t';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -374,7 +410,7 @@ function profile(){return `<div class="top"><button class="ghost" onclick="go({s
 <div class="card"><p class="note" style="margin:0">Tu nick</p><div class="disp" style="font-size:38px;color:var(--acc)">@${esc(ME.nick)}</div></div>
 ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}
 <div class="add"><input class="in" id="nk" placeholder="Nuevo nick" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" onclick="saveNick()">Cambiar</button></div>
-<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${lookCard()}${backupCard()}`}
+<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${lookCard()}${cosCard()}${backupCard()}`}
 function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
 function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
 const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
@@ -424,7 +460,8 @@ let v={s:'home',g:null,tab:'table',t:null,draft:{name:'',ps:[]}};
 const $=id=>document.getElementById(id);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const nm=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
+const nmp=id=>{const f=S.friends.find(f=>f.id===id);return f?esc((f.uid&&PROF[f.uid]&&PROF[f.uid].nick)||f.name):'?'};
+const nm=id=>{const n=nmp(id),fx=n==='?'?'':cosOf(id,'fx');return fx?`<span class="fx fx-${fx}">${n}</span>`:n};
 const stat=(g,p)=>{const o=S.games[g].stats;const x=o[p]||(o[p]={c:0,d:0,t:0,cp:0});if(x.cp===undefined)x.cp=0;return x};
 const dTxt=n=>n+(n===1?' descenso':' descensos');
 const copTxt=n=>n?' · '+n+(n===1?' copa':' copas'):'';
@@ -508,7 +545,7 @@ function delT2(rev){const t=curT(),G=S.games[v.g];
 /* vistas */
 function friendSelect(id,excl){
   const o=S.friends.filter(f=>!excl.includes(f.id));
-  return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${nm(f.id)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
+  return `<select class="in" id="${id}" style="flex:1">${o.length?o.map(f=>`<option value="${f.id}">${nmp(f.id)}</option>`).join(''):'<option value="">Sin amigos disponibles</option>'}</select>`}
 
 async function addGroup(){const n=$('gn').value.trim();if(!n)return;v.err='';
   try{const g=await createG(n);R.cur=g.id;setS();watch(g);saveUser();go({s:'home',g:null})}catch(e){v.err='No se pudo crear el grupo: '+(e.code||e.message);render()}}
@@ -707,7 +744,8 @@ function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
   const cabs=ord.map((id,pi)=>{const p=tc.P[id],list=trList(p),uu=fUid(id),LK=lookOf(uu),led=LK.color||ledOf(p);needBanner(uu);const bn=uu?BAN[uu]:'';
     const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
     const trs=list.length?list.map((t,k)=>`<button class="vtr" onclick="trophyOpen('${id}',${k})" aria-label="${esc(t.name)}"><span class="vglow" style="background:radial-gradient(closest-side,${GACC[t.gm]}55,transparent)"></span><img src="trofeo-${t.type}-${t.gm}.webp" alt="" loading="lazy"><span class="vpl"><i>${esc(t.name)}</i></span><span class="vdt">${fDateS(t.ts)}</span></button>`).join(''):'<div class="vempty">Estante vacío<small>Todavía no ganó ningún torneo</small></div>';
-    return `<section class="vcab" style="--led:${led}"><div class="vled"></div>
+    const cfr=cosOf(id,'fr');
+    return `<section class="vcab${cfr?' cab-'+cfr:''}" style="--led:${led}"><div class="vled"></div>${cfr?'<i class="vfr"></i>':''}
 <header class="vhd" style="${bn?`background:linear-gradient(${GLASS?'#0001,#0004':'#0007,#000b'}),url(${bn}) center/cover`:''}">${avHTML(id,42)}<div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
 <div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
   const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
@@ -825,7 +863,7 @@ function finishCup(){const t=curT();const c=$('cc').value,r=$('cr').value,d=$('c
   t.players.forEach(p=>stat(v.g,p).t++);stat(v.g,c).cp++;if(d)stat(v.g,d).d++;
   save();render()}
 function cupView(t){
-  const opts=ph=>`<option value="">${ph}</option>`+t.players.map(p=>`<option value="${p}">${nm(p)}</option>`).join('');
+  const opts=ph=>`<option value="">${ph}</option>`+t.players.map(p=>`<option value="${p}">${nmp(p)}</option>`).join('');
   const sub=[t.runner?'Subcampeón: '+nm(t.runner):'',t.desc?'Descenso: '+nm(t.desc):''].filter(Boolean).join('<br>')||'Copa cerrada';
   const del=v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Esta copa ya sumó una copa al campeón y un torneo jugado a cada participante.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo la copa</button><button class="danger" onclick="delT2(true)">Copa y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar copa</button>`;
   if(t.kind==='llaves')return bracketView(t,del);
@@ -1019,9 +1057,11 @@ async function loadLooks(){if(!USER||!R)return;const ids=[...new Set([USER.uid,.
   await Promise.all(ids.map(async id=>{try{LOOK[id]=(await FB.getLook(id))||{}}catch(e){}}))}
 function needBanner(u){if(!u||!lookOf(u).hb||BAN[u]!==undefined)return;BAN[u]=null;FB.getBanner(u).then(x=>{BAN[u]=x||'';softRender()}).catch(()=>{BAN[u]=''})}
 function meAv(sz){const L=lookOf(USER&&USER.uid);
-  return L.av?`<span class="avx" style="width:${sz}px;height:${sz}px${L.color?';--ac:'+L.color:''}"><img src="${L.av}" alt=""></span>`:`<div class="av" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.55)}px;flex:none${L.color?';background:'+L.color:''}">${esc(ME?ME.nick.charAt(0).toUpperCase():'?')}</div>`}
+  const mf=S&&S.friends.find(f=>f.uid===(USER&&USER.uid)),fr=mf?cosOf(mf.id,'fr'):'';
+  return L.av?`<span class="avx${fr?' fr-'+fr:''}" style="width:${sz}px;height:${sz}px${L.color?';--ac:'+L.color:''}"><img src="${L.av}" alt=""></span>`:`<div class="av" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.55)}px;flex:none${L.color?';background:'+L.color:''}">${esc(ME?ME.nick.charAt(0).toUpperCase():'?')}</div>`}
 function avHTML(id,sz){const L=lookOf(fUid(id)),ch=esc(rawName(id)).slice(0,1).toUpperCase();
-  return `<span class="avx" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.46)}px${L.color?';--ac:'+L.color:''}">${L.av?`<img src="${L.av}" alt="">`:ch}</span>`}
+  const fr=cosOf(id,'fr');
+  return `<span class="avx${fr?' fr-'+fr:''}" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.46)}px${L.color?';--ac:'+L.color:''}">${L.av?`<img src="${L.av}" alt="">`:ch}</span>`}
 const lookErr=e=>toast('No se pudo guardar'+(e&&e.code==='permission-denied'?' (faltan las reglas nuevas de Firebase).':'.'));
 async function setLookF(d){try{await FB.setLook(USER.uid,{...d,t:Date.now()});LOOK[USER.uid]={...lookOf(USER.uid),...d};render()}catch(e){lookErr(e)}}
 const setColor=c=>setLookF({color:c});
@@ -1067,7 +1107,55 @@ function lookCard(){const u=USER.uid,L=lookOf(u);needBanner(u);const ban=BAN[u];
 <input class="in" id="bio" maxlength="60" placeholder="Tu frase (opcional)" value="${esc(L.bio||'')}" onchange="setBio(this.value)">
 <p class="note">Fotos JPG, PNG o WebP: se achican solas. También podés usar GIFs animados: foto hasta 250 KB y portada hasta 600 KB.</p></div>`}
 
-function render(reset){
+/* ===== Marcos y efectos de nick ===== */
+let RN=0,CC={n:-1},COSHIDE=false,cosT=0;try{COSHIDE=localStorage.getItem('ps_cos')==='0'}catch(e){}
+const cosCtx=()=>{if(CC.n!==RN)CC={n:RN,tc:calcTitles()};return CC.tc};
+const pjOf=p=>p.fifa.pj+p.cr.pj+p.brawl.pj,trOf=p=>p.trophies.length,ligOf=p=>p.trophies.filter(t=>t.type==='liga').length;
+const FRAMES=[
+ {id:'bronce',n:'Bronce',d:'10 partidos jugados',need:10,u:'partidos',v:pjOf},
+ {id:'plata',n:'Plata',d:'2 trofeos',need:2,u:'trofeos',v:trOf},
+ {id:'oro',n:'Oro',d:'5 trofeos',need:5,u:'trofeos',v:trOf},
+ {id:'leyenda',n:'Leyenda',d:'10 trofeos',need:10,u:'trofeos',v:trOf}];
+const FXS=[
+ {id:'brillo',n:'Brillo',d:'25 partidos jugados',need:25,u:'partidos',v:pjOf},
+ {id:'degrade',n:'Degradé',d:'1 liga ganada',need:1,u:'ligas',v:ligOf},
+ {id:'oroliq',n:'Oro líquido',d:'3 trofeos',need:3,u:'trofeos',v:trOf},
+ {id:'arcoiris',n:'Arcoíris',d:'10 trofeos',need:10,u:'trofeos',v:trOf},
+ {id:'tirania',n:'Tiranía',d:'Mientras tengas el título «Tiranía total»',title:23},
+ {id:'vino',n:'Vino',d:'Mientras tengas el título «Traigan vino que copas sobran…»',title:2},
+ {id:'ferreada',n:'Ferreada',d:'Mientras tengas el título «Ferreada histórica»',title:24}];
+const heldOf=(tc,fid)=>new Set((tc.by[fid]||[]).map(a=>a.t.id));
+function cosOk(fid,it,tc){const p=tc.P[fid];if(!p)return false;return it.title?heldOf(tc,fid).has(it.title):it.v(p)>=it.need}
+function cosProg(fid,it,tc){const p=tc.P[fid];if(!p)return'';if(it.title)return heldOf(tc,fid).has(it.title)?'':'Lo tenés si ganás ese título';return'Llevás '+Math.min(it.v(p),it.need)+' de '+it.need+' '+it.u}
+function cosOf(fid,kind){if(COSHIDE||!S)return'';const u=fUid(fid);if(!u)return'';const id=lookOf(u)[kind];if(!id)return'';
+  const it=(kind==='fr'?FRAMES:FXS).find(x=>x.id===id);return it&&cosOk(fid,it,cosCtx())?id:''}
+function equip(kind,id){const me=S.friends.find(f=>f.uid===USER.uid);
+  if(id){const it=(kind==='fr'?FRAMES:FXS).find(x=>x.id===id);if(!it||!me||!cosOk(me.id,it,cosCtx())){toast('Todavía no lo desbloqueaste. '+(me&&it?cosProg(me.id,it,cosCtx()):''));return}}
+  setLookF({[kind]:id})}
+function setCos(show){COSHIDE=!show;try{localStorage.setItem('ps_cos',show?'1':'0')}catch(e){}render()}
+function cosCard(){const me=S&&S.friends.find(f=>f.uid===USER.uid);
+  if(!me)return `<div class="card"><h3>Marcos y efectos</h3><p class="note">Sumate como jugador al grupo (Jugadores → Agregar como jugador) para desbloquear marcos y efectos de nick.</p></div>`;
+  const tc=cosCtx(),L=lookOf(USER.uid),ini=L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase();
+  const item=(it,kind)=>{const ok=cosOk(me.id,it,tc),on=L[kind]===it.id;
+    const pv=kind==='fr'?`<span class="avx fr-${it.id}" style="width:46px;height:46px;font-size:20px;--ac:transparent">${ini}</span>`:`<b class="fx fx-${it.id}" style="font-size:19px">${esc(ME.nick)}</b>`;
+    return `<button class="cos ${on?'on':''} ${ok?'':'lock'}" onclick="equip('${kind}','${it.id}')"><span class="cpv">${pv}${ok?'':'<i class="lk">🔒</i>'}</span><span class="cn">${it.n}</span><small>${ok?it.d:(cosProg(me.id,it,tc)||it.d)}</small></button>`};
+  const none=kind=>`<button class="cos ${L[kind]?'':'on'}" onclick="equip('${kind}','')"><span class="cpv" style="font-size:22px">∅</span><span class="cn">Ninguno</span></button>`;
+  return `<div class="card"><h3>Marcos y efectos</h3>
+<p class="note" style="margin:0 0 6px">Marco de foto y vitrina</p><div class="cosg">${none('fr')}${FRAMES.map(i=>item(i,'fr')).join('')}</div>
+<p class="note" style="margin:14px 0 6px">Efecto de nick</p><div class="cosg">${none('fx')}${FXS.map(i=>item(i,'fx')).join('')}</div>
+<p class="note" style="margin:12px 0 8px">Se desbloquean jugando en este grupo. Los demás solo ven los que realmente ganaste.</p>
+<button class="ghost" onclick="setCos(${COSHIDE})">${COSHIDE?'👁 Mostrar marcos y efectos de todos':'🙈 Ocultar marcos y efectos de todos'}</button>
+<p class="note" style="margin:6px 0 0">Esta opción es solo para tu pantalla.</p></div>`}
+function cosCheck(){if(!USER||!ready||!S||!ME||Date.now()-cosT<15000)return;cosT=Date.now();
+  const me=S.friends.find(f=>f.uid===USER.uid);if(!me)return;const tc=cosCtx();
+  const all=[...FRAMES.map(x=>['Marco '+x.n,'fr:'+x.id,x]),...FXS.map(x=>['Efecto '+x.n,'fx:'+x.id,x])].filter(a=>cosOk(me.id,a[2],tc));
+  const ids=all.map(a=>a[1]),k='ps_unl_'+S.id+'_'+USER.uid;let old=null;
+  try{old=JSON.parse(localStorage.getItem(k))}catch(e){}
+  try{localStorage.setItem(k,JSON.stringify(ids))}catch(e){}
+  if(!Array.isArray(old)){if(ids.length)toast('🎉 Ya tenés '+ids.length+(ids.length===1?' cosmético desbloqueado':' cosméticos desbloqueados')+'. Mirá Mi perfil → Marcos y efectos.')}
+  else{const nw=all.filter(a=>!old.includes(a[1]));if(nw.length)toast('🎉 ¡Desbloqueaste '+nw[0][0]+(nw.length>1?' y '+(nw.length-1)+' más':'')+'! Equipalo en Mi perfil.')}}
+
+function render(reset){RN++;
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'');
@@ -1076,6 +1164,7 @@ function render(reset){
   if(!reset)document.querySelectorAll('.wrap,.vsw,.brs').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
   {const bs=document.querySelector('.brs');if(bs)brScroll(bs)}
+  try{cosCheck()}catch(e){}
   if(crWanted()&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
   if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
