@@ -121,6 +121,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .trd{font-size:11px;color:var(--mut);margin-top:2px}
 .trempty{color:var(--mut);font-size:13px;text-align:center;padding:16px 0 20px}
 .ld{min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ldv{position:relative;width:min(270px,72vw);aspect-ratio:1;display:grid;place-items:center;margin-top:-10px}
+.ldv img{position:absolute;transition:opacity .5s}
+.ldv video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;mix-blend-mode:screen;opacity:0;transition:opacity .6s;pointer-events:none;-webkit-mask-image:radial-gradient(closest-side,#000 62%,transparent 100%);mask-image:radial-gradient(closest-side,#000 62%,transparent 100%)}
+.ldv.on video{opacity:1}.ldv.on img{opacity:0}
+@media (prefers-reduced-motion:reduce){.ldv video{display:none}}
 .ld img{width:112px;height:112px;border-radius:26px;box-shadow:0 14px 44px -8px rgba(198,255,61,.45),0 0 0 1px rgba(255,255,255,.08);animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-9px) rotate(-3deg)}}
 .ldbar{width:150px;height:5px;border-radius:99px;background:var(--line);overflow:hidden;position:relative}
@@ -352,7 +357,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · w';
+const APP_V='6-nov-2026 · x';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -485,7 +490,7 @@ window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';v.menu=f
   v.s='home';render()};
 function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar sesión: '+(e.code||e.message);render()})}
 function doLogout(){FB.logout()}
-const loaderView=()=>`<div class="ld"><img src="icon-192.png" alt="" width="112" height="112"><h1 class="logo disp" style="margin:22px 0 14px">Play<b>Stats</b></h1><div class="ldbar"></div><div class="ldp"><span>Calentando los joysticks…</span><span>Contando campeonatos…</span><span>Buscando al rey de la tabla…</span><span>Afilando el cartel rojo…</span></div></div>`;
+const loaderView=()=>`<div class="ld"><div class="ldv"><img src="icon-192.png" alt="" width="112" height="112"><video src="carga.mp4" muted autoplay loop playsinline preload="auto" aria-hidden="true" tabindex="-1" onplaying="this.parentNode.classList.add('on')" onerror="this.remove()"></video></div><h1 class="logo disp" style="margin:0 0 14px">Play<b>Stats</b></h1><div class="ldbar"></div><div class="ldp"><span>Calentando los joysticks…</span><span>Contando campeonatos…</span><span>Buscando al rey de la tabla…</span><span>Afilando el cartel rojo…</span></div></div>`;
 function loginView(){return `<h1 class="logo disp">Play<b>Stats</b></h1><p class="sub">Iniciá sesión para guardar tus torneos en la nube.</p>${loginErr?`<p class="warn" style="margin-bottom:12px">${esc(loginErr)}</p>`:''}<button class="pri" style="width:100%;min-height:52px;font-size:17px" onclick="doLogin()">Entrar con Google</button>`}
 setTimeout(()=>{if(!authChecked){authChecked=true;loginErr='No se pudo conectar con Firebase. Revisá tu conexión y recargá.';render()}},8000);
 const score=s=>s.c*3-s.d*2+(s.cp||0)*2;
