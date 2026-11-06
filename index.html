@@ -245,7 +245,7 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .imged{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
 .imgp{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:92vh;overflow:auto}
 .imgp h3{margin:0 0 10px;text-align:center}.imgp canvas,.imgp .gifp{width:100%;border-radius:12px;touch-action:none;background:#000;display:block;cursor:grab}
-.imgp.av canvas,.imgp.av .gifp{width:220px;height:220px;border-radius:50%;margin:0 auto;object-fit:cover}.imgp .gifp{object-fit:cover}
+.imgp.iav canvas,.imgp.iav .gifp{width:220px;height:220px;border-radius:50%;margin:0 auto;object-fit:cover}.imgp .gifp{object-fit:cover}
 .imgp input[type=range]{width:100%;margin:12px 0 4px}
 </style>
 </head>
@@ -259,7 +259,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · o';
+const APP_V='6-nov-2026 · p';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -1014,7 +1014,7 @@ function exportCrop(c,max){for(const q of[.86,.78,.7,.6,.5]){let u=c.toDataURL('
 function openImgEd(kind,img,url,gif){
   const old=document.getElementById('imged');if(old)old.remove();
   const av=kind==='av',d=document.createElement('div');d.id='imged';d.className='imged';
-  d.innerHTML=`<div class="imgp ${kind}"><h3>${av?'Foto de perfil':'Portada'}</h3>${gif?`<img class="gifp" src="${url}" alt="">`:`<canvas width="${av?256:900}" height="${av?256:300}"></canvas>`}
+  d.innerHTML=`<div class="imgp i${kind}"><h3>${av?'Foto de perfil':'Portada'}</h3>${gif?`<img class="gifp" src="${url}" alt="">`:`<canvas width="${av?256:900}" height="${av?256:300}"></canvas>`}
 ${gif?'<p class="note" style="text-align:center">GIF animado: se guarda tal cual y se recorta al centro al mostrarse.</p>':'<input type="range" id="izm" min="1" max="3" step="0.02" value="1" aria-label="Zoom"><p class="note" style="text-align:center;margin:0">Arrastrá la imagen para encuadrar · deslizá para hacer zoom</p>'}
 <div class="row2" style="margin-top:14px"><button id="ican">Cancelar</button><button class="pri" id="isav">Guardar</button></div></div>`;
   document.body.appendChild(d);
