@@ -233,6 +233,20 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .glb{margin:14px 0 0;padding:12px;border:1px solid var(--acc);border-radius:14px;text-align:center}
 .glr{display:grid;grid-template-columns:1fr auto auto auto 1fr;gap:8px;align-items:center;font-size:16px;font-weight:600;margin-top:4px}
 .glr b{font-size:28px;color:var(--acc);line-height:1}.glr span:first-child{text-align:right}.glr span:last-child{text-align:left}.glr i{color:var(--mut);font-style:normal}
+.avx{display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;flex:none;vertical-align:middle;background:var(--panel2);color:var(--mut);font-weight:700;border:2px solid var(--ac,var(--line));box-sizing:border-box}
+.avx img{width:100%;height:100%;object-fit:cover;display:block}
+.pbn{position:relative;height:118px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,var(--ac,#2b4382),#0c0d11)}
+.card .pbn{margin-top:10px}
+.pbn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pid{display:flex;gap:12px;align-items:flex-end;padding:0 8px;margin:-34px 0 10px;position:relative}
+.pid .avx{border-width:4px;border-color:var(--ac,var(--bg));background:var(--bg)}
+.pid .nmb{padding-bottom:2px;min-width:0}.bio{margin:2px 0 0;font-size:13.5px;color:var(--mut)}
+.sws{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 12px}.sw{width:32px;height:32px;border-radius:50%;border:3px solid transparent;padding:0;min-height:0}.sw.on{border-color:#fff}
+.imged{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+.imgp{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:92vh;overflow:auto}
+.imgp h3{margin:0 0 10px;text-align:center}.imgp canvas,.imgp .gifp{width:100%;border-radius:12px;touch-action:none;background:#000;display:block;cursor:grab}
+.imgp.av canvas,.imgp.av .gifp{width:220px;height:220px;border-radius:50%;margin:0 auto;object-fit:cover}.imgp .gifp{object-fit:cover}
+.imgp input[type=range]{width:100%;margin:12px 0 4px}
 </style>
 </head>
 <body>
@@ -245,7 +259,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · n';
+const APP_V='6-nov-2026 · o';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -292,7 +306,8 @@ ${inc.length?`<div class="card"><h3>Solicitudes de amistad</h3>${inc.map(f=>row(
 <div class="card"><h3>Mis amigos</h3>${ok.length?ok.map(f=>{const u=o(f);return row(nk(u),(S.members.includes(u)?`<span class="tag">En ${esc(S.name)}</span>`:`<button onclick="invUser('${u}')">Invitar a ${esc(S.name)}</button>`)+`<button class="ghost danger" onclick="frAct('no','${f.id}')">Quitar</button>`)}).join(''):'<div class="empty" style="padding:10px">Todavía no tenés amigos. Buscá a alguien por su nick.</div>'}</div>
 ${out.length?`<div class="card"><h3>Solicitudes enviadas</h3>${out.map(f=>row(nk(o(f)),`<button class="ghost" onclick="frAct('no','${f.id}')">Cancelar</button>`)).join('')}</div>`:''}`}
 const memberNick=u=>(PROF[u]&&PROF[u].nick)||'usuario';
-async function loadProfiles(){const ids=[...new Set([...R.groups.flatMap(g=>g.members||[]),...FR.flatMap(f=>f.users)])].filter(id=>!PROF[id]);
+async function loadProfiles(){loadLooks().then(softRender).catch(()=>{});
+  const ids=[...new Set([...R.groups.flatMap(g=>g.members||[]),...FR.flatMap(f=>f.users)])].filter(id=>!PROF[id]);
   const out=await Promise.all(ids.map(id=>FB.getProfile(id).catch(()=>null)));ids.forEach((id,i)=>{if(out[i])PROF[id]=out[i]})}
 async function saveNick(){const raw=$('nk').value.trim();v.nickErr='';
   if(!/^[A-Za-z0-9_]{3,16}$/.test(raw)){v.nickErr='Usá de 3 a 16 caracteres: letras, números o guión bajo.';render();return}
@@ -337,7 +352,7 @@ function profile(){return `<div class="top"><button class="ghost" onclick="go({s
 <div class="card"><p class="note" style="margin:0">Tu nick</p><div class="disp" style="font-size:38px;color:var(--acc)">@${esc(ME.nick)}</div></div>
 ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:''}
 <div class="add"><input class="in" id="nk" placeholder="Nuevo nick" maxlength="16" autocapitalize="off" autocomplete="off" onkeydown="if(event.key==='Enter')saveNick()"><button class="pri" onclick="saveNick()">Cambiar</button></div>
-<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${backupCard()}`}
+<p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${lookCard()}${backupCard()}`}
 function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
 function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
 const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
@@ -362,7 +377,7 @@ function watch(g){if(subs[g.id])return;subs[g.id]=FB.watch(g.id,s=>{
   if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;normalize();ch=true}catch(e){}}
   if(ch)softRender()},()=>{dropLocal(g.id);afterDrop().then(softRender).catch(()=>{})})}
 async function loadAll(){
-  ME=await FB.getProfile(USER.uid);PROF={};if(ME)PROF[USER.uid]=ME;
+  ME=await FB.getProfile(USER.uid);PROF={};LOOK={};BAN={};if(ME)PROF[USER.uid]=ME;
   const ud=await FB.getUser(USER.uid);const gids=(ud&&ud.gids)||[];
   R={groups:[],cur:(ud&&ud.cur)||null};
   for(const id of gids){const d=await FB.getGroup(id);if(d)R.groups.push(fromDoc(d))}
@@ -372,7 +387,7 @@ async function loadAll(){
 }
 window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';v.menu=false;
   Object.values(subs).forEach(f=>f());subs={};stopSocial();
-  if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};v.s='home';render();return}
+  if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};LOOK={};BAN={};v.s='home';render();return}
   try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
   v.s='home';render()};
 function doLogin(){loginErr='';FB.login().catch(e=>{loginErr='No se pudo iniciar sesión: '+(e.code||e.message);render()})}
@@ -633,7 +648,8 @@ function playerProfile(){const tc=calcTitles();const p=tc.P[v.pp];
   const rv=Object.entries(p.vs);const cli=rv.filter(x=>x[1].w>0).sort((a,b)=>b[1].w-a[1].w)[0],bes=rv.filter(x=>x[1].l>0).sort((a,b)=>b[1].l-a[1].l)[0];
   const riv=(cli||bes)?sec('Rivalidades',(cli?row('Su cliente',esc(rawName(cli[0]))+' · le ganó '+cli[1].w+(cli[1].w===1?' vez':' veces')):'')+(bes?row('Su bestia negra',esc(rawName(bes[0]))+' · perdió '+bes[1].l+(bes[1].l===1?' vez':' veces')):'')):'';
   return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Jugador</h2></div>
-<div style="display:flex;align-items:center;gap:14px;margin-bottom:6px"><div class="av">${esc(rawName(p.id).charAt(0).toUpperCase())}</div><div><div class="disp" style="font-size:34px;line-height:1">${nm(p.id)}</div><div class="note" style="margin:4px 0 0">${f&&f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</div></div></div>
+${(()=>{const u=f&&f.uid,L=lookOf(u);needBanner(u);const ban=u?BAN[u]:'',ac=L.color?'--ac:'+L.color:'';
+  return `<div class="pbn" style="${ac}">${ban?`<img src="${ban}" alt="">`:''}</div><div class="pid" style="${ac}">${avHTML(p.id,78)}<div class="nmb"><div class="disp" style="font-size:34px;line-height:1">${nm(p.id)}</div><div class="note" style="margin:4px 0 0">${u?'@'+esc(memberNick(u)):'Invitado'}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>`})()}
 <div style="margin-bottom:12px">${ts.length?byKind(ts).map(a=>`<span class="tchip ${a.t.k}">${KC[a.t.k].e} ${esc(a.name)}</span>`).join(''):'<span class="note">Todavía no tiene títulos.</span>'}</div>
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">${box('Campeonatos',p.c)}${box('Copas',p.cp)}${box('Descensos',p.d)}${box('Torneos',p.t)}</div>
 ${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derrotas',p.sl))}${riv}
@@ -665,11 +681,11 @@ function trophySheet(tc){const [pid,ix]=v.vt.split(':');const p=tc.P[pid];if(!p)
 function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
   const top=`<div class="top"><button class="ghost" onclick="go({s:'${v.vb||'friends'}',vt:null})">←</button><h2>Vitrina</h2></div>`;
   if(!ord.length)return top+'<div class="empty">Todavía no hay jugadores en el grupo.</div>';
-  const cabs=ord.map((id,pi)=>{const p=tc.P[id],list=trList(p),led=ledOf(p);
+  const cabs=ord.map((id,pi)=>{const p=tc.P[id],list=trList(p),uu=fUid(id),LK=lookOf(uu),led=LK.color||ledOf(p);needBanner(uu);const bn=uu?BAN[uu]:'';
     const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
     const trs=list.length?list.map((t,k)=>`<button class="vtr" onclick="trophyOpen('${id}',${k})" aria-label="${esc(t.name)}"><span class="vglow" style="background:radial-gradient(closest-side,${GACC[t.gm]}55,transparent)"></span><img src="trofeo-${t.type}-${t.gm}.webp" alt="" loading="lazy"><span class="vpl"><i>${esc(t.name)}</i></span><span class="vdt">${fDateS(t.ts)}</span></button>`).join(''):'<div class="vempty">Estante vacío<small>Todavía no ganó ningún torneo</small></div>';
     return `<section class="vcab" style="--led:${led}"><div class="vled"></div>
-<header class="vhd"><div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
+<header class="vhd" style="${bn?`background:linear-gradient(#0007,#000b),url(${bn}) center/cover`:''}">${avHTML(id,42)}<div class="vtt"><b class="disp">${nm(id)}${me?' <small>(vos)</small>':''}</b><span>${nl} ${nl===1?'liga':'ligas'} · ${nc} ${nc===1?'copa':'copas'}</span></div></header>
 <div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
   const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
   return top+`<div class="vsw" data-start="${st}">${cabs}</div>
@@ -683,7 +699,7 @@ function friends(){
 <div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina',vb:'friends',vp:null,vsc:false,vt:null})">🏆 Vitrina</button><button onclick="go({s:'salon'})">🏅 Salón de títulos</button></div>
 ${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
 <div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
-${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span style="cursor:pointer;flex:1;min-width:140px" onclick="go({s:'pp',pp:'${f.id}'})"><b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span> <span style="color:var(--mut)">›</span>${titleLine(tc,f.id)}</span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span><div style="flex-basis:100%">${canEdit()?`<input class="in" style="min-height:38px;padding:6px 10px" placeholder="🏰 Tag de Clash Royale (opcional) #ABC123" value="${f.cr?'#'+f.cr:''}" onchange="setCrTag('${f.id}',this.value)">`:(f.cr?`<small style="color:var(--mut)">🏰 #${f.cr}</small>`:'')}</div></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
+${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span style="cursor:pointer;flex:1;min-width:140px" onclick="go({s:'pp',pp:'${f.id}'})">${avHTML(f.id,30)} <b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span> <span style="color:var(--mut)">›</span>${titleLine(tc,f.id)}</span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span><div style="flex-basis:100%">${canEdit()?`<input class="in" style="min-height:38px;padding:6px 10px" placeholder="🏰 Tag de Clash Royale (opcional) #ABC123" value="${f.cr?'#'+f.cr:''}" onchange="setCrTag('${f.id}',this.value)">`:(f.cr?`<small style="color:var(--mut)">🏰 #${f.cr}</small>`:'')}</div></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
 
 function h2hOpts(){const out=[],seen=new Set();
   if(v.hs==='all'){R.groups.forEach(g=>g.friends.forEach(f=>{if(f.uid&&!seen.has(f.uid)){seen.add(f.uid);out.push({k:'u:'+f.uid,l:esc('@'+memberNick(f.uid))})}}))}
@@ -933,7 +949,7 @@ function brCard(t,tie,cls){const gm=v.g,I=brTie(t,tie),two=I.L.length>1,ready=ti
     if(ready&&p){
       if(two)sc=I.L.some(m=>isDone(m,gm))?'<b>'+(gm==='brawl'?(isA?I.PA:I.PB):(isA?I.A:I.B))+'</b>':'·';
       else sc=I.L.map(m=>{if(!isDone(m,gm))return'·';const sw=m.a!==p;return gm==='brawl'?(sw?m.pb:m.pa)+'°':(sw?m.sb:m.sa)}).join(' ')}
-    return `<div class="btr ${win?'w':''} ${lose?'l':''}"><span class="bav">${p?esc(rawName(p)).slice(0,1).toUpperCase():''}</span><span class="bnm">${p?nm(p):`<span style="color:var(--mut);font-weight:400">${tie.bye?'Sin rival':'Por definirse'}</span>`}</span><span class="bsc">${sc}</span></div>`};
+    return `<div class="btr ${win?'w':''} ${lose?'l':''}">${p?avHTML(p,24):'<span class="avx" style="width:24px;height:24px"></span>'}<span class="bnm">${p?nm(p):`<span style="color:var(--mut);font-weight:400">${tie.bye?'Sin rival':'Por definirse'}</span>`}</span><span class="bsc">${sc}</span></div>`};
   const ft=tie.bye?'Pasa directo':I.manual?'Empate global · tocá para definir':'';
   return `<button class="bt ${cls||''} ${I.manual?'man':''}" ${ready?'':'disabled'} onclick="go({brt:'${tie.id}'})">${row(tie.a,true)}${row(tie.b,false)}${ft?`<div class="bft">${ft}</div>`:''}</button>`}
 function brSheet(t){const tie=t.br.ties[v.brt];if(!tie||!tie.a||!tie.b)return'';const I=brTie(t,tie);
@@ -970,6 +986,59 @@ ${t.done?throne(nm(t.champ),'Campeón de la copa',sub):''}
 <div class="brs" onscroll="brScroll(this)">${cols}</div>
 ${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${ready?'':'opacity:.5'}" ${ready?'':'disabled'} onclick="finishBr()">Cerrar copa y sumar a la tabla</button><p class="note">${ready?'El campeón suma una copa y todos un torneo jugado.':'Se cierra cuando estén definidos la final y el 3er puesto.'}</p>${played?'':'<button class="ghost" style="margin-bottom:10px" onclick="redrawBr()">🔀 Sortear de nuevo</button>'}`}
 ${del}${v.brt?brSheet(t):''}`}
+
+let LOOK={},BAN={},imgKind=null;
+const COLORS=['#c6ff3d','#2ee67a','#5aa9ff','#ff8a2b','#ff5d73','#b985ff','#ffd24a','#35e0d6'];
+const lookOf=u=>(u&&LOOK[u])||{};
+const fUid=id=>(S.friends.find(f=>f.id===id)||{}).uid;
+async function loadLooks(){if(!USER||!R)return;const ids=[...new Set([USER.uid,...R.groups.flatMap(g=>g.members||[])])].filter(id=>id&&LOOK[id]===undefined);
+  await Promise.all(ids.map(async id=>{try{LOOK[id]=(await FB.getLook(id))||{}}catch(e){}}))}
+function needBanner(u){if(!u||!lookOf(u).hb||BAN[u]!==undefined)return;BAN[u]=null;FB.getBanner(u).then(x=>{BAN[u]=x||'';softRender()}).catch(()=>{BAN[u]=''})}
+function avHTML(id,sz){const L=lookOf(fUid(id)),ch=esc(rawName(id)).slice(0,1).toUpperCase();
+  return `<span class="avx" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.46)}px${L.color?';--ac:'+L.color:''}">${L.av?`<img src="${L.av}" alt="">`:ch}</span>`}
+const lookErr=e=>toast('No se pudo guardar'+(e&&e.code==='permission-denied'?' (faltan las reglas nuevas de Firebase).':'.'));
+async function setLookF(d){try{await FB.setLook(USER.uid,{...d,t:Date.now()});LOOK[USER.uid]={...lookOf(USER.uid),...d};render()}catch(e){lookErr(e)}}
+const setColor=c=>setLookF({color:c});
+const setBio=t=>setLookF({bio:String(t||'').trim().slice(0,60)});
+async function clearImg(k){try{if(k==='av'){await setLookF({av:''})}else{await FB.delBanner(USER.uid);BAN[USER.uid]='';await setLookF({hb:0})}}catch(e){lookErr(e)}}
+function pickImg(k){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>onImg(i.files[0],k);i.click()}
+function onImg(file,kind){if(!file)return;const gif=file.type==='image/gif',lim=kind==='av'?250e3:600e3;
+  if(gif&&file.size>lim){toast('El GIF pesa '+Math.round(file.size/1024)+' KB y el máximo es '+Math.round(lim/1024)+' KB. Probá achicarlo.');return}
+  if(file.size>20e6){toast('La imagen es demasiado pesada.');return}
+  const r=new FileReader();r.onerror=()=>toast('No se pudo leer la imagen.');
+  r.onload=()=>{const img=new Image();img.onload=()=>openImgEd(kind,img,r.result,gif);img.onerror=()=>toast('No se pudo leer la imagen.');img.src=r.result};r.readAsDataURL(file)}
+function drawCrop(c,img,st){const W=c.width,H=c.height,sc=Math.max(W/img.width,H/img.height)*st.z,w=img.width*sc,h=img.height*sc,mx=(w-W)/2,my=(h-H)/2;
+  st.x=Math.max(-mx,Math.min(mx,st.x));st.y=Math.max(-my,Math.min(my,st.y));
+  const g=c.getContext('2d');g.fillStyle='#14161c';g.fillRect(0,0,W,H);g.drawImage(img,(W-w)/2+st.x,(H-h)/2+st.y,w,h)}
+function exportCrop(c,max){for(const q of[.86,.78,.7,.6,.5]){let u=c.toDataURL('image/webp',q);if(!u.startsWith('data:image/webp'))u=c.toDataURL('image/jpeg',q);if(u.length*.75<=max||q===.5)return u}}
+function openImgEd(kind,img,url,gif){
+  const old=document.getElementById('imged');if(old)old.remove();
+  const av=kind==='av',d=document.createElement('div');d.id='imged';d.className='imged';
+  d.innerHTML=`<div class="imgp ${kind}"><h3>${av?'Foto de perfil':'Portada'}</h3>${gif?`<img class="gifp" src="${url}" alt="">`:`<canvas width="${av?256:900}" height="${av?256:300}"></canvas>`}
+${gif?'<p class="note" style="text-align:center">GIF animado: se guarda tal cual y se recorta al centro al mostrarse.</p>':'<input type="range" id="izm" min="1" max="3" step="0.02" value="1" aria-label="Zoom"><p class="note" style="text-align:center;margin:0">Arrastrá la imagen para encuadrar · deslizá para hacer zoom</p>'}
+<div class="row2" style="margin-top:14px"><button id="ican">Cancelar</button><button class="pri" id="isav">Guardar</button></div></div>`;
+  document.body.appendChild(d);
+  const close=()=>d.remove();d.querySelector('#ican').onclick=close;
+  const st={x:0,y:0,z:1},c=d.querySelector('canvas');
+  if(c){drawCrop(c,img,st);const z=d.querySelector('#izm');z.oninput=()=>{st.z=+z.value;drawCrop(c,img,st)};
+    let drag=null;c.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY};c.setPointerCapture(e.pointerId)};
+    c.onpointermove=e=>{if(!drag)return;const k=c.width/c.clientWidth;st.x+=(e.clientX-drag.x)*k;st.y+=(e.clientY-drag.y)*k;drag={x:e.clientX,y:e.clientY};drawCrop(c,img,st)};
+    c.onpointerup=c.onpointercancel=()=>{drag=null}}
+  d.querySelector('#isav').onclick=async()=>{const b=d.querySelector('#isav');b.disabled=true;b.textContent='Guardando…';
+    try{const data=gif?url:exportCrop(c,av?60e3:150e3);
+      if(av){await FB.setLook(USER.uid,{av:data,t:Date.now()});LOOK[USER.uid]={...lookOf(USER.uid),av:data}}
+      else{await FB.setBanner(USER.uid,data);await FB.setLook(USER.uid,{hb:1,t:Date.now()});LOOK[USER.uid]={...lookOf(USER.uid),hb:1};BAN[USER.uid]=data}
+      close();render();toast('Listo, se actualizó tu '+(av?'foto':'portada'))}
+    catch(e){b.disabled=false;b.textContent='Guardar';lookErr(e)}}}
+function lookCard(){const u=USER.uid,L=lookOf(u);needBanner(u);const ban=BAN[u];
+  return `<div class="card"><h3>Mi apariencia</h3>
+<div class="pbn" style="${L.color?'--ac:'+L.color:''}">${ban?`<img src="${ban}" alt="">`:''}</div>
+<div class="pid" style="${L.color?'--ac:'+L.color:''}"><span class="avx" style="width:78px;height:78px;font-size:34px">${L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase()}</span><div class="nmb"><div class="disp" style="font-size:26px;line-height:1">@${esc(ME.nick)}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>
+<div class="row2"><button onclick="pickImg('av')">📷 Foto</button><button onclick="pickImg('bn')">🖼️ Portada</button></div>
+<div class="row2" style="margin-top:8px"><button class="ghost" onclick="clearImg('av')">Quitar foto</button><button class="ghost" onclick="clearImg('bn')">Quitar portada</button></div>
+<p class="note" style="margin:14px 0 0">Tu color</p><div class="sws">${COLORS.map(c=>`<button class="sw ${L.color===c?'on':''}" style="background:${c}" aria-label="Color ${c}" onclick="setColor('${c}')"></button>`).join('')}<button class="ghost" style="min-height:0;padding:4px 10px" onclick="setColor('')">Sin color</button></div>
+<input class="in" id="bio" maxlength="60" placeholder="Tu frase (opcional)" value="${esc(L.bio||'')}" onchange="setBio(this.value)">
+<p class="note">Fotos JPG, PNG o WebP: se achican solas. También podés usar GIFs animados: foto hasta 250 KB y portada hasta 600 KB.</p></div>`}
 
 function render(reset){
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
@@ -1020,6 +1089,11 @@ window.FB={
   joinGroup:(gid,uid)=>updateDoc(doc(fs,'groups',gid),{members:arrayUnion(uid)}),
   getUser:async uid=>{const s=await getDoc(doc(fs,'users',uid));return s.exists()?s.data():null},
   setUser:(uid,d)=>setDoc(doc(fs,'users',uid),d,{merge:true}),
+  getLook:async uid=>{const s=await getDoc(doc(fs,'looks',uid));return s.exists()?s.data():null},
+  setLook:(uid,d)=>setDoc(doc(fs,'looks',uid),d,{merge:true}),
+  getBanner:async uid=>{const s=await getDoc(doc(fs,'banners',uid));return s.exists()?s.data().img:null},
+  setBanner:(uid,img)=>setDoc(doc(fs,'banners',uid),{img,t:Date.now()}),
+  delBanner:uid=>deleteDoc(doc(fs,'banners',uid)),
   newId:()=>doc(collection(fs,'groups')).id,
   getGroup:async gid=>{try{const s=await getDoc(doc(fs,'groups',gid));return s.exists()?{id:s.id,...s.data()}:null}catch(e){if(e.code==='permission-denied')return null;throw e}},
   createGroup:async(gid,data,uid)=>{let code=genCode();await setDoc(doc(fs,'groups',gid),{...data,code});
