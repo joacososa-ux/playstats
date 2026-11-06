@@ -199,6 +199,30 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .stp button{width:36px;height:24px;min-height:0;padding:0;font-size:11px;line-height:1;border-radius:7px}
 .stp button:disabled{opacity:.4}.warn{color:var(--bad);font-size:13px}
 .syn{display:flex;flex-direction:column;gap:6px;margin:8px 0 12px}.syn small{color:var(--mut);font-size:12.5px;line-height:1.35}.aut{grid-column:1/-1;font-size:12px;color:var(--mut);text-align:center}.aut a{color:var(--acc);text-decoration:underline;cursor:pointer}
+.brt{margin-top:14px}
+.brs{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;position:relative;padding:4px 16px 14px;margin:0 -16px;scrollbar-width:none}
+.brs::-webkit-scrollbar{display:none}
+.brc{flex:0 0 78%;max-width:340px;scroll-snap-align:start}
+.brh{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 4px 8px}
+.brl{display:flex;flex-direction:column;justify-content:space-around}
+.bw{position:relative}
+.bt{display:block;width:100%;text-align:left;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;color:var(--tx);font:inherit}
+.bt:disabled{opacity:1;cursor:default}
+.bt.man{border-color:var(--acc)}
+.btr{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:8px 10px;min-height:42px}
+.btr+.btr{border-top:1px solid var(--line)}
+.bav{width:24px;height:24px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:12px;color:var(--mut)}
+.bnm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bsc{font-variant-numeric:tabular-nums;color:var(--mut);font-size:14px;white-space:nowrap}
+.btr.w{background:linear-gradient(90deg,transparent,#ffffff12)}.btr.w .bsc{color:var(--tx)}.btr.w .bsc b{color:var(--acc)}
+.btr.l{opacity:.5}
+.bft{font-size:11.5px;color:var(--mut);padding:4px 10px 7px;border-top:1px solid var(--line)}
+.bt.man .bft{color:var(--acc)}
+.bw.d::after,.bw.u::after{content:'';position:absolute;right:-17px;width:16px;border:2px solid var(--line);border-left:0;pointer-events:none}
+.bw.d::after{top:50%;height:calc(var(--seg)/2);border-bottom:0;border-radius:0 8px 0 0}
+.bw.u::after{bottom:50%;height:calc(var(--seg)/2);border-top:0;border-radius:0 0 8px 0}
+.bw.inn::before{content:'';position:absolute;left:-17px;width:16px;top:50%;border-top:2px solid var(--line)}
+.brsh{max-height:82vh;overflow-y:auto;text-align:left}.brsh h3{text-align:center}.brsh .note{text-align:center}
 </style>
 </head>
 <body>
@@ -211,7 +235,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · l';
+const APP_V='6-nov-2026 · m';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -402,9 +426,11 @@ function addDraft(){const id=$('dsel').value;if(id&&!v.draft.ps.includes(id)){v.
 function rmDraft(id){v.draft.ps=v.draft.ps.filter(p=>p!==id);render()}
 function setMode(m){v.draft.mode=m;render()}
 function setLegs(n){v.draft.legs=n;render()}
+function setKind(k){v.draft.kind=k;render()}
 function createT(){const d=v.draft;if(d.ps.length<2)return;const cup=d.mode==='copa',dbl=!cup&&d.legs===2;
   const G=S.games[v.g];
-  const t={id:uid(),name:d.name.trim()||((cup?'Copa ':'Torneo ')+(G.tours.length+1)),players:d.ps.slice(),matches:cup?[]:rounds(d.ps,dbl),mode:cup?'copa':'liga',legs:dbl?2:1,done:false,champ:null,cts:Date.now()};
+  const t={id:uid(),name:d.name.trim()||((cup?'Copa ':'Torneo ')+(G.tours.length+1)),players:d.ps.slice(),matches:cup?[]:rounds(d.ps,dbl),mode:cup?'copa':'liga',legs:dbl||(cup&&d.kind==='llaves'&&d.legs===2)?2:1,done:false,champ:null,cts:Date.now()};
+  if(cup&&d.kind==='llaves'){const B=buildBracket(d.ps,t.legs);t.kind='llaves';t.br=B.br;t.matches=B.matches;brResolve(t)}
   G.tours.push(t);d.ps.forEach(p=>{if(!G.players.includes(p))G.players.push(p)});
   v.draft={name:'',ps:[]};save();go({s:'tour',t:t.id})}
 function curT(){return S.games[v.g].tours.find(t=>t.id===v.t)}
@@ -662,8 +688,8 @@ function h2hCalc(ka,kb){
       const k1=key(g,m.a),k2=key(g,m.b);let sw;
       if(k1===ka&&k2===kb)sw=false;else if(k1===kb&&k2===ka)sw=true;else return;
       if(!isDone(m,gm))return;
-      if(gm!=='brawl'){const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res[gm];r.pj++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,ts:m.ts||0})}
-      else{const x=sw?m.pb:m.pa,y=sw?m.pa:m.pb,A=sw?m.kb:m.ka,B=sw?m.ka:m.kb,r=res.brawl;r.pj++;r.ka+=A;r.kb+=B;if(x<y)r.a++;else r.b++;res.list.push({gm,g:g.name,t:t.name,r:m.r,x,y,A,B,ts:m.ts||0})}
+      if(gm!=='brawl'){const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res[gm];r.pj++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;res.list.push({gm,g:g.name,t:t.name,r:m.r,rn:m.rn,x,y,ts:m.ts||0})}
+      else{const x=sw?m.pb:m.pa,y=sw?m.pa:m.pb,A=sw?m.kb:m.ka,B=sw?m.ka:m.kb,r=res.brawl;r.pj++;r.ka+=A;r.kb+=B;if(x<y)r.a++;else r.b++;res.list.push({gm,g:g.name,t:t.name,r:m.r,rn:m.rn,x,y,A,B,ts:m.ts||0})}
     });
     if(t.done&&t.mode!=='copa'){const st=standings(t,gm);const ia=st.findIndex(s=>key(g,s.p)===ka),ib=st.findIndex(s=>key(g,s.p)===kb);
       if(ia>=0&&ib>=0){res.tor.n++;if(ia<ib)res.tor.a++;else res.tor.b++}}
@@ -703,7 +729,7 @@ ${pj?`<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;mar
     if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('En Clash Royale no hay empates.'+(c.lib?' Incluye '+c.lib+(c.lib===1?' amistosa':' amistosas')+' fuera de torneos.':'')));
     if(b.pj)det+=card('⚔️ BrawlHalla · '+pl(b.pj),cmp(b.a,'Victorias',b.b)+cmp(b.ka,'KOs',b.kb),nt('Gana quien termina mejor ubicado en cada partida.'));
     if(r.tor.n)det+=card('🏆 Torneos terminados · '+r.tor.n,cmp(r.tor.a,'Terminó mejor ubicado',r.tor.b),nt('Cuenta los torneos de liga ya cerrados en los que jugaron los dos.'));
-    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)}${m.free?'':' · Fecha '+m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b>${m.free&&m.own&&canEdit()?` <a class="aut" style="display:inline;margin-left:6px" onclick="delFree('${m.k}')">quitar</a>`:''}</div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
+    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)}${m.free?'':' · '+(m.rn||'Fecha '+m.r)}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b>${m.free&&m.own&&canEdit()?` <a class="aut" style="display:inline;margin-left:6px" onclick="delFree('${m.k}')">quitar</a>`:''}</div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
   return top+`<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0">${sel(ka,'ha')}<b class="disp" style="font-size:22px;color:var(--mut)">VS</b>${sel(kb,'hb')}</div>${sc}${det}
 <p class="note">${v.hs==='all'?'En el historial global solo cuentan jugadores con cuenta vinculada. Los invitados aparecen solo dentro de su grupo.':'Cuenta solo lo jugado en este grupo.'} En BrawlHalla gana quien termina mejor ubicado en cada partido.</p>`}
 function supreme(){
@@ -729,7 +755,7 @@ ${wid?shame(nm(wid),'Mucho descenso, poca copa…',dTxt(stat(v.g,wid).d)+' · '+
     const d=v.draft;
     body=`<div class="card"><h3>Nuevo torneo de ${M.n}</h3>
 <div class="tabs" style="margin:10px 0 0"><button class="${d.mode==='copa'?'':'on'}" onclick="setMode('liga')">Liga</button><button class="${d.mode==='copa'?'on':''}" onclick="setMode('copa')">Copa</button></div>
-${d.mode==='copa'?'<p class="note" style="margin:8px 0 0">Copa simple: después cargás el campeón y el subcampeón.</p>':`<div class="tabs" style="margin:10px 0 0"><button class="${d.legs===2?'':'on'}" onclick="setLegs(1)">Solo ida</button><button class="${d.legs===2?'on':''}" onclick="setLegs(2)">Ida y vuelta</button></div><p class="note" style="margin:8px 0 0">${d.legs===2?'Cada cruce se juega dos veces: más fechas y más chances de bajar al de arriba.':'Cada cruce se juega una sola vez.'}</p>`}
+${d.mode==='copa'?`<div class="tabs" style="margin:10px 0 0"><button class="${d.kind==='llaves'?'':'on'}" onclick="setKind('simple')">Copa simple</button><button class="${d.kind==='llaves'?'on':''}" onclick="setKind('llaves')">Con llaves</button></div>${d.kind==='llaves'?`<div class="tabs" style="margin:10px 0 0"><button class="${d.legs===2?'':'on'}" onclick="setLegs(1)">Partido único</button><button class="${d.legs===2?'on':''}" onclick="setLegs(2)">Ida y vuelta</button></div><p class="note" style="margin:8px 0 0">Sorteo al azar de los cruces. Hay partido por el 3er puesto y la final es siempre partido único.</p>`:'<p class="note" style="margin:8px 0 0">Copa simple: después cargás el campeón y el subcampeón.</p>'}`:`<div class="tabs" style="margin:10px 0 0"><button class="${d.legs===2?'':'on'}" onclick="setLegs(1)">Solo ida</button><button class="${d.legs===2?'on':''}" onclick="setLegs(2)">Ida y vuelta</button></div><p class="note" style="margin:8px 0 0">${d.legs===2?'Cada cruce se juega dos veces: más fechas y más chances de bajar al de arriba.':'Cada cruce se juega una sola vez.'}</p>`}
 <input class="in" style="margin:10px 0" placeholder="Nombre (ej. Liga de octubre)" value="${esc(d.name)}" oninput="v.draft.name=this.value">
 <div class="add">${friendSelect('dsel',d.ps)}<button onclick="addDraft()">Sumar</button></div>
 <div class="chips">${d.ps.length?d.ps.map(p=>`<span class="chip">${nm(p)}<button onclick="rmDraft('${p}')" aria-label="Quitar">✕</button></span>`).join(''):'<span class="note">Elegí al menos 2 amigos de la lista.</span>'}</div>
@@ -753,6 +779,7 @@ function cupView(t){
   const opts=ph=>`<option value="">${ph}</option>`+t.players.map(p=>`<option value="${p}">${nm(p)}</option>`).join('');
   const sub=[t.runner?'Subcampeón: '+nm(t.runner):'',t.desc?'Descenso: '+nm(t.desc):''].filter(Boolean).join('<br>')||'Copa cerrada';
   const del=v.cd?`<div class="card"><b>¿Eliminar "${esc(t.name)}"?</b><p class="note">${t.done?'Esta copa ya sumó una copa al campeón y un torneo jugado a cada participante.':'Todavía no sumó nada a las tablas.'}</p><div class="row2">${t.done?`<button class="danger" onclick="delT2(false)">Solo la copa</button><button class="danger" onclick="delT2(true)">Copa y sus datos</button>`:`<button class="danger" onclick="delT2(false)">Eliminar</button>`}</div><button class="ghost" style="margin-top:8px" onclick="go({cd:false})">Cancelar</button></div>`:`<button class="ghost danger" onclick="go({cd:true})">Eliminar copa</button>`;
+  if(t.kind==='llaves')return bracketView(t,del);
   return `<div class="top"><button class="ghost" onclick="go({s:'game',tab:'tours'})">←</button><h2>🏅 ${esc(t.name)}</h2></div>
 ${t.done?throne(nm(t.champ),'Campeón de la copa',sub):`<div class="card"><h3>Cerrar la copa</h3><p class="note">Jugaron la copa por fuera de la app. Cargá el resultado final.</p>
 <label class="note" style="display:block">Campeón</label><select class="in" id="cc">${opts('Elegí al campeón')}</select>
@@ -847,18 +874,103 @@ async function crSync(manual){
 }
 setInterval(()=>{if(!document.hidden&&crWanted())crSync(false)},60000);
 
+
+const BR_NAMES={1:'Final',2:'Semifinales',4:'Cuartos',8:'Octavos',16:'Dieciseisavos'};
+function brSeeds(n){let a=[1,2];while(a.length<n){const m=a.length*2+1;a=a.flatMap(x=>[x,m-x])}return a}
+function buildBracket(ps,legs){
+  const seeds=ps.slice().sort(()=>Math.random()-.5),n=seeds.length;let size=2;while(size<n)size*=2;
+  const ord=brSeeds(size),ties={},order=[],matches=[],rounds=[];let prev=[],semis=[],R=0;
+  for(let k=1,cnt=size/2;cnt>=1;k++,cnt/=2){
+    const cur=[],rn=BR_NAMES[cnt]||('Ronda '+k),nl=cnt===1?1:legs;R=k;
+    for(let i=0;i<cnt;i++){
+      const id='r'+k+'t'+(i+1);let a=null,b=null,from=null,bye=false;
+      if(k===1){a=seeds[ord[2*i]-1]||null;b=seeds[ord[2*i+1]-1]||null;if(!a||!b){bye=true;a=a||b;b=null}}
+      else from=[prev[2*i],prev[2*i+1]];
+      ties[id]={id,rd:k,rn,a,b,from,bye};order.push(id);cur.push(id);
+      if(!bye)for(let l=0;l<nl;l++){const sw=l%2===1;matches.push({r:k,rn,tie:id,leg:l+1,a:sw?b:a,b:sw?a:b,sa:null,sb:null,pa:null,pb:null,ka:0,kb:0})}
+    }
+    rounds.push({rn,ids:cur});if(cnt===2)semis=cur;prev=cur}
+  let third=null;
+  if(n>=4&&semis.length===2){third='3p';ties[third]={id:third,rd:R,rn:'3er puesto',a:null,b:null,from:semis,bye:false,third:true};order.push(third);
+    matches.push({r:R,rn:'3er puesto',tie:third,leg:1,a:null,b:null,sa:null,sb:null,pa:null,pb:null,ka:0,kb:0})}
+  return{br:{ties,order,rounds,final:prev[0],third},matches}}
+function brTie(t,tie){const gm=v.g,L=t.matches.filter(m=>m.tie===tie.id);
+  if(tie.bye)return{w:tie.a,l:null,done:true,L:[]};
+  if(!tie.a||!tie.b)return{w:null,l:null,done:false,L};
+  const dn=L.length>0&&L.every(m=>isDone(m,gm));let A=0,B=0,KA=0,KB=0;
+  L.forEach(m=>{const sw=m.a!==tie.a;if(!isDone(m,gm))return;
+    if(gm==='brawl'){A+=sw?m.pb:m.pa;B+=sw?m.pa:m.pb;KA+=sw?m.kb:m.ka;KB+=sw?m.ka:m.kb}else{A+=sw?m.sb:m.sa;B+=sw?m.sa:m.sb}});
+  if(!dn)return{w:null,l:null,done:false,L,A,B};
+  let w=null;
+  if(gm==='brawl'){if(A<B)w=tie.a;else if(A>B)w=tie.b;else if(KA>KB)w=tie.a;else if(KA<KB)w=tie.b}
+  else{if(A>B)w=tie.a;else if(A<B)w=tie.b}
+  let manual=false;if(!w){if(tie.w&&(tie.w===tie.a||tie.w===tie.b))w=tie.w;else manual=true}
+  return{w,l:w?(w===tie.a?tie.b:tie.a):null,done:!!w,manual,L,A,B}}
+function brResolve(t){let ch=false;const B=t.br;
+  B.order.forEach(id=>{const tie=B.ties[id];if(!tie.from)return;
+    const [x,y]=tie.from.map(f=>{const r=brTie(t,B.ties[f]);return (tie.third?r.l:r.w)||null});
+    if(tie.a!==x||tie.b!==y){tie.a=x;tie.b=y;delete tie.w;ch=true;
+      t.matches.filter(m=>m.tie===id).forEach((m,k)=>{const o=k%2===0;m.a=o?x:y;m.b=o?y:x;m.sa=null;m.sb=null;m.pa=null;m.pb=null;m.ka=0;m.kb=0;delete m.ts;delete m.auto})}});
+  return ch}
+const brLbl=x=>BR_NAMES[x]||'';
+function matchRow(m,i,t,dn){const cr=v.g==='cr';
+  return `<div class="match ${dn?'done':''}"><span class="n ${dn&&m.sa>m.sb?'w':''}">${nm(m.a)}</span>
+<input type="number" inputmode="numeric" min="0" ${cr?'max="3"':''} aria-label="local" value="${m.sa===null?'':m.sa}" ${t.done?'disabled':''} onchange="setScore(${i},'sa',this.value)"><span style="text-align:center">-</span>
+<input type="number" inputmode="numeric" min="0" ${cr?'max="3"':''} aria-label="visitante" value="${m.sb===null?'':m.sb}" ${t.done?'disabled':''} onchange="setScore(${i},'sb',this.value)"><span class="n ${dn&&m.sb>m.sa?'w':''}">${nm(m.b)}</span>${cr&&m.sa!==null&&m.sa===m.sb?'<div class="warn" style="grid-column:1/-1;text-align:center">En Clash Royale no hay empates: tiene que haber un ganador.</div>':''}${m.auto&&!t.done&&canEdit()?`<div class="aut">⚡ Cargado automáticamente · <a onclick="undoAuto(${i})">Deshacer</a></div>`:''}</div>`}
+function brCard(t,tie){const gm=v.g,I=brTie(t,tie),two=I.L.length>1,ready=tie.a&&tie.b&&!tie.bye;
+  const row=(p,isA)=>{const win=I.w&&p&&I.w===p,lose=I.w&&p&&I.w!==p;let sc='';
+    if(ready&&p){sc=I.L.map(m=>{if(!isDone(m,gm))return'·';const sw=m.a!==p;return gm==='brawl'?(sw?m.pb:m.pa)+'°':(sw?m.sb:m.sa)}).join(' ');
+      if(two&&I.done&&gm!=='brawl')sc+=' <b>'+(isA?I.A:I.B)+'</b>'}
+    return `<div class="btr ${win?'w':''} ${lose?'l':''}"><span class="bav">${p?esc(rawName(p)).slice(0,1).toUpperCase():''}</span><span class="bnm">${p?nm(p):`<span style="color:var(--mut);font-weight:400">${tie.bye?'Sin rival':'Por definirse'}</span>`}</span><span class="bsc">${sc}</span></div>`};
+  const ft=tie.bye?'Pasa directo':I.manual?'Empate global · tocá para definir':'';
+  return `<button class="bt ${I.manual?'man':''}" ${ready?'':'disabled'} onclick="go({brt:'${tie.id}'})">${row(tie.a,true)}${row(tie.b,false)}${ft?`<div class="bft">${ft}</div>`:''}</button>`}
+function brSheet(t){const tie=t.br.ties[v.brt];if(!tie||!tie.a||!tie.b)return'';const I=brTie(t,tie);
+  const legs=I.L.map(m=>{const i=t.matches.indexOf(m),dn=isDone(m,v.g);
+    const lab=I.L.length>1?`<div class="note" style="margin:10px 0 2px">${m.leg===1?'Ida':'Vuelta'}</div>`:'';
+    return lab+(v.g==='brawl'?brawlMatch(m,i,t,dn):matchRow(m,i,t,dn))}).join('');
+  const man=I.manual&&!t.done?`<div class="card" style="margin-top:12px"><b>Empate global</b><p class="note" style="text-align:left">Definan quién avanza (penales, desempate…).</p><div class="row2"><button onclick="brPick('${tie.id}','${tie.a}')">Avanza ${nm(tie.a)}</button><button onclick="brPick('${tie.id}','${tie.b}')">Avanza ${nm(tie.b)}</button></div></div>`:'';
+  return `<div class="mbg" onclick="go({brt:null})"></div><div class="vsheet brsh" role="dialog"><h3 style="margin:0 0 4px">${esc(tie.rn)}</h3><div class="note" style="margin:0 0 6px">${nm(tie.a)} vs ${nm(tie.b)}${I.L.length>1?' · ida y vuelta':''}</div>${legs}${man}<button class="pri" style="width:100%;margin-top:14px" onclick="go({brt:null})">Listo</button></div>`}
+function brPick(id,p){const tie=curT().br.ties[id];tie.w=p;save();render()}
+function redrawBr(){const t=curT();if(t.done||t.matches.some(m=>isDone(m,v.g)))return;
+  const B=buildBracket(t.players,t.legs===2?2:1);t.br=B.br;t.matches=B.matches;brResolve(t);save();render()}
+function finishBr(){const t=curT(),B=t.br,F=brTie(t,B.ties[B.final]),T=B.third?brTie(t,B.ties[B.third]):null;
+  if(!F.w||(T&&!T.w))return;
+  t.done=true;t.champ=F.w;t.runner=F.l;t.third=T?T.w:null;t.ts=Date.now();
+  t.players.forEach(p=>stat(v.g,p).t++);stat(v.g,F.w).cp++;save();render()}
+function brGo(i){const e=document.querySelector('.brs');if(e&&e.children[i])e.scrollTo({left:e.children[i].offsetLeft-e.children[0].offsetLeft,behavior:'smooth'})}
+function brScroll(e){const c=e.children[0];if(!c)return;const i=Math.round(e.scrollLeft/(c.offsetWidth+16));document.querySelectorAll('.brt button').forEach((b,k)=>b.classList.toggle('on',k===i))}
+function bracketView(t,del){
+  const B=t.br;if(brResolve(t))save();
+  const n0=B.rounds[0].ids.length,H=n0*112,last=B.rounds.length-1;
+  const cols=B.rounds.map((rd,ri)=>{const seg=H/rd.ids.length;
+    const ties=rd.ids.map((id,i)=>`<div class="bw ${ri<last?(i%2?'u':'d'):''} ${ri>0?'inn':''}">${brCard(t,B.ties[id])}</div>`).join('');
+    const third=(ri===last&&B.third)?`<div class="brh" style="margin-top:26px">3er puesto</div><div class="bw">${brCard(t,B.ties[B.third])}</div>`:'';
+    return `<div class="brc"><div class="brh">${rd.rn}</div><div class="brl" style="height:${H}px;--seg:${seg}px">${ties}</div>${third}</div>`}).join('');
+  const tabs=B.rounds.map((rd,i)=>`<button class="${i===0?'on':''}" onclick="brGo(${i})">${rd.rn.replace('Semifinales','Semis').replace('Dieciseisavos','16avos')}</button>`).join('');
+  const F=brTie(t,B.ties[B.final]),T=B.third?brTie(t,B.ties[B.third]):null,ready=!!F.w&&(!T||!!T.w);
+  const played=t.matches.some(m=>isDone(m,v.g));
+  const sub=[t.runner?'Subcampeón: '+nm(t.runner):'',t.third?'3er puesto: '+nm(t.third):''].filter(Boolean).join('<br>')||'Copa cerrada';
+  return `<div class="top"><button class="ghost" onclick="go({s:'game',tab:'tours'})">←</button><h2>🏅 ${esc(t.name)}</h2></div>
+${t.done?throne(nm(t.champ),'Campeón de la copa',sub):''}
+<p class="note" style="margin:0 0 4px">Copa con llaves · ${t.legs===2?'ida y vuelta (final y 3er puesto, partido único)':'partido único'}. Tocá un cruce para cargar el resultado.</p>
+<div class="tabs brt">${tabs}</div>
+<div class="brs" onscroll="brScroll(this)">${cols}</div>
+${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${ready?'':'opacity:.5'}" ${ready?'':'disabled'} onclick="finishBr()">Cerrar copa y sumar a la tabla</button><p class="note">${ready?'El campeón suma una copa y todos un torneo jugado.':'Se cierra cuando estén definidos la final y el 3er puesto.'}</p>${played?'':'<button class="ghost" style="margin-bottom:10px" onclick="redrawBr()">🔀 Sortear de nuevo</button>'}`}
+${del}${v.brt?brSheet(t):''}`}
+
 function render(reset){
-  const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw')].map(e=>e.scrollLeft);
+  const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
-  if(!reset)document.querySelectorAll('.wrap,.vsw').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
+  if(!reset)document.querySelectorAll('.wrap,.vsw,.brs').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
+  {const bs=document.querySelector('.brs');if(bs)brScroll(bs)}
   if(crWanted()&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
   if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
-['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
+['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','setKind','brPick','redrawBr','finishBr','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
 </script>
 <script type="module">
