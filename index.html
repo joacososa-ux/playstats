@@ -200,18 +200,18 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .stp button:disabled{opacity:.4}.warn{color:var(--bad);font-size:13px}
 .syn{display:flex;flex-direction:column;gap:6px;margin:8px 0 12px}.syn small{color:var(--mut);font-size:12.5px;line-height:1.35}.aut{grid-column:1/-1;font-size:12px;color:var(--mut);text-align:center}.aut a{color:var(--acc);text-decoration:underline;cursor:pointer}
 .brt{margin-top:14px}
-.brs{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;position:relative;padding:4px 16px 14px;margin:0 -16px;scrollbar-width:none}
+.brs{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 18px;position:relative;padding:4px 18px 14px;margin:0 -16px;scrollbar-width:none}
 .brs::-webkit-scrollbar{display:none}
-.brc{flex:0 0 78%;max-width:340px;scroll-snap-align:start}
+.brc{flex:0 0 72%;max-width:300px;scroll-snap-align:start}
 .brh{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 4px 8px}
 .brl{display:flex;flex-direction:column;justify-content:space-around}
 .bw{position:relative}
 .bt{display:block;width:100%;text-align:left;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;color:var(--tx);font:inherit}
 .bt:disabled{opacity:1;cursor:default}
 .bt.man{border-color:var(--acc)}
-.btr{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:8px 10px;min-height:42px}
+.btr{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:6px 9px;min-height:38px;font-size:15px}
 .btr+.btr{border-top:1px solid var(--line)}
-.bav{width:24px;height:24px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:12px;color:var(--mut)}
+.bav{width:22px;height:22px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-size:12px;color:var(--mut)}
 .bnm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bsc{font-variant-numeric:tabular-nums;color:var(--mut);font-size:14px;white-space:nowrap}
 .btr.w{background:linear-gradient(90deg,transparent,#ffffff12)}.btr.w .bsc{color:var(--tx)}.btr.w .bsc b{color:var(--acc)}
@@ -223,6 +223,16 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .bw.u::after{bottom:50%;height:calc(var(--seg)/2);border-top:0;border-radius:0 0 8px 0}
 .bw.inn::before{content:'';position:absolute;left:-17px;width:16px;top:50%;border-top:2px solid var(--line)}
 .brsh{max-height:82vh;overflow-y:auto;text-align:left}.brsh h3{text-align:center}.brsh .note{text-align:center}
+.bt.fin{border:2px solid #f5c542;background:linear-gradient(160deg,#4a3606,#1d1503);box-shadow:0 0 26px #f5c54266,inset 0 0 18px #f5c54218}
+.bt.fin .btr+.btr{border-top-color:#f5c54255}.bt.fin .bav{background:#f5c54222;color:#ffe08a}.bt.fin .btr.w .bnm{color:#ffe08a}
+.bt.fin .btr.w{background:linear-gradient(90deg,transparent,#f5c54226)}.bt.fin .btr.w .bsc,.bt.fin .btr.w .bsc b{color:#ffd45e}
+.brh.fh{color:#f5c542;text-shadow:0 0 12px #f5c54288;font-weight:700}
+.bw.fin{margin-top:0}.ftr{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);height:104px;pointer-events:none;filter:drop-shadow(0 0 18px #f5c542aa)}
+.bt.brz{border-color:#b9773a}
+.brt button:last-child{color:#f5c542}.brt button.on:last-child{color:var(--acc-tx)}
+.glb{margin:14px 0 0;padding:12px;border:1px solid var(--acc);border-radius:14px;text-align:center}
+.glr{display:grid;grid-template-columns:1fr auto auto auto 1fr;gap:8px;align-items:center;font-size:16px;font-weight:600;margin-top:4px}
+.glr b{font-size:28px;color:var(--acc);line-height:1}.glr span:first-child{text-align:right}.glr span:last-child{text-align:left}.glr i{color:var(--mut);font-style:normal}
 </style>
 </head>
 <body>
@@ -235,7 +245,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · m';
+const APP_V='6-nov-2026 · n';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -898,14 +908,15 @@ function brTie(t,tie){const gm=v.g,L=t.matches.filter(m=>m.tie===tie.id);
   if(tie.bye)return{w:tie.a,l:null,done:true,L:[]};
   if(!tie.a||!tie.b)return{w:null,l:null,done:false,L};
   const dn=L.length>0&&L.every(m=>isDone(m,gm));let A=0,B=0,KA=0,KB=0;
+  let PA=0,PB=0;
   L.forEach(m=>{const sw=m.a!==tie.a;if(!isDone(m,gm))return;
-    if(gm==='brawl'){A+=sw?m.pb:m.pa;B+=sw?m.pa:m.pb;KA+=sw?m.kb:m.ka;KB+=sw?m.ka:m.kb}else{A+=sw?m.sb:m.sa;B+=sw?m.sa:m.sb}});
-  if(!dn)return{w:null,l:null,done:false,L,A,B};
+    if(gm==='brawl'){A+=sw?m.pb:m.pa;B+=sw?m.pa:m.pb;PA+=5-(sw?m.pb:m.pa);PB+=5-(sw?m.pa:m.pb);KA+=sw?m.kb:m.ka;KB+=sw?m.ka:m.kb}else{A+=sw?m.sb:m.sa;B+=sw?m.sa:m.sb}});
+  if(!dn)return{w:null,l:null,done:false,L,A,B,PA,PB,KA,KB};
   let w=null;
   if(gm==='brawl'){if(A<B)w=tie.a;else if(A>B)w=tie.b;else if(KA>KB)w=tie.a;else if(KA<KB)w=tie.b}
   else{if(A>B)w=tie.a;else if(A<B)w=tie.b}
   let manual=false;if(!w){if(tie.w&&(tie.w===tie.a||tie.w===tie.b))w=tie.w;else manual=true}
-  return{w,l:w?(w===tie.a?tie.b:tie.a):null,done:!!w,manual,L,A,B}}
+  return{w,l:w?(w===tie.a?tie.b:tie.a):null,done:!!w,manual,L,A,B,PA,PB,KA,KB}}
 function brResolve(t){let ch=false;const B=t.br;
   B.order.forEach(id=>{const tie=B.ties[id];if(!tie.from)return;
     const [x,y]=tie.from.map(f=>{const r=brTie(t,B.ties[f]);return (tie.third?r.l:r.w)||null});
@@ -917,19 +928,21 @@ function matchRow(m,i,t,dn){const cr=v.g==='cr';
   return `<div class="match ${dn?'done':''}"><span class="n ${dn&&m.sa>m.sb?'w':''}">${nm(m.a)}</span>
 <input type="number" inputmode="numeric" min="0" ${cr?'max="3"':''} aria-label="local" value="${m.sa===null?'':m.sa}" ${t.done?'disabled':''} onchange="setScore(${i},'sa',this.value)"><span style="text-align:center">-</span>
 <input type="number" inputmode="numeric" min="0" ${cr?'max="3"':''} aria-label="visitante" value="${m.sb===null?'':m.sb}" ${t.done?'disabled':''} onchange="setScore(${i},'sb',this.value)"><span class="n ${dn&&m.sb>m.sa?'w':''}">${nm(m.b)}</span>${cr&&m.sa!==null&&m.sa===m.sb?'<div class="warn" style="grid-column:1/-1;text-align:center">En Clash Royale no hay empates: tiene que haber un ganador.</div>':''}${m.auto&&!t.done&&canEdit()?`<div class="aut">⚡ Cargado automáticamente · <a onclick="undoAuto(${i})">Deshacer</a></div>`:''}</div>`}
-function brCard(t,tie){const gm=v.g,I=brTie(t,tie),two=I.L.length>1,ready=tie.a&&tie.b&&!tie.bye;
+function brCard(t,tie,cls){const gm=v.g,I=brTie(t,tie),two=I.L.length>1,ready=tie.a&&tie.b&&!tie.bye;
   const row=(p,isA)=>{const win=I.w&&p&&I.w===p,lose=I.w&&p&&I.w!==p;let sc='';
-    if(ready&&p){sc=I.L.map(m=>{if(!isDone(m,gm))return'·';const sw=m.a!==p;return gm==='brawl'?(sw?m.pb:m.pa)+'°':(sw?m.sb:m.sa)}).join(' ');
-      if(two&&I.done&&gm!=='brawl')sc+=' <b>'+(isA?I.A:I.B)+'</b>'}
+    if(ready&&p){
+      if(two)sc=I.L.some(m=>isDone(m,gm))?'<b>'+(gm==='brawl'?(isA?I.PA:I.PB):(isA?I.A:I.B))+'</b>':'·';
+      else sc=I.L.map(m=>{if(!isDone(m,gm))return'·';const sw=m.a!==p;return gm==='brawl'?(sw?m.pb:m.pa)+'°':(sw?m.sb:m.sa)}).join(' ')}
     return `<div class="btr ${win?'w':''} ${lose?'l':''}"><span class="bav">${p?esc(rawName(p)).slice(0,1).toUpperCase():''}</span><span class="bnm">${p?nm(p):`<span style="color:var(--mut);font-weight:400">${tie.bye?'Sin rival':'Por definirse'}</span>`}</span><span class="bsc">${sc}</span></div>`};
   const ft=tie.bye?'Pasa directo':I.manual?'Empate global · tocá para definir':'';
-  return `<button class="bt ${I.manual?'man':''}" ${ready?'':'disabled'} onclick="go({brt:'${tie.id}'})">${row(tie.a,true)}${row(tie.b,false)}${ft?`<div class="bft">${ft}</div>`:''}</button>`}
+  return `<button class="bt ${cls||''} ${I.manual?'man':''}" ${ready?'':'disabled'} onclick="go({brt:'${tie.id}'})">${row(tie.a,true)}${row(tie.b,false)}${ft?`<div class="bft">${ft}</div>`:''}</button>`}
 function brSheet(t){const tie=t.br.ties[v.brt];if(!tie||!tie.a||!tie.b)return'';const I=brTie(t,tie);
   const legs=I.L.map(m=>{const i=t.matches.indexOf(m),dn=isDone(m,v.g);
     const lab=I.L.length>1?`<div class="note" style="margin:10px 0 2px">${m.leg===1?'Ida':'Vuelta'}</div>`:'';
     return lab+(v.g==='brawl'?brawlMatch(m,i,t,dn):matchRow(m,i,t,dn))}).join('');
+  const gm=v.g,glb=(I.L.length>1&&I.L.some(m=>isDone(m,gm)))?`<div class="glb"><div class="note" style="margin:0">Resultado global</div><div class="glr"><span>${nm(tie.a)}</span><b>${gm==='brawl'?I.PA:I.A}</b><i>–</i><b>${gm==='brawl'?I.PB:I.B}</b><span>${nm(tie.b)}</span></div>${gm==='brawl'?`<div class="note" style="margin:2px 0 0">Puntos de posición (1°=4 … 4°=1) · KOs ${I.KA}–${I.KB}</div>`:''}</div>`:'';
   const man=I.manual&&!t.done?`<div class="card" style="margin-top:12px"><b>Empate global</b><p class="note" style="text-align:left">Definan quién avanza (penales, desempate…).</p><div class="row2"><button onclick="brPick('${tie.id}','${tie.a}')">Avanza ${nm(tie.a)}</button><button onclick="brPick('${tie.id}','${tie.b}')">Avanza ${nm(tie.b)}</button></div></div>`:'';
-  return `<div class="mbg" onclick="go({brt:null})"></div><div class="vsheet brsh" role="dialog"><h3 style="margin:0 0 4px">${esc(tie.rn)}</h3><div class="note" style="margin:0 0 6px">${nm(tie.a)} vs ${nm(tie.b)}${I.L.length>1?' · ida y vuelta':''}</div>${legs}${man}<button class="pri" style="width:100%;margin-top:14px" onclick="go({brt:null})">Listo</button></div>`}
+  return `<div class="mbg" onclick="go({brt:null})"></div><div class="vsheet brsh" role="dialog"><h3 style="margin:0 0 4px">${esc(tie.rn)}</h3><div class="note" style="margin:0 0 6px">${nm(tie.a)} vs ${nm(tie.b)}${I.L.length>1?' · ida y vuelta':''}</div>${legs}${glb}${man}<button class="pri" style="width:100%;margin-top:14px" onclick="go({brt:null})">Listo</button></div>`}
 function brPick(id,p){const tie=curT().br.ties[id];tie.w=p;save();render()}
 function redrawBr(){const t=curT();if(t.done||t.matches.some(m=>isDone(m,v.g)))return;
   const B=buildBracket(t.players,t.legs===2?2:1);t.br=B.br;t.matches=B.matches;brResolve(t);save();render()}
@@ -941,11 +954,11 @@ function brGo(i){const e=document.querySelector('.brs');if(e&&e.children[i])e.sc
 function brScroll(e){const c=e.children[0];if(!c)return;const i=Math.round(e.scrollLeft/(c.offsetWidth+16));document.querySelectorAll('.brt button').forEach((b,k)=>b.classList.toggle('on',k===i))}
 function bracketView(t,del){
   const B=t.br;if(brResolve(t))save();
-  const n0=B.rounds[0].ids.length,H=n0*112,last=B.rounds.length-1;
+  const n0=B.rounds[0].ids.length,H=Math.max(n0*104,250),last=B.rounds.length-1;
   const cols=B.rounds.map((rd,ri)=>{const seg=H/rd.ids.length;
-    const ties=rd.ids.map((id,i)=>`<div class="bw ${ri<last?(i%2?'u':'d'):''} ${ri>0?'inn':''}">${brCard(t,B.ties[id])}</div>`).join('');
-    const third=(ri===last&&B.third)?`<div class="brh" style="margin-top:26px">3er puesto</div><div class="bw">${brCard(t,B.ties[B.third])}</div>`:'';
-    return `<div class="brc"><div class="brh">${rd.rn}</div><div class="brl" style="height:${H}px;--seg:${seg}px">${ties}</div>${third}</div>`}).join('');
+    const isF=ri===last,ties=rd.ids.map((id,i)=>`<div class="bw ${ri<last?(i%2?'u':'d'):''} ${ri>0?'inn':''} ${isF?'fin':''}">${isF?`<img class="ftr" src="trofeo-copa-${v.g}.webp" alt="">`:''}${brCard(t,B.ties[id],isF?'fin':'')}</div>`).join('');
+    const third=(ri===last&&B.third)?`<div class="brh" style="margin-top:26px">3er puesto</div><div class="bw">${brCard(t,B.ties[B.third],'brz')}</div>`:'';
+    return `<div class="brc"><div class="brh ${isF?'fh':''}">${isF?'🏆 ':''}${rd.rn}</div><div class="brl" style="height:${H}px;--seg:${seg}px">${ties}</div>${third}</div>`}).join('');
   const tabs=B.rounds.map((rd,i)=>`<button class="${i===0?'on':''}" onclick="brGo(${i})">${rd.rn.replace('Semifinales','Semis').replace('Dieciseisavos','16avos')}</button>`).join('');
   const F=brTie(t,B.ties[B.final]),T=B.third?brTie(t,B.ties[B.third]):null,ready=!!F.w&&(!T||!!T.w);
   const played=t.matches.some(m=>isDone(m,v.g));
