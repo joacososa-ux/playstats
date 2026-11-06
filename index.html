@@ -211,7 +211,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · j';
+const APP_V='6-nov-2026 · k';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -654,7 +654,7 @@ function h2hOpts(){const out=[],seen=new Set();
 function h2hCalc(ka,kb){
   const groups=v.hs==='all'?R.groups:[S],games=v.hg==='all'?['fifa','brawl','cr']:[v.hg];
   const key=(g,fid)=>{const f=g.friends.find(x=>x.id===fid);return f?(f.uid?'u:'+f.uid:'g:'+g.id+':'+fid):null};
-  const res={fifa:{pj:0,a:0,e:0,b:0,ga:0,gb:0},cr:{pj:0,a:0,e:0,b:0,ga:0,gb:0},brawl:{pj:0,a:0,b:0,ka:0,kb:0},tor:{n:0,a:0,b:0},list:[]};
+  const res={fifa:{pj:0,a:0,e:0,b:0,ga:0,gb:0},cr:{pj:0,a:0,e:0,b:0,ga:0,gb:0,lib:0},brawl:{pj:0,a:0,b:0,ka:0,kb:0},tor:{n:0,a:0,b:0},list:[]};
   groups.forEach(g=>games.forEach(gm=>g.games[gm].tours.forEach(t=>{
     t.matches.forEach(m=>{
       const k1=key(g,m.a),k2=key(g,m.b);let sw;
@@ -666,6 +666,11 @@ function h2hCalc(ka,kb){
     if(t.done&&t.mode!=='copa'){const st=standings(t,gm);const ia=st.findIndex(s=>key(g,s.p)===ka),ib=st.findIndex(s=>key(g,s.p)===kb);
       if(ia>=0&&ib>=0){res.tor.n++;if(ia<ib)res.tor.a++;else res.tor.b++}}
   })));
+  if(games.includes('cr'))groups.forEach(g=>(g.games.cr.free||[]).forEach(m=>{
+    const k1=key(g,m.a),k2=key(g,m.b);let sw;
+    if(k1===ka&&k2===kb)sw=false;else if(k1===kb&&k2===ka)sw=true;else return;
+    const x=sw?m.sb:m.sa,y=sw?m.sa:m.sb,r=res.cr;r.pj++;r.lib++;r.ga+=x;r.gb+=y;if(x>y)r.a++;else if(x<y)r.b++;else r.e++;
+    res.list.push({gm:'cr',g:g.name,t:'Amistosa',r:0,x,y,ts:m.ts||0,free:true,k:m.k,own:g===S})}));
   return res}
 function h2h(){v.hs=v.hs||'grp';v.hg=v.hg||'all';
   const opts=h2hOpts();let ka=v.ha,kb=v.hb;
@@ -673,7 +678,7 @@ function h2h(){v.hs=v.hs||'grp';v.hg=v.hg||'all';
   if(!opts.some(o=>o.k===kb)||kb===ka)kb=(opts.find(o=>o.k!==ka)||{}).k;
   const top=`<div class="top"><button class="ghost" onclick="go({s:'home'})">←</button><h2>Mano a mano</h2></div>
 <div class="tabs"><button class="${v.hs==='grp'?'on':''}" onclick="go({hs:'grp'})">Este grupo</button><button class="${v.hs==='all'?'on':''}" onclick="go({hs:'all'})">Todos mis grupos</button></div>
-<div class="tabs"><button class="${v.hg==='all'?'on':''}" onclick="go({hg:'all'})">Todos</button><button class="${v.hg==='fifa'?'on':''}" onclick="go({hg:'fifa'})">FIFA</button><button class="${v.hg==='brawl'?'on':''}" onclick="go({hg:'brawl'})">BrawlHalla</button><button class="${v.hg==='cr'?'on':''}" onclick="go({hg:'cr'})">Clash</button></div>`;
+<div class="tabs"><button class="${v.hg==='all'?'on':''}" onclick="go({hg:'all'})">Todos</button><button class="${v.hg==='fifa'?'on':''}" onclick="go({hg:'fifa'})">FIFA</button><button class="${v.hg==='brawl'?'on':''}" onclick="go({hg:'brawl'})">BrawlHalla</button><button class="${v.hg==='cr'?'on':''}" onclick="go({hg:'cr'})">Clash</button></div>${crBar()}`;
   if(opts.length<2||!ka||!kb)return top+`<div class="empty">${v.hs==='all'?'Para el historial global necesitás al menos 2 jugadores con cuenta vinculada (Jugadores → Agregar como jugador / Vincular).':'Necesitás al menos 2 jugadores en este grupo.'}</div>`;
   const sel=(cur,fn)=>`<select class="in" onchange="go({${fn}:this.value})">${opts.map(o=>`<option value="${o.k}" ${o.k===cur?'selected':''}>${o.l}</option>`).join('')}</select>`;
   const la=opts.find(o=>o.k===ka).l,lb=opts.find(o=>o.k===kb).l;
@@ -693,10 +698,10 @@ ${pj?`<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;mar
     const pl=n=>n+(n===1?' partido':' partidos');
     const nt=t=>`<p class="note" style="text-align:center;margin:8px 0 0">${t}</p>`;
     if(f.pj)det+=card('⚽ FIFA · '+pl(f.pj),cmp(f.a,'Victorias',f.b)+cmp(f.ga,'Goles',f.gb),nt('Empates: '+f.e));
-    if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('En Clash Royale no hay empates.'));
+    if(c.pj)det+=card('🏰 Clash Royale · '+pl(c.pj),cmp(c.a,'Victorias',c.b)+cmp(c.ga,'Coronas',c.gb),nt('En Clash Royale no hay empates.'+(c.lib?' Incluye '+c.lib+(c.lib===1?' amistosa':' amistosas')+' fuera de torneos.':'')));
     if(b.pj)det+=card('⚔️ BrawlHalla · '+pl(b.pj),cmp(b.a,'Victorias',b.b)+cmp(b.ka,'KOs',b.kb),nt('Gana quien termina mejor ubicado en cada partida.'));
     if(r.tor.n)det+=card('🏆 Torneos terminados · '+r.tor.n,cmp(r.tor.a,'Terminó mejor ubicado',r.tor.b),nt('Cuenta los torneos de liga ya cerrados en los que jugaron los dos.'));
-    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)} · Fecha ${m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b></div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
+    det+=`<div class="card"><h3>Últimos partidos</h3>${r.list.slice().reverse().sort((a,b)=>b.ts-a.ts).slice(0,10).map(m=>`<div style="padding:7px 0;border-top:1px solid var(--line)"><div class="note" style="margin:0">${GAMES[m.gm].e} ${esc(m.t)}${m.free?'':' · Fecha '+m.r}${m.ts?' · '+new Date(m.ts).toLocaleDateString('es-AR',{day:'numeric',month:'short'}):''}${v.hs==='all'?' · '+esc(m.g):''}</div><div><b>${la}</b> ${m.gm!=='brawl'?m.x+' - '+m.y:m.x+'° ('+m.A+' KO) · '+m.y+'° ('+m.B+' KO)'} <b>${lb}</b>${m.free&&m.own&&canEdit()?` <a class="aut" style="display:inline;margin-left:6px" onclick="delFree('${m.k}')">quitar</a>`:''}</div></div>`).join('')}<p class="note">Ordenados por fecha de carga. Los partidos anteriores a esta función no tienen fecha y van al final.</p></div>`}
   return top+`<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:12px 0">${sel(ka,'ha')}<b class="disp" style="font-size:22px;color:var(--mut)">VS</b>${sel(kb,'hb')}</div>${sc}${det}
 <p class="note">${v.hs==='all'?'En el historial global solo cuentan jugadores con cuenta vinculada. Los invitados aparecen solo dentro de su grupo.':'Cuenta solo lo jugado en este grupo.'} En BrawlHalla gana quien termina mejor ubicado en cada partido.</p>`}
 function supreme(){
@@ -727,7 +732,7 @@ ${v.g==='fifa'?`<div class="tabs" style="margin:10px 0 0"><button class="${d.mod
 <div class="chips">${d.ps.length?d.ps.map(p=>`<span class="chip">${nm(p)}<button onclick="rmDraft('${p}')" aria-label="Quitar">✕</button></span>`).join(''):'<span class="note">Elegí al menos 2 amigos de la lista.</span>'}</div>
 <button class="pri" style="width:100%" ${d.ps.length<2?'disabled style="width:100%;opacity:.5"':''} onclick="createT()">${v.g==='fifa'&&d.mode==='copa'?'Crear copa':'Crear torneo y fixture'}</button></div>`;
   }
-  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>${M.e} ${M.n}</h2></div>${tabs}${body}`;
+  return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>${M.e} ${M.n}</h2></div>${tabs}${crBar()}${body}`;
 }
 
 function brawlMatch(m,i,t,dn){
@@ -792,41 +797,52 @@ function crBox(t){if(v.g!=='cr'||t.done||!canEdit())return'';
   return `<div class="syn"><button onclick="syncCR()">⚡ Sincronizar partidas</button><small>${miss.length?'Sin tag de Clash Royale: '+miss.join(', ')+' (cargalo en Jugadores). ':'Las amistosas 1 vs 1 entre jugadores del torneo se cargan solas. '}${esc(crInfo)}</small></div>`}
 function undoAuto(i){const m=curT().matches[i];m.sa=null;m.sb=null;delete m.ts;delete m.auto;save();render();toast('Resultado deshecho')}
 const syncCR=()=>crSync(true);
+const crWanted=()=>(['tour','game'].includes(v.s)&&v.g==='cr')||(v.s==='h2h'&&['all','cr'].includes(v.hg||'all'));
+function crBar(){if(!canEdit()||!((v.s==='game'&&v.g==='cr')||(v.s==='h2h'&&['all','cr'].includes(v.hg||'all'))))return'';
+  const n=S.friends.filter(f=>f.cr).length;
+  return `<div class="syn"><button onclick="syncCR()">⚡ Sincronizar Clash Royale</button><small>${n>=2?n+' jugadores con tag. Las amistosas 1 vs 1 entre ellos se suman al historial, con o sin torneo. ':'Cargá el tag de Clash Royale de al menos 2 jugadores (en Jugadores). '}${esc(crInfo)}</small></div>`}
+function delFree(k){const G=S.games.cr;G.free=(G.free||[]).filter(m=>m.k!==k);save();render();toast('Partida eliminada del historial')}
 async function crSync(manual){
   if(crBusy||!USER||!ready||!S||!canEdit())return;
   const G=S.games.cr,open=G.tours.filter(t=>!t.done);
-  if(!open.length){if(manual)toast('No hay torneos abiertos de Clash Royale.');return}
-  const fr=id=>S.friends.find(f=>f.id===id)||{};
-  const ids=[...new Set(open.flatMap(t=>t.players))],tags=[...new Set(ids.map(id=>fr(id).cr).filter(Boolean))];
-  if(tags.length<2){crInfo='Cargá el tag de al menos 2 jugadores.';if(manual)toast(crInfo);return}
+  const tags=[...new Set(S.friends.map(f=>f.cr).filter(Boolean))].slice(0,12);
+  if(tags.length<2){crInfo='Cargá el tag de al menos 2 jugadores.';if(manual){toast(crInfo);render()}return}
   crBusy=true;crLast=Date.now();
   try{
     const r=await fetch(CR_API+'/?tags='+tags.join(','));if(!r.ok)throw 0;
     const d=await r.json();if(!d.ok)throw 0;
-    if(!G.syncFrom)G.syncFrom=Date.now()-6*3600e3;
-    G.seen=G.seen||[];
+    let dirty=false;
+    if(!G.syncFrom){G.syncFrom=Date.now()-6*3600e3;dirty=true}
+    if(!G.freeFrom){G.freeFrom=Date.now();dirty=true}
+    G.seen=G.seen||[];G.free=G.free||[];
     const byTag={};S.friends.forEach(f=>{if(f.cr)byTag[f.cr]=f.id});
     const msgs=[];
     for(const b of d.battles||[]){
       const key=b.t+'|'+[b.a,b.b].sort().join('|'),ms=crTime(b.t),fa=byTag[b.a],fb=byTag[b.b];
-      if(G.seen.includes(key)||!ms||ms<G.syncFrom||!fa||!fb||fa===fb||b.ac===b.bc)continue;
-      for(const t of open){
+      if(G.seen.includes(key)||!ms||!fa||!fb||fa===fb||b.ac===b.bc)continue;
+      let used=false;
+      if(ms>=G.syncFrom)for(const t of open){
         if(ms<(t.cts||0))continue;
         const m=t.matches.find(x=>x.sa==null&&x.sb==null&&((x.a===fa&&x.b===fb)||(x.a===fb&&x.b===fa)));
         if(!m)continue;
         const sw=m.a!==fa;m.sa=Math.min(3,sw?b.bc:b.ac);m.sb=Math.min(3,sw?b.ac:b.bc);m.ts=ms;m.auto=1;
-        G.seen.push(key);msgs.push(rawName(m.a)+' '+m.sa+'–'+m.sb+' '+rawName(m.b));break}
+        msgs.push(rawName(m.a)+' '+m.sa+'–'+m.sb+' '+rawName(m.b));used=true;break}
+      if(!used&&ms>=G.freeFrom){
+        G.free.push({k:key,a:fa,b:fb,sa:Math.min(3,b.ac),sb:Math.min(3,b.bc),ts:ms});
+        msgs.push(rawName(fa)+' '+Math.min(3,b.ac)+'–'+Math.min(3,b.bc)+' '+rawName(fb)+' (historial)');used=true}
+      if(used)G.seen.push(key)
     }
     if(G.seen.length>400)G.seen=G.seen.slice(-400);
     const hh=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false});
     crInfo='Última revisión: '+hh+' hs.';
-    if(msgs.length){save();toast('⚡ '+(msgs.length>1?msgs.length+' partidas cargadas':'Se cargó '+msgs[0]))}
+    if(msgs.length||dirty)save();
+    if(msgs.length)toast('⚡ '+(msgs.length>1?msgs.length+' partidas nuevas':'Nueva partida: '+msgs[0]));
     else if(manual)toast('No hay partidas nuevas.');
     if(msgs.length||manual)render();
   }catch(e){crInfo='No se pudo consultar Clash Royale.';if(manual){toast('No se pudo consultar Clash Royale. Probá de nuevo en un rato.');render()}}
   finally{crBusy=false}
 }
-setInterval(()=>{if(!document.hidden&&v.s==='tour'&&v.g==='cr')crSync(false)},60000);
+setInterval(()=>{if(!document.hidden&&crWanted())crSync(false)},60000);
 
 function render(reset){
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw')].map(e=>e.scrollLeft);
@@ -836,10 +852,10 @@ function render(reset){
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap,.vsw').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
   window.scrollTo(0,y);
-  if(v.s==='tour'&&v.g==='cr'&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
+  if(crWanted()&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
   if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
-['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
+['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
 </script>
 <script type="module">
