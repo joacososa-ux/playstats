@@ -357,7 +357,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · y';
+const APP_V='6-nov-2026 · z';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -453,7 +453,7 @@ ${v.nickErr?`<p class="warn" style="margin-bottom:10px">${esc(v.nickErr)}</p>`:'
 <p class="note">Tus amigos te ven con este nick. Tu mail de Google no se muestra a nadie.</p>${lookCard()}${cosCard()}${backupCard()}`}
 function addMember(u){if(S.friends.some(f=>f.uid===u))return;S.friends.push({id:uid(),name:memberNick(u),uid:u});save();render()}
 function linkFriend(id,u){if(!u)return;const f=S.friends.find(x=>x.id===id);if(!f||S.friends.some(x=>x.uid===u))return;f.uid=u;save();render()}
-const gData=g=>JSON.stringify({friends:g.friends,games:g.games});
+const gData=g=>JSON.stringify(Object.keys(g.tOv||{}).length?{friends:g.friends,games:g.games,tOv:g.tOv}:{friends:g.friends,games:g.games});
 const fromDoc=d=>{let x={};try{x=JSON.parse(d.json||'{}')}catch(e){}return{id:d.id,name:d.name||'Grupo',owner:d.owner,admins:d.admins||[],members:d.members||[],code:d.code||'',friends:x.friends||[],games:x.games||blank().games}};
 function saveG(g){FB.saveGroup(g.id,{name:g.name,json:gData(g),updated:Date.now()}).catch(e=>{v.err='No se pudo guardar: '+(e.code||e.message)})}
 function save(){if(!USER||!ready||!S||!canEdit())return;const g=S;clearTimeout(tms[g.id]);tms[g.id]=setTimeout(()=>saveG(g),400)}
@@ -472,7 +472,7 @@ function watch(g){if(subs[g.id])return;subs[g.id]=FB.watch(g.id,s=>{
   if((d.members||[]).length!==x.members.length){x.members=d.members||[];ch=true;loadProfiles().then(softRender).catch(()=>{})}
   if(d.code&&x.code!==d.code){x.code=d.code;ch=true}
   if(JSON.stringify(d.admins||[])!==JSON.stringify(x.admins||[])){x.admins=d.admins||[];ch=true}
-  if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;normalize();ch=true}catch(e){}}
+  if(d.json&&d.json!==gData(x)){try{const p=JSON.parse(d.json);x.friends=p.friends||[];x.games=p.games||x.games;x.tOv=p.tOv||{};normalize();ch=true}catch(e){}}
   if(ch)softRender()},()=>{dropLocal(g.id);afterDrop().then(softRender).catch(()=>{})})}
 async function loadAll(){
   ME=await FB.getProfile(USER.uid);PROF={};LOOK={};BAN={};if(ME)PROF[USER.uid]=ME;
@@ -730,6 +730,10 @@ function calcTitles(){
     if(el.length<2&&mn)return;
     let name=T.n;if(T.tiers)T.tiers.th.forEach((th,i)=>{if(best>=th)name=T.tiers.n[i]});
     aw[T.id]={t:T,holders:hs,value:best,name};hs.forEach(id=>(by[id]=by[id]||[]).push(aw[T.id]))});
+  const ov=S.tOv||{};
+  TITLES.forEach(T=>{const ids=(ov[T.id]||[]).filter(id=>P[id]);if(!ids.length)return;
+    const old=aw[T.id];if(old)old.holders.forEach(h=>{if(by[h])by[h]=by[h].filter(a=>a!==old)});
+    const a={t:T,holders:ids,value:null,name:old?old.name:T.n,manual:1};aw[T.id]=a;ids.forEach(id=>(by[id]=by[id]||[]).push(a))});
   return{P,aw,by,gates:G3}}
 const KC={oro:{e:'🥇',c:'#ffd24a',t:'#fff3c4'},pos:{e:'🏅',c:'#3ddc84',t:'#b9f6ca'},neu:{e:'🎖️',c:'#8fb2f5',t:'#d7e6ff'},neg:{e:'🔻',c:'#ff5d73',t:'#ffc2cb'}};
 const KORD={oro:0,pos:1,neu:2,neg:3};
@@ -760,9 +764,19 @@ ${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derro
 function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s))];
   return `<div class="top"><button class="ghost" onclick="go({s:v.sb||'friends'})">←</button><h2>Salón de títulos</h2></div>
 <div style="margin:0 0 6px">${Object.keys(KC).map(k=>`<span class="tchip ${k}">${KC[k].e} ${{oro:'Oro',pos:'Positivo',neu:'Neutro',neg:'Negativo'}[k]}</span>`).join('')}</div>
-<p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
+<p class="note">Se calculan solos con los partidos cargados (los admins pueden asignarlos a mano). Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
 ${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
-   const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${fmtV(T,a.value)}</span></div>`:`<div class="note" style="margin:0">${(tc.gates[T.gm||'all']<(T.mt||1))?'🔒 Se activa tras '+T.mt+' torneos cerrados'+(T.gm?' de '+{fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'}[T.gm]:'')+' (van '+tc.gates[T.gm||'all']+')':'Vacante'}</div>`}</div>`}).join('')).join('')}`}
+   const K=KC[T.k];return `<div class="card tcd ${T.k}${a?'':' vac'}" style="border-color:${K.c}"><div class="disp" style="font-size:${T.k==='oro'?'28px':'24px'};line-height:1.1;color:${K.t}">${K.e} ${esc(a?a.name:T.n)}</div><p class="note" style="margin:4px 0 6px">${esc(T.d)}</p>${a?`<div><b>${a.holders.map(h=>esc(rawName(h))).join(', ')}</b> · <span style="color:${K.c}">${a.manual?'✋ Otorgado por un admin':fmtV(T,a.value)}</span></div>`:`<div class="note" style="margin:0">${(tc.gates[T.gm||'all']<(T.mt||1))?'🔒 Se activa tras '+T.mt+' torneos cerrados'+(T.gm?' de '+{fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'}[T.gm]:'')+' (van '+tc.gates[T.gm||'all']+')':'Vacante'}</div>`}${canEdit()?`<button class="ghost" style="margin-top:8px;min-height:0;padding:5px 12px;font-size:13px" onclick="go({te:${T.id}})">✋ ${a&&a.manual?'Editar':'Asignar'} a mano</button>`:''}</div>`}).join('')).join('')}${v.te&&canEdit()?titSheet():''}`}
+function titSheet(){const T=TITLES.find(t=>t.id===v.te);if(!T)return'';const ov=(S.tOv||{})[T.id]||[],tc=calcTitles(),a=tc.aw[T.id];const cur=a?a.holders:[];
+  return `<div class="mbg" onclick="go({te:null})"></div><div class="vsheet" role="dialog" style="text-align:left;max-height:88vh;overflow:auto"><h3 style="margin:0 0 4px">${KC[T.k].e} ${esc(T.n)}</h3>
+<p class="note" style="margin:0 0 10px">${esc(T.d)}. Elegí quién lo tiene. Mientras esté asignado a mano, no cambia solo.</p>
+${S.friends.map(f=>`<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><input type="checkbox" class="tck" value="${f.id}" ${(ov.length?ov:cur).includes(f.id)?'checked':''} style="width:22px;height:22px;flex:none"><span>${nm(f.id)}</span></label>`).join('')}
+<button class="pri" style="width:100%;margin:12px 0 8px" onclick="titSave(${T.id})">Guardar</button>
+${ov.length?`<button class="ghost" style="width:100%;margin-bottom:8px" onclick="titAuto(${T.id})">↩ Volver a automático</button>`:''}<button class="ghost" style="width:100%" onclick="go({te:null})">Cancelar</button></div>`}
+function titSave(id){const ids=[...document.querySelectorAll('.tck:checked')].map(e=>e.value);
+  if(!ids.length){toast('Marcá al menos un jugador, o usá "Volver a automático".');return}
+  S.tOv=S.tOv||{};S.tOv[id]=ids;save();v.te=null;toast('Título asignado.');render()}
+function titAuto(id){if(S.tOv)delete S.tOv[id];save();v.te=null;toast('El título vuelve a calcularse solo.');render()}
 const GNAME={fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'};
 const trList=p=>p.trophies.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)||a.name.localeCompare(b.name));
 function vOrder(tc){const me=S.friends.find(f=>USER&&f.uid===USER.uid);
@@ -1236,7 +1250,7 @@ function render(reset){RN++;
   if(crWanted()&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
   if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
-['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','setKind','brPick','redrawBr','finishBr','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree','legAdd','legDel'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
+['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','setKind','brPick','redrawBr','finishBr','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree','legAdd','legDel','titSave','titAuto'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
 </script>
 <script type="module">
