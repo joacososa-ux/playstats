@@ -326,6 +326,59 @@ button{transition:transform .14s cubic-bezier(.3,1.5,.5,1),filter .15s}
 button:not(:disabled):active{transform:scale(.955);filter:brightness(1.12)}
 .mnu .mit:active{transform:scale(.98)}
 @media (prefers-reduced-motion:reduce){#app.enter>*,#app.enter table tr,#app.enter .vtr,.mnu .mit,.mbg{animation:none!important}button:active{transform:none}}
+
+/* fondos de juego */
+.big.hb{background-size:cover;background-position:center}
+.big.b-fifa.hb{background-image:linear-gradient(90deg,#000b,#0003),var(--bg-fifa)}
+.big.b-brawl.hb{background-image:linear-gradient(90deg,#000b,#0003),var(--bg-brawl)}
+.big.b-cr.hb{background-image:linear-gradient(90deg,#000b,#0003),var(--bg-cr)}
+body.gbg::before{content:'';position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;pointer-events:none}
+body.gbg.fifa::before{background-image:linear-gradient(#000a,#000d),var(--bg-fifa)}
+body.gbg.brawl::before{background-image:linear-gradient(#000a,#000d),var(--bg-brawl)}
+body.gbg.cr::before{background-image:linear-gradient(#000a,#000d),var(--bg-cr)}
+/* animación de entrada */
+.ge{position:fixed;inset:0;z-index:9999;overflow:hidden;pointer-events:all;touch-action:none;transition:opacity .45s ease}
+.ge.out{opacity:0;pointer-events:none}
+.ge-bg{position:absolute;inset:0;opacity:0;animation:geBg .25s ease-out forwards}
+@keyframes geBg{to{opacity:1}}
+.ge-flash{position:absolute;inset:0;opacity:0;animation:geFl .3s .8s ease-in forwards}
+@keyframes geFl{to{opacity:1}}
+.ge-fifa .ge-bg{background:radial-gradient(120% 70% at 50% 30%,#14603a,#06150e)}
+.ge-fifa .ge-flash{background:#06150e}
+.gf-goal{position:absolute;left:50%;top:40%;width:62vw;max-width:300px;transform:translate(-50%,-70%) scale(.8);opacity:0;animation:gfIn .3s .05s ease-out forwards,gfNet .4s .62s ease-in-out}
+.gf-goal svg{display:block;width:100%;filter:drop-shadow(0 0 14px #2ee67a99)}
+@keyframes gfIn{to{opacity:1;transform:translate(-50%,-70%) scale(1)}}
+@keyframes gfNet{20%{transform:translate(-50%,-70%) scale(1.07,.95)}50%{transform:translate(-50%,-70%) scale(.97,1.04)}100%{transform:translate(-50%,-70%) scale(1)}}
+.gf-ball{position:absolute;left:50%;top:40%;width:56px;height:56px;margin:-28px 0 0 -28px;font-size:52px;line-height:56px;text-align:center;opacity:0;animation:gfBall .6s .12s cubic-bezier(.3,.2,.5,1) forwards}
+@keyframes gfBall{0%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1.5) rotate(0)}50%{opacity:1;transform:translate(calc(var(--dx)*.4),calc(var(--dy)*.4 - 70px)) scale(.95) rotate(420deg)}95%{opacity:1;transform:translate(0,-26px) scale(.4) rotate(820deg)}100%{opacity:0;transform:translate(0,-26px) scale(.34) rotate(860deg)}}
+.gf-txt{position:absolute;left:0;right:0;top:56%;text-align:center;font-family:'Bebas Neue','Space Grotesk',sans-serif;font-weight:800;font-size:64px;letter-spacing:3px;color:#fff;text-shadow:0 0 22px #2ee67a,0 4px 0 #0a7a3c;opacity:0;transform:scale(.3);animation:gfTxt .35s .68s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes gfTxt{to{opacity:1;transform:scale(1)}}
+.ge-brawl .ge-bg{background:radial-gradient(120% 70% at 50% 40%,#6a2c0e,#130a06)}
+.ge-brawl .ge-flash{background:#ffb066}
+.ge-brawl .ge-flash{animation-name:geFlB}
+@keyframes geFlB{0%{opacity:0}100%{opacity:1;background:#130a06}}
+.gb-w{position:absolute;inset:0;animation:gbShake .3s .5s linear}
+@keyframes gbShake{20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,3px)}80%{transform:translate(3px,-2px)}}
+.gb-s{position:absolute;left:50%;top:42%;width:64px;height:320px;margin:-160px 0 0 -32px;filter:drop-shadow(0 6px 10px #0008)}
+.gb-s svg{width:100%;height:100%;display:block}
+.gb-s1{animation:gbS1 .55s .1s cubic-bezier(.4,.1,.3,1) forwards;transform:translate(-120vw,0) rotate(-100deg)}
+.gb-s2{animation:gbS2 .55s .1s cubic-bezier(.4,.1,.3,1) forwards;transform:translate(120vw,0) rotate(100deg)}
+@keyframes gbS1{70%{transform:translate(0,0) rotate(42deg)}100%{transform:translate(0,0) rotate(36deg)}}
+@keyframes gbS2{70%{transform:translate(0,0) rotate(-42deg)}100%{transform:translate(0,0) rotate(-36deg)}}
+.gb-ring{position:absolute;left:50%;top:42%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:5px solid #fff3c4;box-shadow:0 0 30px #ffb02e;opacity:0;animation:gbRing .5s .52s ease-out forwards}
+@keyframes gbRing{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(9)}}
+.gb-sp{position:absolute;left:50%;top:42%;width:4px;height:var(--l);margin:0 0 0 -2px;background:linear-gradient(#fff,#ffb02e,transparent);border-radius:3px;transform-origin:50% 0;opacity:0;transform:rotate(var(--a)) translateY(10px) scaleY(.2);animation:gbSp .45s .52s ease-out forwards}
+@keyframes gbSp{0%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(70px) scaleY(1)}}
+.ge-cr .ge-bg{background:radial-gradient(120% 70% at 50% 40%,#1b2a6b,#070b1f)}
+.ge-cr .gc-splash{background:radial-gradient(circle,#e879f9 0%,#a21caf 45%,#4a1270 100%)}
+.gc-drop{position:absolute;left:50%;top:42%;width:54px;height:80px;margin:-40px 0 0 -27px;animation:gcDrop .52s ease-in forwards;transform:translateY(-60vh) scale(.8,1.3)}
+.gc-drop svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 14px #d946efaa)}
+@keyframes gcDrop{70%{opacity:1}100%{opacity:0;transform:translateY(0) scale(1,1)}}
+.gc-splash{position:absolute;left:50%;top:42%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;transform:scale(0);animation:gcSp .62s .5s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes gcSp{0%{transform:scale(0)}30%{transform:scale(1.8,.9)}100%{transform:scale(40)}}
+.gc-ring{position:absolute;left:50%;top:42%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:4px solid #f5d0fe;opacity:0;animation:gbRing .5s .5s ease-out forwards}
+.gc-p{position:absolute;left:50%;top:42%;width:14px;height:20px;margin:-10px 0 0 -7px;background:radial-gradient(circle at 35% 35%,#f6a8ff,#a21caf);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0;transform:rotate(var(--a)) translateY(0);animation:gcP .5s .5s ease-out forwards}
+@keyframes gcP{0%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(calc(var(--d)*-1.6)) scale(.5)}}
 /* skins por juego */
 .avx.fr-cesped{--frb:repeating-conic-gradient(from 0deg,#1f8f3a 0 15deg,#58d36b 15deg 30deg);box-shadow:0 0 10px #3ddc8466}
 .avx.fr-lava{--frb:conic-gradient(from 0deg,#ff3b1f,#ffb02e,#7a0d00,#ff6a1a,#ff3b1f);box-shadow:0 0 12px #ff3b1f88}
@@ -357,7 +410,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · z';
+const APP_V='6-nov-2026 · aa';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -640,9 +693,9 @@ ${it('↪','Cerrar sesión',"doLogout()",'<span class="mic"></span>')}
 function home(){return `<div class="hbar"><h1 class="logo disp" style="margin:0">Play<b>Stats</b></h1><button class="mbtn" aria-label="Abrir menú" aria-expanded="${!!v.menu}" onclick="go({menu:!v.menu})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>${badge()?'<i class="mdot"></i>':''}</button></div>
 <p class="sub" style="margin:6px 0 16px">Elegí el juego y llevá la cuenta de los torneos.</p>
 <button class="ghost" style="width:100%;margin:0 0 16px;display:flex;justify-content:space-between" onclick="go({s:'groups'})"><span>👥 Grupo: <b>${esc(S.name)}</b></span><span style="color:var(--mut)">Cambiar</span></button>
-<button class="big b-fifa" onclick="go({s:'game',g:'fifa',tab:'table'})"><span class="em">⚽</span><span class="disp">FIFA</span><small>${cnt(S.games.fifa.tours.length,'torneo','torneos')} · ${cnt(S.games.fifa.players.length,'jugador','jugadores')}</small></button>
-<button class="big b-brawl" onclick="go({s:'game',g:'brawl',tab:'table'})"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${cnt(S.games.brawl.tours.length,'torneo','torneos')} · ${cnt(S.games.brawl.players.length,'jugador','jugadores')}</small></button>
-<button class="big b-cr" onclick="go({s:'game',g:'cr',tab:'table'})"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${cnt(S.games.cr.tours.length,'torneo','torneos')} · ${cnt(S.games.cr.players.length,'jugador','jugadores')}</small></button>
+<button class="big b-fifa${BGOK.fifa?' hb':''}" onclick="enterGame('fifa',this)"><span class="em">⚽</span><span class="disp">FIFA</span><small>${cnt(S.games.fifa.tours.length,'torneo','torneos')} · ${cnt(S.games.fifa.players.length,'jugador','jugadores')}</small></button>
+<button class="big b-brawl${BGOK.brawl?' hb':''}" onclick="enterGame('brawl',this)"><span class="em">⚔️</span><span class="disp">BrawlHalla</span><small>${cnt(S.games.brawl.tours.length,'torneo','torneos')} · ${cnt(S.games.brawl.players.length,'jugador','jugadores')}</small></button>
+<button class="big b-cr${BGOK.cr?' hb':''}" onclick="enterGame('cr',this)"><span class="em">🏰</span><span class="disp">Clash Royale</span><small>${cnt(S.games.cr.tours.length,'torneo','torneos')} · ${cnt(S.games.cr.players.length,'jugador','jugadores')}</small></button>
 ${(()=>{const L=supLeader();return L?`<button class="strip" onclick="go({s:'supreme'})"><span class="crn">👑</span><span class="stx"><small>Agarrá un libro pibe</small><b>${nm(L.id)}</b><em>${cnt(L.c,'campeonato','campeonatos')}${copTxt(L.cp)} · ${dTxt(L.d)}</em></span><span class="mic">›</span></button>`:''})()}
 ${(()=>{const tc=calcTitles();const all=Object.values(tc.P);const tot=all.reduce((a,p)=>a+p.trophies.length,0);const top=all.slice().sort((a,b)=>b.trophies.length-a.trophies.length)[0];
   return `<button class="strip vstrip" onclick="go({s:'vitrina',vb:'home',vp:null,vsc:false,vt:null})"><span class="crn" style="animation:none">🏆</span><span class="stx"><small>Vitrina de trofeos</small><b>${cnt(tot,'trofeo','trofeos')}</b><em>${top&&top.trophies.length?'Más trofeos: '+nm(top.id)+' ('+top.trophies.length+')':'Todavía no hay trofeos en el grupo'}</em></span><span class="mic">›</span></button>`})()}
@@ -1174,6 +1227,7 @@ function lookCard(){const u=USER.uid,L=lookOf(u),mf=S&&S.friends.find(f=>f.uid==
 <div class="pid" style="${L.color?'--ac:'+L.color:''}"><span class="avx${lf.fr?' fr-'+lf.fr:''}" style="width:78px;height:78px;font-size:34px">${L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase()}</span><div class="nmb"><div class="disp" style="font-size:26px;line-height:1">${lf.fx?`<span class="fx fx-${lf.fx}">@${esc(ME.nick)}</span>`:'@'+esc(ME.nick)}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>
 <div class="row2"><button onclick="pickImg('av')">📷 Foto</button><button onclick="pickImg('bn')">🖼️ Portada</button></div>
 <div class="row2" style="margin-top:8px"><button class="ghost" onclick="clearImg('av')">Quitar foto</button><button class="ghost" onclick="clearImg('bn')">Quitar portada</button></div>
+<p class="note" style="margin:14px 0 6px">Fondos dentro de los juegos</p><div class="tabs" style="margin-bottom:6px"><button class="${GBG?'on':''}" onclick="setGbg(true)">🖼 Con imagen</button><button class="${GBG?'':'on'}" onclick="setGbg(false)">Lisos</button></div>
 <p class="note" style="margin:14px 0 6px">Estilo de la app</p><div class="tabs" style="margin-bottom:6px"><button class="${GLASS?'on':''}" onclick="setGlass(true)">✨ Cristal</button><button class="${GLASS?'':'on'}" onclick="setGlass(false)">Clásico</button></div>
 <p class="note" style="margin:14px 0 0">Tu color</p><div class="sws">${COLORS.map(c=>`<button class="sw ${L.color===c?'on':''}" style="background:${c}" aria-label="Color ${c}" onclick="setColor('${c}')"></button>`).join('')}<button class="ghost" style="min-height:0;padding:4px 10px" onclick="setColor('')">Sin color</button></div>
 <input class="in" id="bio" maxlength="60" placeholder="Tu frase (opcional)" value="${esc(L.bio||'')}" onchange="setBio(this.value)">
@@ -1235,10 +1289,28 @@ function cosCheck(){if(!USER||!ready||!S||!ME||Date.now()-cosT<15000)return;cosT
   else{const nw=all.filter(a=>!old.includes(a[1]));if(nw.length)toast('🎉 ¡Desbloqueaste '+nw[0][0]+(nw.length>1?' y '+(nw.length-1)+' más':'')+'! Equipalo en Mi perfil.')}}
 
 let LSK='';
+/* ===== Fondos de juego y animación de entrada ===== */
+let GBG=true,GEL=false;const BGOK={};try{GBG=localStorage.getItem('ps_gbg')!=='0'}catch(e){}
+function setGbg(on){GBG=!!on;try{localStorage.setItem('ps_gbg',on?'1':'0')}catch(e){}render()}
+['fifa','brawl','cr'].forEach(g=>{const i=new Image();i.onload=()=>{BGOK[g]=1;document.documentElement.style.setProperty('--bg-'+g,'url(bg-'+g+'.webp)');try{render()}catch(e){}};i.src='bg-'+g+'.webp'});
+const SWORD='<svg viewBox="0 0 40 200"><defs><linearGradient id="bl" x1="0" x2="1"><stop offset="0" stop-color="#9aa6b8"/><stop offset=".5" stop-color="#f4f8ff"/><stop offset="1" stop-color="#8794a8"/></linearGradient></defs><path d="M20 2 L30 24 V130 H10 V24 Z" fill="url(#bl)" stroke="#5b6678" stroke-width="1.5"/><path d="M20 8 V128" stroke="#fff" stroke-opacity=".6" stroke-width="2"/><rect x="0" y="130" width="40" height="9" rx="4" fill="#d9a21b" stroke="#7a5a08"/><rect x="16" y="139" width="8" height="40" rx="3" fill="#6b3a1c"/><circle cx="20" cy="185" r="9" fill="#d9a21b" stroke="#7a5a08"/></svg>';
+const GESCENE={
+ fifa:`<div class="ge-bg"></div><div class="gf-goal"><svg viewBox="0 0 200 110"><g stroke="#fff" stroke-opacity=".28" stroke-width="1">${Array.from({length:13},(_,i)=>`<path d="M${10+i*15} 8V105"/>`).join('')}${Array.from({length:8},(_,i)=>`<path d="M10 ${12+i*13}H190"/>`).join('')}</g><path d="M8 106V6H192V106" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg></div><div class="gf-ball">⚽</div><div class="gf-txt">¡GOL!</div><div class="ge-flash"></div>`,
+ brawl:`<div class="ge-bg"></div><div class="gb-w"><div class="gb-s gb-s1">${SWORD}</div><div class="gb-s gb-s2">${SWORD}</div><div class="gb-ring"></div>${Array.from({length:12},(_,i)=>`<i class="gb-sp" style="--a:${i*30}deg;--l:${50+(i%3)*24}px"></i>`).join('')}</div><div class="ge-flash"></div>`,
+ cr:`<div class="ge-bg"></div><div class="gc-drop"><svg viewBox="0 0 60 90"><defs><radialGradient id="eg" cx=".35" cy=".4" r=".8"><stop offset="0" stop-color="#f6a8ff"/><stop offset=".55" stop-color="#c026d3"/><stop offset="1" stop-color="#6b1a9e"/></radialGradient></defs><path d="M30 4 C30 4 6 38 6 58 a24 24 0 0 0 48 0 C54 38 30 4 30 4Z" fill="url(#eg)" stroke="#4a1270" stroke-width="2"/><ellipse cx="21" cy="52" rx="5" ry="9" fill="#fff" fill-opacity=".45" transform="rotate(20 21 52)"/></svg></div><div class="gc-splash"></div><div class="gc-ring"></div>${Array.from({length:10},(_,i)=>`<i class="gc-p" style="--a:${i*36+8}deg;--d:${70+(i%3)*40}px"></i>`).join('')}`};
+function enterGame(g,el){if(GEL)return;
+  const go1=()=>go({s:'game',g,tab:'table'});
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){go1();return}
+  GEL=true;const r=el.getBoundingClientRect(),W=innerWidth,H=innerHeight,d=document.createElement('div');
+  d.id='ge';d.className='ge ge-'+g;d.setAttribute('aria-hidden','true');
+  d.style.setProperty('--dx',(r.left+r.width/2-W/2)+'px');d.style.setProperty('--dy',(r.top+r.height/2-H*.4)+'px');
+  d.innerHTML=GESCENE[g];document.body.appendChild(d);
+  setTimeout(()=>{try{go1()}finally{d.classList.add('out');setTimeout(()=>{d.remove();GEL=false},480)}},1150)}
+
 function render(reset){RN++;
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
-  document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'');
+  document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'')+(GBG&&BGOK[v.g]&&(v.s==='game'||v.s==='tour')?' gbg':'');
   const A=$('app'),sk=(!authChecked||(USER&&!ready&&!loginErr))?'L':(!USER||!ready)?'G':!ME?'N':'A',ent=!!reset||sk!==LSK;LSK=sk;A.classList.remove('enter');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ent&&sk!=='L'){void A.offsetWidth;A.classList.add('enter')}
