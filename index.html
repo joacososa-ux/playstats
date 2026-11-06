@@ -247,6 +247,21 @@ tr.last td:last-child{border-right:1px solid var(--bad);border-radius:0 12px 12p
 .imgp h3{margin:0 0 10px;text-align:center}.imgp canvas,.imgp .gifp{width:100%;border-radius:12px;touch-action:none;background:#000;display:block;cursor:grab}
 .imgp.iav canvas,.imgp.iav .gifp{width:220px;height:220px;border-radius:50%;margin:0 auto;object-fit:cover}.imgp .gifp{object-fit:cover}
 .imgp input[type=range]{width:100%;margin:12px 0 4px}
+
+/* ✨ Estilo Cristal (prueba) */
+body.glass .vsheet,body.glass .brsh,body.glass .imgp,body.glass .mnu{background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.06) 55%,rgba(255,255,255,.12));-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.12),inset 1px 0 0 rgba(255,255,255,.12),0 24px 56px -12px rgba(0,0,0,.65)}
+body.glass .vsheet::before,body.glass .brsh::before,body.glass .imgp::before,body.glass .mnu::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;background:radial-gradient(120% 70% at 12% -10%,rgba(255,255,255,.28),transparent 55%)}
+body.glass .imgp{position:relative}
+body.glass .mbg{background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+body.glass .imged{background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+body.glass #toast{background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 14px 34px -8px rgba(0,0,0,.6)}
+body.glass .tabs{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 18px -8px rgba(0,0,0,.5)}
+body.glass .tabs button.on{background:linear-gradient(180deg,rgba(255,255,255,.36),rgba(255,255,255,.14));background:linear-gradient(180deg,rgba(255,255,255,.36),color-mix(in srgb,var(--acc) 34%,transparent));color:var(--tx);border:1px solid rgba(255,255,255,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 4px 12px -4px rgba(0,0,0,.5);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+body.glass .brt button.on:last-child{color:var(--tx)}
+body.glass .pbn{height:136px}
+body.glass .pid{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.07));-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);border:1px solid rgba(255,255,255,.3);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5),0 14px 34px -10px rgba(0,0,0,.6);border-radius:20px;padding:10px 14px;margin:-58px 10px 12px;align-items:center}
+body.glass .pid .avx{border-color:var(--ac,rgba(255,255,255,.65));background:rgba(0,0,0,.3)}
+@media (prefers-reduced-transparency:reduce){body.glass .vsheet,body.glass .brsh,body.glass .imgp,body.glass .mnu,body.glass .pid,body.glass #toast{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--panel)}}
 </style>
 </head>
 <body>
@@ -259,7 +274,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · p';
+const APP_V='6-nov-2026 · q';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -987,7 +1002,8 @@ ${t.done?throne(nm(t.champ),'Campeón de la copa',sub):''}
 ${t.done?'':`<button class="pri" style="width:100%;margin-bottom:10px;${ready?'':'opacity:.5'}" ${ready?'':'disabled'} onclick="finishBr()">Cerrar copa y sumar a la tabla</button><p class="note">${ready?'El campeón suma una copa y todos un torneo jugado.':'Se cierra cuando estén definidos la final y el 3er puesto.'}</p>${played?'':'<button class="ghost" style="margin-bottom:10px" onclick="redrawBr()">🔀 Sortear de nuevo</button>'}`}
 ${del}${v.brt?brSheet(t):''}`}
 
-let LOOK={},BAN={},imgKind=null;
+let LOOK={},BAN={},imgKind=null,GLASS=true;try{GLASS=localStorage.getItem('ps_glass')!=='0'}catch(e){}
+function setGlass(on){GLASS=!!on;try{localStorage.setItem('ps_glass',on?'1':'0')}catch(e){}render()}
 const COLORS=['#c6ff3d','#2ee67a','#5aa9ff','#ff8a2b','#ff5d73','#b985ff','#ffd24a','#35e0d6'];
 const lookOf=u=>(u&&LOOK[u])||{};
 const fUid=id=>(S.friends.find(f=>f.id===id)||{}).uid;
@@ -1036,6 +1052,7 @@ function lookCard(){const u=USER.uid,L=lookOf(u);needBanner(u);const ban=BAN[u];
 <div class="pid" style="${L.color?'--ac:'+L.color:''}"><span class="avx" style="width:78px;height:78px;font-size:34px">${L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase()}</span><div class="nmb"><div class="disp" style="font-size:26px;line-height:1">@${esc(ME.nick)}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>
 <div class="row2"><button onclick="pickImg('av')">📷 Foto</button><button onclick="pickImg('bn')">🖼️ Portada</button></div>
 <div class="row2" style="margin-top:8px"><button class="ghost" onclick="clearImg('av')">Quitar foto</button><button class="ghost" onclick="clearImg('bn')">Quitar portada</button></div>
+<p class="note" style="margin:14px 0 6px">Estilo de la app</p><div class="tabs" style="margin-bottom:6px"><button class="${GLASS?'on':''}" onclick="setGlass(true)">✨ Cristal</button><button class="${GLASS?'':'on'}" onclick="setGlass(false)">Clásico</button></div>
 <p class="note" style="margin:14px 0 0">Tu color</p><div class="sws">${COLORS.map(c=>`<button class="sw ${L.color===c?'on':''}" style="background:${c}" aria-label="Color ${c}" onclick="setColor('${c}')"></button>`).join('')}<button class="ghost" style="min-height:0;padding:4px 10px" onclick="setColor('')">Sin color</button></div>
 <input class="in" id="bio" maxlength="60" placeholder="Tu frase (opcional)" value="${esc(L.bio||'')}" onchange="setBio(this.value)">
 <p class="note">Fotos JPG, PNG o WebP: se achican solas. También podés usar GIFs animados: foto hasta 250 KB y portada hasta 600 KB.</p></div>`}
@@ -1043,7 +1060,7 @@ function lookCard(){const u=USER.uid,L=lookOf(u);needBanner(u);const ban=BAN[u];
 function render(reset){
   const y=window.scrollY;const sl=[...document.querySelectorAll('.wrap,.vsw,.brs')].map(e=>e.scrollLeft);
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
-  document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'');
+  document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'');
   $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon})[v.s]();
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap,.vsw,.brs').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
