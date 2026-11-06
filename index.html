@@ -357,7 +357,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · x';
+const APP_V='6-nov-2026 · y';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -689,6 +689,7 @@ function calcTitles(){
   S.friends.forEach(f=>{P[f.id]={id:f.id,c:0,cp:0,d:0,t:0,fifa:{pj:0,w:0,e:0,l:0,gf:0,gc:0,big:0},cr:{pj:0,w:0,l:0,gf:0,gc:0,triple:0},brawl:{pj:0,w:0,first:0,last:0,ko:0,pos:0},tg:{fifa:0,brawl:0,cr:0},sw:0,sl:0,second:0,dyn:0,loss:0,vs:{},trophies:[]}});
   for(const gm of GM){const G=S.games[gm];if(!G)continue;
     for(const id in G.stats){const p=P[id],x=G.stats[id];if(p){p.c+=x.c||0;p.cp+=x.cp||0;p.d+=x.d||0;p.t+=x.t||0;p.tg[gm]+=x.t||0}}
+    (G.legacy||[]).forEach(l=>{if(P[l.p])P[l.p].trophies.push({gm,type:l.type,name:l.name,ts:l.ts||0,legacy:1,lid:l.id})});
     const ev=[];let k=0;
     G.tours.forEach(t=>t.matches.forEach(m=>{if(isDone(m,gm))ev.push({m,k:k++})}));
     ev.sort((a,b)=>(a.m.ts||0)-(b.m.ts||0)||a.k-b.k);
@@ -777,10 +778,26 @@ function trophySheet(tc){const [pid,ix]=v.vt.split(':');const p=tc.P[pid];if(!p)
 <div class="disp" style="font-size:28px;line-height:1.1;margin-top:8px;color:#fff3c4">${esc(t.name)}</div>
 <div style="margin:10px 0 2px"><span class="tchip ${lg?'oro':'neu'}">${lg?'Campeonato de liga':'Copa'}</span> <span class="tchip pos" style="background:${GACC[t.gm]};color:#06130c">${GAMES[t.gm].e} ${GNAME[t.gm]}</span></div>
 <div class="note" style="margin:8px 0 0">Ganador: <b style="color:var(--tx)">${nm(pid)}</b></div>
-<div class="note" style="margin:2px 0 12px">Se cerró el <b style="color:var(--tx)">${fDate(t.ts)}</b></div>
-<button class="pri" style="width:100%" onclick="go({vt:null})">Cerrar</button></div>`}
+<div class="note" style="margin:2px 0 12px">${t.legacy?'Trofeo histórico · ':'Se cerró el '}<b style="color:var(--tx)">${fDate(t.ts)}</b></div>
+${t.legacy&&canEdit()?`<button class="ghost" style="width:100%;margin-bottom:8px" onclick="legDel('${t.gm}','${t.lid}')">🗑 Quitar este trofeo</button>`:''}<button class="pri" style="width:100%" onclick="go({vt:null})">Cerrar</button></div>`}
+const GNM={fifa:'FIFA',brawl:'BrawlHalla',cr:'Clash Royale'};
+function legSheet(){const fs=S.friends.map(f=>`<option value="${f.id}">${nmp(f.id)}</option>`).join('');
+  return `<div class="mbg" onclick="go({lg:false})"></div><div class="vsheet" role="dialog" style="text-align:left;max-height:88vh;overflow:auto"><h3 style="margin:0 0 4px">Agregar trofeo histórico</h3>
+<p class="note" style="margin:0 0 10px">Para torneos anteriores a la app. Aparece en la vitrina del jugador. No modifica la tabla de campeonatos.</p>
+<label class="note">Jugador</label><select class="in" id="lgp">${fs}</select>
+<div class="row2" style="margin-top:8px"><div><label class="note">Juego</label><select class="in" id="lgg">${GM.map(g=>`<option value="${g}">${GNM[g]}</option>`).join('')}</select></div><div><label class="note">Tipo</label><select class="in" id="lgt"><option value="liga">Liga</option><option value="copa">Copa</option></select></div></div>
+<label class="note" style="display:block;margin-top:8px">Nombre del torneo</label><input class="in" id="lgn" maxlength="40" placeholder="Ej: Liga de verano 2025">
+<div class="row2" style="margin-top:8px"><div><label class="note">Fecha (opcional)</label><input class="in" id="lgd" type="date"></div><div><label class="note">Cantidad</label><select class="in" id="lgc">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option>${n}</option>`).join('')}</select></div></div>
+<p class="note" style="margin:8px 0 12px">Si ponés más de 1, se agregan numerados (Liga de verano 1, 2, 3…).</p>
+<button class="pri" style="width:100%;margin-bottom:8px" onclick="legAdd()">Agregar a la vitrina</button><button class="ghost" style="width:100%" onclick="go({lg:false})">Cancelar</button></div>`}
+function legAdd(){const g=$('lgg').value,pid=$('lgp').value,type=$('lgt').value,name=$('lgn').value.trim().slice(0,40),n=Math.max(1,Math.min(10,+$('lgc').value||1)),d=$('lgd').value;
+  if(!name){toast('Poné el nombre del torneo.');return}
+  const ts=d?new Date(d+'T12:00:00').getTime():0,G=S.games[g];G.legacy=G.legacy||[];
+  for(let i=1;i<=n;i++)G.legacy.push({id:uid(),p:pid,type,name:n>1?name+' '+i:name,ts});
+  save();v.lg=false;toast('Trofeo'+(n>1?'s agregados':' agregado')+' a la vitrina.');render()}
+function legDel(g,id){const G=S.games[g];G.legacy=(G.legacy||[]).filter(l=>l.id!==id);save();v.vt=null;toast('Trofeo quitado.');render()}
 function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
-  const top=`<div class="top"><button class="ghost" onclick="go({s:'${v.vb||'friends'}',vt:null})">←</button><h2>Vitrina</h2></div>`;
+  const top=`<div class="top"><button class="ghost" onclick="go({s:'${v.vb||'friends'}',vt:null})">←</button><h2>Vitrina</h2>${canEdit()?'<button class="ghost" style="margin-left:auto" onclick="go({lg:true})">＋ Trofeo</button>':''}</div>`;
   if(!ord.length)return top+'<div class="empty">Todavía no hay jugadores en el grupo.</div>';
   const cabs=ord.map((id,pi)=>{const p=tc.P[id],list=trList(p),uu=fUid(id),LK=lookOf(uu),led=LK.color||ledOf(p);needBanner(uu);const bn=uu?BAN[uu]:'';
     const nl=list.filter(x=>x.type==='liga').length,nc=list.length-nl;const me=USER&&(S.friends.find(f=>f.id===id)||{}).uid===USER.uid;
@@ -791,7 +808,7 @@ function vitrina(){const tc=calcTitles();const ord=vOrder(tc);
 <div class="vwall"><div class="vrow">${trs}</div><div class="vshelf"></div></div><div class="vfoot"></div></section>`}).join('');
   const st=v.vp?Math.max(0,ord.indexOf(v.vp)):0;
   return top+`<div class="vsw" data-start="${st}">${cabs}</div>
-<p class="note" style="text-align:center">Tocá un trofeo para ver el detalle. Si un jugador tiene muchos, deslizá su estante hacia el costado.</p>${v.vt?trophySheet(tc):''}`}
+<p class="note" style="text-align:center">Tocá un trofeo para ver el detalle. Si un jugador tiene muchos, deslizá su estante hacia el costado.</p>${v.lg&&canEdit()?legSheet():''}${v.vt?trophySheet(tc):''}`}
 
 function friends(){
   const tc=calcTitles();
@@ -1219,7 +1236,7 @@ function render(reset){RN++;
   if(crWanted()&&Date.now()-crLast>25000)setTimeout(()=>crSync(false),50);
   if(v.vsc&&v.s==='vitrina'){const e=document.querySelector('.vsw');const c=e&&e.children[+e.dataset.start||0];if(c)window.scrollTo(0,c.getBoundingClientRect().top+window.scrollY-12);v.vsc=false}
 }
-['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','setKind','brPick','redrawBr','finishBr','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
+['addFriend','delFriend','addToTable','rmFromTable','bump','addDraft','rmDraft','setMode','createT','setScore','setB','finishT','finishCup','koStep','setLegs','setKind','brPick','redrawBr','finishBr','delT2','addMember','linkFriend','setCrTag','syncCR','undoAuto','delFree','legAdd','legDel'].forEach(n=>{const f=window[n];window[n]=function(...a){if(!canEdit()){toast('Solo los administradores del grupo pueden hacer cambios.');return}return f.apply(this,a)}});
 render();
 </script>
 <script type="module">
