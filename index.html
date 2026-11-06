@@ -265,6 +265,10 @@ body.glass .pid .avx{border-color:var(--ac,rgba(255,255,255,.65));background:rgb
 body.glass .vtt{background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.07));-webkit-backdrop-filter:blur(14px) saturate(1.7);backdrop-filter:blur(14px) saturate(1.7);border:1px solid rgba(255,255,255,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(255,255,255,.1),0 8px 20px -6px rgba(0,0,0,.65)}
 body.glass .vtt b{text-shadow:0 1px 8px rgba(0,0,0,.65),0 0 2px rgba(0,0,0,.5)}body.glass .vtt span{color:#e7eaf2;text-shadow:0 1px 5px rgba(0,0,0,.7)}
 @media (prefers-reduced-transparency:reduce){body.glass .vtt{-webkit-backdrop-filter:none;backdrop-filter:none}}
+.mprof{width:100%;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;border-radius:14px}
+.mprof:active{background:rgba(255,255,255,.08)}.mprof b{font-size:17px}
+.tstrip{background:radial-gradient(100% 140% at 0% 0%,rgba(255,200,60,.2),transparent 65%),var(--panel);box-shadow:0 0 26px -10px rgba(255,200,60,.55)}
+.tstrip small{color:#ffd24a}
 </style>
 </head>
 <body>
@@ -277,7 +281,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='6-nov-2026 · r';
+const APP_V='6-nov-2026 · s';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -545,7 +549,7 @@ function menuPanel(){const nb=badge();
   const it=(e,l,act,x)=>`<button class="mit" role="menuitem" onclick="${act}"><span class="mie">${e}</span><span class="mil">${l}</span>${x||'<span class="mic">›</span>'}</button>`;
   const bd=n=>n?`<span class="mbd">${n}</span>`:'<span class="mic">›</span>';
   return `<div class="mbg" onclick="go({menu:false})"></div><div class="mnu" role="menu">
-<div class="mhd"><div class="av" style="width:44px;height:44px;font-size:24px">${esc(ME?ME.nick.charAt(0).toUpperCase():'?')}</div><div><b>${ME?'@'+esc(ME.nick):'Mi cuenta'}</b><div class="note" style="margin:0;font-size:12px">${esc(S.name)}</div></div></div>
+<button class="mhd mprof" onclick="go({s:'profile',menu:false})" aria-label="Mi perfil y copia de seguridad">${meAv(48)}<div style="flex:1;min-width:0"><b>${ME?'@'+esc(ME.nick):'Mi cuenta'}</b><div class="note" style="margin:0;font-size:12px;color:var(--acc)">Mi perfil y copia de seguridad</div></div><span class="mic">›</span></button>
 <div class="msec">Grupo</div>
 ${it('🏆','Tabla suprema',"go({s:'supreme',menu:false})")}
 ${it('👥','Jugadores <span class="note" style="margin:0">('+S.friends.length+')</span>',"go({s:'friends',menu:false})")}
@@ -553,7 +557,6 @@ ${it('⚔️','Mano a mano',"go({s:'h2h',menu:false})")}
 <div class="msec">Social</div>
 ${it('🤝','Amigos',"go({s:'social',err:'',msg:'',found:null,menu:false})",bd(nb))}
 <div class="msec">Cuenta</div>
-${it('👤','Mi perfil y copia de seguridad',"go({s:'profile',menu:false})")}
 ${INST?it('📲','Instalar app',"installApp()"):''}
 ${it('↪','Cerrar sesión',"doLogout()",'<span class="mic"></span>')}
 <div class="note" style="text-align:center;opacity:.6;margin:10px 0 2px;font-size:12px">PlayStats · versión ${APP_V}</div></div>`}
@@ -566,6 +569,8 @@ function home(){return `<div class="hbar"><h1 class="logo disp" style="margin:0"
 ${(()=>{const L=supLeader();return L?`<button class="strip" onclick="go({s:'supreme'})"><span class="crn">👑</span><span class="stx"><small>Agarrá un libro pibe</small><b>${nm(L.id)}</b><em>${cnt(L.c,'campeonato','campeonatos')}${copTxt(L.cp)} · ${dTxt(L.d)}</em></span><span class="mic">›</span></button>`:''})()}
 ${(()=>{const tc=calcTitles();const all=Object.values(tc.P);const tot=all.reduce((a,p)=>a+p.trophies.length,0);const top=all.slice().sort((a,b)=>b.trophies.length-a.trophies.length)[0];
   return `<button class="strip vstrip" onclick="go({s:'vitrina',vb:'home',vp:null,vsc:false,vt:null})"><span class="crn" style="animation:none">🏆</span><span class="stx"><small>Vitrina de trofeos</small><b>${cnt(tot,'trofeo','trofeos')}</b><em>${top&&top.trophies.length?'Más trofeos: '+nm(top.id)+' ('+top.trophies.length+')':'Todavía no hay trofeos en el grupo'}</em></span><span class="mic">›</span></button>`})()}
+${(()=>{const tc=calcTitles();const ids=Object.keys(tc.by||{});const tot=ids.reduce((a,id)=>a+(tc.by[id]||[]).length,0);const top=ids.slice().sort((a,b)=>(tc.by[b]||[]).length-(tc.by[a]||[]).length)[0];
+  return `<button class="strip vstrip tstrip" onclick="go({s:'salon',sb:'home'})"><span class="crn" style="animation:none">🏅</span><span class="stx"><small>Salón de títulos</small><b>${cnt(tot,'título','títulos')}</b><em>${top&&(tc.by[top]||[]).length?'Más títulos: '+nm(top)+' ('+tc.by[top].length+')':'Se desbloquean jugando torneos'}</em></span><span class="mic">›</span></button>`})()}
 ${v.menu?menuPanel():''}`}
 
 
@@ -674,7 +679,7 @@ ${g}${sec('Rachas',row('Mejor racha de victorias',p.sw)+row('Peor racha de derro
 <button class="pri" style="width:100%" onclick="go({s:'vitrina',vb:'pp',vp:'${p.id}',vsc:true,vt:null})">🏆 Ver su vitrina (${p.trophies.length})</button>
 <p class="note">Las estadísticas salen de los partidos cargados en este grupo. Lo que se corrige a mano con − y + no suma a goles, KOs ni coronas.</p>`}
 function salon(){const tc=calcTitles();const secs=[...new Set(TITLES.map(t=>t.s))];
-  return `<div class="top"><button class="ghost" onclick="go({s:'friends'})">←</button><h2>Salón de títulos</h2></div>
+  return `<div class="top"><button class="ghost" onclick="go({s:v.sb||'friends'})">←</button><h2>Salón de títulos</h2></div>
 <div style="margin:0 0 6px">${Object.keys(KC).map(k=>`<span class="tchip ${k}">${KC[k].e} ${{oro:'Oro',pos:'Positivo',neu:'Neutro',neg:'Negativo'}[k]}</span>`).join('')}</div>
 <p class="note">Se calculan solos con los partidos cargados. Si alguien supera al líder, el título cambia de dueño. En los promedios hace falta jugar un mínimo de partidos.</p>
 ${S.friends.length<2?'<div class="empty">Hacen falta al menos 2 jugadores en el grupo.</div>':secs.map(sc=>`<h3 style="margin:16px 0 8px;color:var(--mut)">${sc}</h3>`+TITLES.filter(t=>t.s===sc).map(T=>{const a=tc.aw[T.id];
@@ -714,7 +719,7 @@ function friends(){
   const linked=new Set(S.friends.filter(f=>f.uid).map(f=>f.uid));
   const free=S.members.filter(u=>!linked.has(u));
   return `<div class="top"><button class="ghost" onclick="go({s:'home',g:null})">←</button><h2>Jugadores</h2></div>
-<div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina',vb:'friends',vp:null,vsc:false,vt:null})">🏆 Vitrina</button><button onclick="go({s:'salon'})">🏅 Salón de títulos</button></div>
+<div class="row2" style="margin-bottom:12px"><button onclick="go({s:'vitrina',vb:'friends',vp:null,vsc:false,vt:null})">🏆 Vitrina</button><button onclick="go({s:'salon',sb:'friends'})">🏅 Salón de títulos</button></div>
 ${free.length?`<div class="card"><h3>Miembros del grupo</h3><p class="note">Tienen cuenta en PlayStats. Sumalos como jugadores.</p>${free.map(u=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0"><b>@${esc(memberNick(u))}${u===USER.uid?' (vos)':''}</b><button class="pri" onclick="addMember('${u}')">Agregar como jugador</button></div>`).join('')}</div>`:''}
 <div class="add"><input class="in" id="fn" placeholder="Nombre de un invitado (sin cuenta)" onkeydown="if(event.key==='Enter')addFriend()"><button class="pri" onclick="addFriend()">Agregar invitado</button></div>
 ${S.friends.length?`<div class="card">${S.friends.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;flex-wrap:wrap"><span style="cursor:pointer;flex:1;min-width:140px" onclick="go({s:'pp',pp:'${f.id}'})">${avHTML(f.id,30)} <b>${nm(f.id)}</b> <span class="tag ${f.uid?'ok':''}">${f.uid?'@'+esc(memberNick(f.uid)):'Invitado'}</span> <span style="color:var(--mut)">›</span>${titleLine(tc,f.id)}</span><span style="display:flex;gap:6px;align-items:center">${!f.uid&&free.length?`<select class="in" style="width:auto;min-height:36px;padding:4px 8px" onchange="linkFriend('${f.id}',this.value)"><option value="">Vincular a…</option>${free.map(u=>`<option value="${u}">@${esc(memberNick(u))}</option>`).join('')}</select>`:''}<button class="ghost danger" onclick="delFriend('${f.id}')">Quitar</button></span><div style="flex-basis:100%">${canEdit()?`<input class="in" style="min-height:38px;padding:6px 10px" placeholder="🏰 Tag de Clash Royale (opcional) #ABC123" value="${f.cr?'#'+f.cr:''}" onchange="setCrTag('${f.id}',this.value)">`:(f.cr?`<small style="color:var(--mut)">🏰 #${f.cr}</small>`:'')}</div></div>`).join('')}</div>`:'<div class="empty">Todavía no hay jugadores. Sumá miembros del grupo o invitados.</div>'}`}
@@ -1013,6 +1018,8 @@ const fUid=id=>(S.friends.find(f=>f.id===id)||{}).uid;
 async function loadLooks(){if(!USER||!R)return;const ids=[...new Set([USER.uid,...R.groups.flatMap(g=>g.members||[])])].filter(id=>id&&LOOK[id]===undefined);
   await Promise.all(ids.map(async id=>{try{LOOK[id]=(await FB.getLook(id))||{}}catch(e){}}))}
 function needBanner(u){if(!u||!lookOf(u).hb||BAN[u]!==undefined)return;BAN[u]=null;FB.getBanner(u).then(x=>{BAN[u]=x||'';softRender()}).catch(()=>{BAN[u]=''})}
+function meAv(sz){const L=lookOf(USER&&USER.uid);
+  return L.av?`<span class="avx" style="width:${sz}px;height:${sz}px${L.color?';--ac:'+L.color:''}"><img src="${L.av}" alt=""></span>`:`<div class="av" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.55)}px;flex:none${L.color?';background:'+L.color:''}">${esc(ME?ME.nick.charAt(0).toUpperCase():'?')}</div>`}
 function avHTML(id,sz){const L=lookOf(fUid(id)),ch=esc(rawName(id)).slice(0,1).toUpperCase();
   return `<span class="avx" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.46)}px${L.color?';--ac:'+L.color:''}">${L.av?`<img src="${L.av}" alt="">`:ch}</span>`}
 const lookErr=e=>toast('No se pudo guardar'+(e&&e.code==='permission-denied'?' (faltan las reglas nuevas de Firebase).':'.'));
