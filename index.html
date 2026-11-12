@@ -452,7 +452,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='11-nov-2026 · g';
+const APP_V='12-nov-2026 · h';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -1285,10 +1285,10 @@ function lookCard(){const u=USER.uid,L=lookOf(u),mf=S&&S.friends.find(f=>f.uid==
   return `<div class="card"><h3>Mi apariencia</h3>
 <div class="pbn" style="${L.color?'--ac:'+L.color:''}">${ban?`<img src="${ban}" alt="">`:''}</div>
 <div class="pid" style="${L.color?'--ac:'+L.color:''}"><span class="avx${lf.fr?' fr-'+lf.fr:''}" style="width:78px;height:78px;font-size:34px">${L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase()}</span><div class="nmb"><div class="disp" style="font-size:26px;line-height:1">${lf.fx?`<span class="fx fx-${lf.fx}">@${esc(ME.nick)}</span>`:'@'+esc(ME.nick)}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>
-<button class="pri" style="width:100%;margin-bottom:8px" onclick="CHD=null;go({s:'char'})">🧍 Mi personaje</button>
+${CHARS_ON?`<button class="pri" style="width:100%;margin-bottom:8px" onclick="CHD=null;go({s:'char'})">🧍 Mi personaje</button>`:''}
 <div class="row2"><button onclick="pickImg('av')">📷 Foto</button><button onclick="pickImg('bn')">🖼️ Portada</button></div>
 <div class="row2" style="margin-top:8px"><button class="ghost" onclick="clearImg('av')">Quitar foto</button><button class="ghost" onclick="clearImg('bn')">Quitar portada</button></div>
-<p class="note" style="margin:14px 0 6px">Personajes</p><div class="tabs" style="margin-bottom:6px"><button class="${CHSHOW?'on':''}" onclick="setChr(true)">🧍 Mostrar</button><button class="${CHSHOW?'':'on'}" onclick="setChr(false)">Ocultar</button></div>
+${CHARS_ON?`<p class="note" style="margin:14px 0 6px">Personajes</p><div class="tabs" style="margin-bottom:6px"><button class="${CHSHOW?'on':''}" onclick="setChr(true)">🧍 Mostrar</button><button class="${CHSHOW?'':'on'}" onclick="setChr(false)">Ocultar</button></div>`:''}
 <p class="note" style="margin:14px 0 6px">Pantalla de campeón al cerrar un torneo</p><div class="tabs" style="margin-bottom:6px"><button class="${CHAMPON?'on':''}" onclick="setChamp(true)">🏆 Mostrar</button><button class="${CHAMPON?'':'on'}" onclick="setChamp(false)">No mostrar</button></div>
 <p class="note" style="margin:14px 0 6px">Fondos dentro de los juegos</p><div class="tabs" style="margin-bottom:6px"><button class="${GBG?'on':''}" onclick="setGbg(true)">🖼 Con imagen</button><button class="${GBG?'':'on'}" onclick="setGbg(false)">Lisos</button></div>
 <p class="note" style="margin:14px 0 6px">Estilo de la app</p><div class="tabs" style="margin-bottom:6px"><button class="${GLASS?'on':''}" onclick="setGlass(true)">✨ Cristal</button><button class="${GLASS?'':'on'}" onclick="setGlass(false)">Clásico</button></div>
@@ -1541,7 +1541,8 @@ function pjStrip(c,pn,im0){const im=pjTint(im0,c);const names=pn==='show'?['poli
 const CHS={};
 function chStrip(c,pn){const k=c.join('.')+'|'+pn;if(CHS[k])return CHS[k];if(c[13]>0){const im=pimg(pjFile(c[13]));if(im)return CHS[k]=pjStrip(c,pn,im)}const fr=pn==='show'?[...POSES.polish,...POSES.polish,...POSES.brag]:POSES[pn],cv=document.createElement('canvas');cv.width=CWD*fr.length;cv.height=CHT;const x=cv.getContext('2d');
   fr.forEach((f,i)=>x.drawImage(drawFrame(c,f),i*CWD,0));return CHS[k]={u:cv.toDataURL(),n:fr.length}}
-let CHSHOW=true;try{CHSHOW=localStorage.getItem('ps_chr')!=='0'}catch(e){}
+/* Personajes ocultos por ahora: poner CHARS_ON=true para reactivarlos */
+const CHARS_ON=false;let CHSHOW=false;if(CHARS_ON)try{CHSHOW=localStorage.getItem('ps_chr')!=='0'}catch(e){}
 function setChr(on){CHSHOW=!!on;try{localStorage.setItem('ps_chr',on?'1':'0')}catch(e){}render()}
 function chHTML(c,pn,k,spd){const st=chStrip(c,pn),w=CWD*k,h=CHT*k;
   return `<span class="chr${st.sm?' sm':''}" style="width:${w}px;height:${h}px;background:url(${st.u}) 0 0/${w*st.n}px ${h}px;--end:-${w*st.n}px;animation-duration:${(spd||.24)*st.n}s;animation-timing-function:steps(${st.n})" role="img" aria-label="Personaje"></span>`}
