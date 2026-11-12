@@ -440,6 +440,27 @@ body.gbg.cr::before{background-image:linear-gradient(#000a,#000d),var(--bg-cr)}
 .cos .cpv{position:relative;display:grid;place-items:center;min-height:50px}
 .cos.lock .cpv{opacity:.45}.cos .lk{position:absolute;font-style:normal;font-size:18px;right:-14px;bottom:-4px}
 .cos small{font-size:11px;font-weight:400;color:var(--mut);line-height:1.25}
+
+.cc{display:block;position:relative;flex:none}.ccb{position:absolute;inset:0;display:block;transform-origin:50% 100%}
+.ccl{position:absolute;left:0;display:block;background-image:url(ch-capas.webp);background-repeat:no-repeat}.cclg{width:111.1%!important}
+.cc.idle .ccb{animation:cci 2.6s ease-in-out infinite}.cc.walk .ccb{animation:ccw .56s linear infinite}.cc.cheer .ccb{animation:ccj .55s ease-out infinite}.cc.brag .ccb{animation:ccs 1.3s ease-in-out infinite}
+.cc.walk .cclg{animation:ccl .56s steps(4) infinite}
+@keyframes cci{50%{transform:translateY(calc(var(--u)*-2))}}
+@keyframes ccw{0%,50%,100%{transform:translateY(0)}25%,75%{transform:translateY(calc(var(--u)*-4))}}
+@keyframes ccj{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(var(--u)*-14))}}
+@keyframes ccs{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes ccl{to{background-position-x:var(--e)}}
+.vest{position:relative;height:340px;border-radius:18px;overflow:hidden;background:linear-gradient(#2b2433,#1a1622);border:1px solid var(--line,#ffffff22)}
+.vdoor{position:absolute;top:0;bottom:46px;width:22%;background:linear-gradient(90deg,#3a2f2a,#2a211e);border:1px solid #ffffff14}.vdoor.l{left:0;border-radius:0 0 8px 0}.vdoor.r{right:0;border-radius:0 0 0 8px}
+.vdoor::after{content:"";position:absolute;top:46%;width:5px;height:34px;border-radius:3px;background:#c9a66b}.vdoor.l::after{right:10px}.vdoor.r::after{left:10px}
+.vspot{position:absolute;left:50%;top:-30px;width:70%;height:120%;transform:translateX(-50%);background:radial-gradient(50% 45% at 50% 55%,#ffffff26,transparent 70%);pointer-events:none}
+.vfloor{position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(#4a3a2c,#352a21);border-top:2px solid #00000040}
+.vcr{position:absolute;left:50%;bottom:34px;transform:translateX(-62%);z-index:2;filter:drop-shadow(0 8px 6px #0008)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.vopt{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;padding:10px 6px 8px;min-height:104px;border-radius:12px;border:2px solid var(--line,#ffffff22);background:var(--panel2,#ffffff0d);color:var(--tx,#fff);cursor:pointer;font:inherit}
+.vopt b{font-size:12px;font-weight:600}.vopt.on{border-color:var(--acc);background:var(--panel,#ffffff14)}
+.cct{display:block;width:84px;background-image:url(ch-capas.webp);background-repeat:no-repeat}
+@media (prefers-reduced-motion:reduce){.cc .ccb,.cc .cclg{animation:none!important}}
 </style>
 </head>
 <body>
@@ -452,7 +473,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='12-nov-2026 · h';
+const APP_V='12-nov-2026 · i';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -578,7 +599,7 @@ async function loadAll(){
   if(!R.groups.length){const g=await createG('Mi grupo');R.cur=g.id}
   setS();normalize();await loadProfiles();R.groups.forEach(watch);saveUser();startSocial();
 }
-window.onUser=async u=>{authChecked=true;USER=u;ready=false;loginErr='';v.menu=false;
+window.onUser=async u=>{authChecked=true;USER=u;chGate();ready=false;loginErr='';v.menu=false;
   Object.values(subs).forEach(f=>f());subs={};stopSocial();
   if(!u){R={groups:[],cur:null};S=null;ME=null;PROF={};LOOK={};BAN={};v.s='home';render();return}
   try{await loadAll();ready=true}catch(e){loginErr='No se pudieron cargar tus datos. Revisá las reglas de Firestore y recargá. ('+(e.code||e.message)+')'}
@@ -676,7 +697,7 @@ function shame(n,l,sub){return `<div class="zocalo"><span class="zt">${l}</span>
 function worstIx(a){const i=a.length-1;return a.length>1&&a[i].d>0?i:-1}
 function worstG(G,g){const sp=sortedPlayers(G,g);const i=worstIx(sp.map(p=>stat(g,p)));return i>=0?sp[i]:null}
 const rk=(ix,ok,bad)=>bad?'<span class="crown">🔻</span>':ix===0&&ok?'<span class="crown">👑</span>':'<span class="rk">'+(ix+1)+'</span>';
-const winPose=id=>POSEF[chOf(id)[14]]||'cheer';
+const winPose=id=>FEST[chOf(id)[4]]||'cheer';
 function leadCard(r){const id=r.id;
   if(!CHSHOW)return throne(r.n,'Agarrá un libro pibe',r.c+' campeonatos'+copTxt(r.cp)+' · '+dTxt(r.d)+'<br>Vení, bajame si podés');
   return `<div class="lead"><div class="lbeam"></div><div class="lcr">👑</div><div class="lchr">${chHTML(chOf(id),winPose(id),4,.22)}</div><div class="lpod"><span>1</span></div><div class="ltl">Líder de la tabla suprema</div><div class="lnm">${nm(id)}</div><div class="lts">${r.c} ${r.c===1?'campeonato':'campeonatos'}${copTxt(r.cp)} · ${dTxt(r.d)}<br>Agarrá un libro pibe</div></div>`}
@@ -1285,7 +1306,7 @@ function lookCard(){const u=USER.uid,L=lookOf(u),mf=S&&S.friends.find(f=>f.uid==
   return `<div class="card"><h3>Mi apariencia</h3>
 <div class="pbn" style="${L.color?'--ac:'+L.color:''}">${ban?`<img src="${ban}" alt="">`:''}</div>
 <div class="pid" style="${L.color?'--ac:'+L.color:''}"><span class="avx${lf.fr?' fr-'+lf.fr:''}" style="width:78px;height:78px;font-size:34px">${L.av?`<img src="${L.av}" alt="">`:esc(ME.nick).slice(0,1).toUpperCase()}</span><div class="nmb"><div class="disp" style="font-size:26px;line-height:1">${lf.fx?`<span class="fx fx-${lf.fx}">@${esc(ME.nick)}</span>`:'@'+esc(ME.nick)}</div>${L.bio?`<p class="bio">${esc(L.bio)}</p>`:''}</div></div>
-${CHARS_ON?`<button class="pri" style="width:100%;margin-bottom:8px" onclick="CHD=null;go({s:'char'})">🧍 Mi personaje</button>`:''}
+${CHARS_ON?`<button class="pri" style="width:100%;margin-bottom:8px" onclick="CHD=null;go({s:'char'})">🚪 Vestidor</button>`:''}
 <div class="row2"><button onclick="pickImg('av')">📷 Foto</button><button onclick="pickImg('bn')">🖼️ Portada</button></div>
 <div class="row2" style="margin-top:8px"><button class="ghost" onclick="clearImg('av')">Quitar foto</button><button class="ghost" onclick="clearImg('bn')">Quitar portada</button></div>
 ${CHARS_ON?`<p class="note" style="margin:14px 0 6px">Personajes</p><div class="tabs" style="margin-bottom:6px"><button class="${CHSHOW?'on':''}" onclick="setChr(true)">🧍 Mostrar</button><button class="${CHSHOW?'':'on'}" onclick="setChr(false)">Ocultar</button></div>`:''}
@@ -1387,8 +1408,11 @@ const PJ=['','rulos','gorra','afro','skater','nerd','gamer','pelado','punk','rub
 const POSEF=['cheer','brag','polish','idle'],POSEFN=['Festejo','Fanfarrón','Limpiando','Parado'];
 const pjv=v=>v>0?{c:Math.floor((v-1)/5)+1,s:(v-1)%5}:{c:0,s:0},pjFile=v=>{const o=pjv(v);return 'pj-'+PJ[o.c]+STYF[o.s]+'.webp'};
 const CHMAX=[SKINS.length,CHN.hair.length,HAIRC.length,CHN.shirt.length,CLOTHC.length,CLOTHC.length,CHN.pants.length,PANTC.length,SHOEC.length,CHN.hat.length,CLOTHC.length,CHN.gl.length,PROPN.length,1+(PJ.length-1)*5,4,1+CLOTHC.length,1+PANTC.length,1+HAIRC.length,1+SHOEC.length];
-const normCh=a=>{if(!Array.isArray(a))return null;return CHMAX.map((m,i)=>{const n=Math.floor(+a[i]);return n>=0&&n<m?n:0})};
-const defCh=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;const r=()=>{h=(h*1103515245+12345)>>>0;return h>>>8};return CHMAX.map((m,i)=>i===9||i===11||i===12||i>=14&&i!==13?0:i===13?1+(r()%(PJ.length-1))*5+(r()%5):r()%m)};
+/* personaje por capas: ch=[99,cabeza,torso,piernas,festejo] (el 99 marca el formato nuevo) */
+const CCN={head:['Gorro','Rulos','Rodete'],torso:['Campera','Buzo','Remera'],legs:['Jean','Short']},FEST=['cheer','brag','walk'],FESTN=['Saltito','Fanfarrón','Caminando'];
+const CCMAX=[100,3,3,2,3];
+const normCh=a=>{if(!Array.isArray(a)||a[0]!==99)return null;return CCMAX.map((m,i)=>{const n=Math.floor(+a[i]);return i===0?99:n>=0&&n<m?n:0})};
+const defCh=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;const r=()=>{h=(h*1103515245+12345)>>>0;return h>>>8};return [99,r()%3,r()%3,r()%2,0]};
 const chOf=fid=>{const u=fUid(fid);return normCh(u&&lookOf(u).ch)||defCh(fid)};
 const shade=(c,f)=>'#'+[1,3,5].map(i=>Math.min(255,Math.round(parseInt(c.substr(i,2),16)*f)).toString(16).padStart(2,'0')).join('');
 const PIMG={};
@@ -1541,35 +1565,35 @@ function pjStrip(c,pn,im0){const im=pjTint(im0,c);const names=pn==='show'?['poli
 const CHS={};
 function chStrip(c,pn){const k=c.join('.')+'|'+pn;if(CHS[k])return CHS[k];if(c[13]>0){const im=pimg(pjFile(c[13]));if(im)return CHS[k]=pjStrip(c,pn,im)}const fr=pn==='show'?[...POSES.polish,...POSES.polish,...POSES.brag]:POSES[pn],cv=document.createElement('canvas');cv.width=CWD*fr.length;cv.height=CHT;const x=cv.getContext('2d');
   fr.forEach((f,i)=>x.drawImage(drawFrame(c,f),i*CWD,0));return CHS[k]={u:cv.toDataURL(),n:fr.length}}
-/* Personajes ocultos por ahora: poner CHARS_ON=true para reactivarlos */
-const CHARS_ON=false;let CHSHOW=false;if(CHARS_ON)try{CHSHOW=localStorage.getItem('ps_chr')!=='0'}catch(e){}
+/* Personajes por capas (cabeza, torso, piernas). Poner CHARS_ON=false para ocultarlos */
+const CHAR_DEV=['joacososa01@gmail.com'];/* mientras estén en pruebas, solo estas cuentas ven los personajes; vaciar la lista y poner CHARS_ALL=true para abrirlos a todos */
+const CHARS_ALL=false;let CHARS_ON=CHARS_ALL,CHSHOW=false;
+function chGate(){CHARS_ON=CHARS_ALL||!!(USER&&USER.email&&CHAR_DEV.includes(USER.email.toLowerCase()));CHSHOW=false;if(CHARS_ON)try{CHSHOW=localStorage.getItem('ps_chr')!=='0'}catch(e){}}
 function setChr(on){CHSHOW=!!on;try{localStorage.setItem('ps_chr',on?'1':'0')}catch(e){}render()}
-function chHTML(c,pn,k,spd){const st=chStrip(c,pn),w=CWD*k,h=CHT*k;
-  return `<span class="chr${st.sm?' sm':''}" style="width:${w}px;height:${h}px;background:url(${st.u}) 0 0/${w*st.n}px ${h}px;--end:-${w*st.n}px;animation-duration:${(spd||.24)*st.n}s;animation-timing-function:steps(${st.n})" role="img" aria-label="Personaje"></span>`}
-/* editor */
-let CHD=null,CHP='idle';
-function charEd(){const me=S&&S.friends.find(f=>f.uid===USER.uid);if(!CHD)CHD=normCh(lookOf(USER.uid).ch)||defCh(USER.uid);const c=CHD;
-  const chips=(i,arr)=>`<div class="chips">${arr.map((n,j)=>`<button class="chip ${c[i]===j?'on':''}" onclick="chSet(${i},${j})">${n}</button>`).join('')}</div>`;
-  const sws=(i,arr)=>`<div class="sws">${arr.map((col,j)=>`<button class="sw ${c[i]===j?'on':''}" style="background:${col}" aria-label="Opción ${j+1}" onclick="chSet(${i},${j})"></button>`).join('')}</div>`;
-  const tsw=(i,arr)=>`<div class="sws"><button class="sw ${c[i]===0?'on':''}" style="background:var(--panel2);font-size:11px;color:var(--tx)" aria-label="Original" onclick="chSet(${i},0)">↺</button>${arr.map((col,j)=>`<button class="sw ${c[i]===j+1?'on':''}" style="background:${col}" aria-label="Color ${j+1}" onclick="chSet(${i},${j+1})"></button>`).join('')}</div>`;
-  const h=t=>`<p class="note" style="margin:12px 0 4px"><b style="color:var(--tx)">${t}</b></p>`;
-  return `<div class="top"><button class="ghost" onclick="go({s:'profile'});CHD=null">←</button><h2>Mi personaje</h2></div>
-<div class="card" style="text-align:center"><div class="chprev">${chHTML(c,CHP,5,.26)}</div>
-<div class="chips" style="justify-content:center">${Object.keys(POSEN).map(k=>`<button class="chip ${CHP===k?'on':''}" onclick="CHP='${k}';render()">${POSEN[k]}</button>`).join('')}</div>
-<p class="note" style="margin:8px 0 0">@${esc(ME.nick)}${me?'':' · sumate como jugador al grupo para verlo en las vitrinas'}</p></div>
-<div class="card" style="text-align:left">${h('Personaje')}<div class="chips">${PJN.map((n,j)=>`<button class="chip pjp ${pjv(c[13]).c===j?'on':''}" title="${n}" aria-label="${n}" onclick="chSet(13,${j?(j-1)*5+1+pjv(c[13]).s:0})">${j?`<span class="pjt" style="background-position:-${(j-1)*45}px 0"></span>`:'<span class="pjt cu">🎨</span>'}</button>`).join('')}</div>
-${c[13]?`${h('Estilo')}<div class="chips">${STYN.map((n,j)=>`<button class="chip ${pjv(c[13]).s===j?'on':''}" onclick="chSet(13,${(pjv(c[13]).c-1)*5+1+j})">${n}</button>`).join('')}</div>`:''}
-${c[13]?`${h('Color de ropa')}${tsw(15,CLOTHC)}${h('Color de pantalón')}${tsw(16,PANTC)}${h('Color de pelo / gorro')}${tsw(17,HAIRC)}${h('Color de zapatillas')}${tsw(18,SHOEC)}<p class="note" style="margin:8px 0 0">«Original» deja los colores del personaje. Elegí «🎨 A medida» para armar uno pieza por pieza.</p>${h('Objeto')}${propPick(c[12])}</div>`:`${h('Piel')}${sws(0,SKINS)}${h('Peinado')}${chips(1,CHN.hair)}${h('Color de pelo')}${sws(2,HAIRC)}
-${h('Ropa')}${chips(3,CHN.shirt)}${h('Color principal')}${sws(4,CLOTHC)}${h('Color secundario (rayas, buzo, campera)')}${sws(5,CLOTHC)}
-${h('Pantalón')}${chips(6,CHN.pants)}${sws(7,PANTC)}${h('Zapatillas')}${sws(8,SHOEC)}
-${h('Cabeza')}${chips(9,CHN.hat)}${c[9]?sws(10,CLOTHC):''}${h('Lentes')}${chips(11,CHN.gl)}${h('Objeto')}${propPick(c[12])}</div>`}
-<div class="card" style="text-align:left">${h('Tu pose de festejo')}<p class="note" style="margin:0 0 6px">La que se ve cuando sos líder o campeón.</p>${chips(14,POSEFN)}</div>
+/* una hoja de imagen (ch-capas.webp, 800x431) con todas las piezas */
+const CCS={W:800,H:438};
+function ccPose(pn){return pn==='walk'?'walk':pn==='cheer'?'cheer':pn==='brag'?'brag':'idle'}
+function chHTML(c,pn,k){const s=CHT*k/320,u=s,p=ccPose(pn),w=180*s,h=320*s,bs=`${CCS.W*s}px ${CCS.H*s}px`;
+  const L=(t,hh,ww,x,y,ex)=>`<span class="ccl ${ex||''}" style="top:${t*s}px;height:${hh*s}px;width:${ww*s}px;background-size:${bs};background-position:-${x*s}px -${y*s}px"></span>`;
+  const lx=p==='walk'?0:200;
+  return `<span class="cc ${p}" style="width:${w}px;height:${h}px;--u:${u}px;--e:-${800*s}px" role="img" aria-label="Personaje"><span class="ccb">${L(209,111,200,lx,213+c[3]*113,'cclg')}${L(127,83,180,c[2]*180,129)}${L(0,128,180,c[1]*180,0)}</span></span>`}
+const ccThumb=(part,i)=>{const o={head:[180,128,i*180,0],torso:[180,81,i*180,130],legs:[200,111,200,213+i*113]}[part],f=84/o[0],hh=o[1]*f;
+  return `<span class="cct" style="height:${hh}px;background-size:${CCS.W*f}px ${CCS.H*f}px;background-position:-${o[2]*f}px -${o[3]*f}px"></span>`};
+/* vestidor */
+let CHD=null,CHP='walk',CHT_='head';
+const CCT=[['head','Cabeza'],['torso','Torso'],['legs','Piernas']],CCI={head:1,torso:2,legs:3};
+function charEd(){const me=S&&S.friends.find(f=>f.uid===USER.uid);if(!CHD)CHD=normCh(lookOf(USER.uid).ch)||defCh(USER.uid);const c=CHD,part=CHT_;
+  return `<div class="top"><button class="ghost" onclick="go({s:'profile'});CHD=null">←</button><h2>Vestidor</h2></div>
+<div class="vest"><div class="vdoor l"></div><div class="vdoor r"></div><div class="vspot"></div><div class="vcr">${chHTML(c,CHP,4.4)}</div><div class="vfloor"></div></div>
+<div class="chips" style="justify-content:center;margin:10px 0 0"><button class="chip ${CHP==='walk'?'on':''}" onclick="CHP='walk';render()">Caminando</button><button class="chip ${CHP==='idle'?'on':''}" onclick="CHP='idle';render()">Parado</button></div>
+<p class="note" style="text-align:center;margin:6px 0 0">@${esc(ME.nick)}${me?'':' · sumate como jugador al grupo para verlo en las vitrinas'}</p>
+<div class="tabs" style="margin:12px 0 8px">${CCT.map(([k,n])=>`<button class="${part===k?'on':''}" onclick="CHT_='${k}';render()">${n}</button>`).join('')}</div>
+<div class="vgrid">${CCN[part].map((n,j)=>`<button class="vopt ${c[CCI[part]]===j?'on':''}" onclick="chSet(${CCI[part]},${j})" aria-label="${n}">${ccThumb(part,j)}<b>${n}</b></button>`).join('')}</div>
+<div class="card" style="text-align:left;margin-top:12px"><p class="note" style="margin:0 0 6px"><b style="color:var(--tx)">Tu festejo</b> · lo que hace cuando sos líder o campeón.</p><div class="chips">${FESTN.map((n,j)=>`<button class="chip ${c[4]===j?'on':''}" onclick="chSet(4,${j})">${n}</button>`).join('')}</div></div>
 <div class="row2"><button onclick="chRnd()">🎲 Aleatorio</button><button class="pri" onclick="chSave()">Guardar personaje</button></div>
 <p class="note" style="text-align:center">Se ve en tu vitrina y lo ven los demás del grupo.</p>`}
-const propThumb=j=>{if(!j)return'<span class="pth">✕</span>';const b=j<=6,[sx,sw]=b?BALLX[j-1]:GTRX[j-7],H=b?32:72,k=34/H;return `<span class="pth" style="background:url(${b?'ch-balls.png':'ch-gtr.png'}) -${sx*k}px 0/${(b?197:149)*k}px 34px no-repeat;width:${sw*k}px"></span>`};
-const propPick=v=>`<div class="chips">${PROPN.map((n,j)=>`<button class="chip pcp ${v===j?'on':''}" title="${n}" aria-label="${n}" onclick="chSet(12,${j})">${propThumb(j)}</button>`).join('')}</div>`;
-function chSet(i,j){CHD[i]=j;if(i===14)CHP=POSEF[j];render()}
-function chRnd(){CHD=CHMAX.map((m,i)=>Math.floor(Math.random()*m));if(Math.random()<.6)CHD[9]=0;if(Math.random()<.6)CHD[11]=0;if(Math.random()<.6)CHD[12]=0;CHD[14]=0;for(let i=15;i<19;i++)if(Math.random()<.5)CHD[i]=0;render()}
+function chSet(i,j){CHD[i]=j;if(i===4&&FEST[j]!=='walk')CHP=FEST[j];render()}
+function chRnd(){CHD=[99,Math.floor(Math.random()*3),Math.floor(Math.random()*3),Math.floor(Math.random()*2),CHD?CHD[4]:0];render()}
 async function chSave(){await setLookF({ch:CHD});toast('Personaje guardado.')}
 
 function render(reset){RN++;
@@ -1577,7 +1601,7 @@ function render(reset){RN++;
   const ro=!!(USER&&ready&&S&&ME&&['game','tour','friends'].includes(v.s)&&!canEdit());
   document.body.className=((v.s==='game'||v.s==='tour')?v.g:'')+(ro?' ro':'')+(GLASS?' glass':'')+(GBG&&BGOK[v.g]&&(v.s==='game'||v.s==='tour')?' gbg':'');
   const A=$('app'),sk=(!authChecked||(USER&&!ready&&!loginErr))?'L':(!USER||!ready)?'G':!ME?'N':'A',ent=!!reset||sk!==LSK;LSK=sk;A.classList.remove('enter');
-  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon,char:charEd})[v.s]();
+  $('app').innerHTML=(!authChecked||(USER&&!ready&&!loginErr))?loaderView():(!USER||!ready)?loginView():!ME?nickView():({home,friends,supreme,game,tour,groups,profile,social,h2h,pp:playerProfile,vitrina,salon,char:()=>CHARS_ON?charEd():profile()})[v.s]();
   if(ent&&sk!=='L'){void A.offsetWidth;A.classList.add('enter')}
   if(ro)$('app').insertAdjacentHTML('afterbegin','<div class="rob">👀 Modo lectura: solo los administradores del grupo pueden hacer cambios.</div>');
   if(!reset)document.querySelectorAll('.wrap,.vsw,.brs').forEach((e,i)=>{if(sl[i])e.scrollLeft=sl[i]});
