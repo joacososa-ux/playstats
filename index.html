@@ -441,15 +441,6 @@ body.gbg.cr::before{background-image:linear-gradient(#000a,#000d),var(--bg-cr)}
 .cos.lock .cpv{opacity:.45}.cos .lk{position:absolute;font-style:normal;font-size:18px;right:-14px;bottom:-4px}
 .cos small{font-size:11px;font-weight:400;color:var(--mut);line-height:1.25}
 
-.cc{display:block;position:relative;flex:none}.ccb{position:absolute;inset:0;display:block;transform-origin:50% 100%}
-.ccl{position:absolute;left:0;display:block;background-image:url(ch-capas.webp);background-repeat:no-repeat}.cclg{width:111.1%!important}
-.cc.idle .ccb{animation:cci 2.6s ease-in-out infinite}.cc.walk .ccb{animation:ccw .56s linear infinite}.cc.cheer .ccb{animation:ccj .55s ease-out infinite}.cc.brag .ccb{animation:ccs 1.3s ease-in-out infinite}
-.cc.walk .cclg{animation:ccl .56s steps(4) infinite}
-@keyframes cci{50%{transform:translateY(calc(var(--u)*-2))}}
-@keyframes ccw{0%,50%,100%{transform:translateY(0)}25%,75%{transform:translateY(calc(var(--u)*-4))}}
-@keyframes ccj{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(var(--u)*-14))}}
-@keyframes ccs{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-@keyframes ccl{to{background-position-x:var(--e)}}
 .vest{position:relative;height:340px;border-radius:18px;overflow:hidden;background:linear-gradient(#2b2433,#1a1622);border:1px solid var(--line,#ffffff22)}
 .vdoor{position:absolute;top:0;bottom:46px;width:22%;background:linear-gradient(90deg,#3a2f2a,#2a211e);border:1px solid #ffffff14}.vdoor.l{left:0;border-radius:0 0 8px 0}.vdoor.r{right:0;border-radius:0 0 0 8px}
 .vdoor::after{content:"";position:absolute;top:46%;width:5px;height:34px;border-radius:3px;background:#c9a66b}.vdoor.l::after{right:10px}.vdoor.r::after{left:10px}
@@ -459,8 +450,11 @@ body.gbg.cr::before{background-image:linear-gradient(#000a,#000d),var(--bg-cr)}
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .vopt{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;padding:10px 6px 8px;min-height:104px;border-radius:12px;border:2px solid var(--line,#ffffff22);background:var(--panel2,#ffffff0d);color:var(--tx,#fff);cursor:pointer;font:inherit}
 .vopt b{font-size:12px;font-weight:600}.vopt.on{border-color:var(--acc);background:var(--panel,#ffffff14)}
-.cct{display:block;width:84px;background-image:url(ch-capas.webp);background-repeat:no-repeat}
-@media (prefers-reduced-motion:reduce){.cc .ccb,.cc .cclg{animation:none!important}}
+.pxc{display:block;position:relative;flex:none}.pxf{position:absolute;left:50%;display:block;background-repeat:no-repeat;image-rendering:pixelated;animation:pxa var(--d) steps(var(--n)) infinite}
+@keyframes pxa{from{background-position:0 0}to{background-position:calc(var(--w)*-1) 0}}
+.cct{display:block;width:64px;height:64px;background-repeat:no-repeat;image-rendering:pixelated}
+.sws{display:flex;flex-wrap:wrap;gap:8px}.sw{width:34px;height:34px;min-height:0;padding:0;border-radius:50%;border:2px solid var(--line,#ffffff33)}.sw.on{border-color:var(--tx,#fff);box-shadow:0 0 0 2px var(--acc)}
+@media (prefers-reduced-motion:reduce){.pxf{animation:none!important}}
 </style>
 </head>
 <body>
@@ -473,7 +467,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='12-nov-2026 · i';
+const APP_V='13-nov-2026 · k';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
@@ -689,7 +683,7 @@ let CHAMPON=true,CHAMP=null;try{CHAMPON=localStorage.getItem('ps_champ')!=='0'}c
 function setChamp(on){CHAMPON=!!on;try{localStorage.setItem('ps_champ',on?'1':'0')}catch(e){}render()}
 function champShow(id,t){if(!CHAMPON||!id)return;CHAMP={id,name:t.name,g:v.g,seen:false}}
 function champClose(){CHAMP=null;const e=document.getElementById('champ');if(e){e.classList.add('out');setTimeout(()=>e.remove(),320)}}
-function champHTML(){const c=CHAMP,fx=CHSHOW?chHTML(chOf(c.id),winPose(c.id),5,.2):'<div style="font-size:90px">🏆</div>';
+function champHTML(){const c=CHAMP,fx=CHSHOW?chHTML(chOf(c.id),winPose(c.id),4.4,.2):'<div style="font-size:90px">🏆</div>';
   const cf=Array.from({length:26},(_,i)=>`<i style="left:${(i*37)%100}%;background:${['#ffd24a','#ff5d73','#3ddc84','#5aa9ff','#b985ff'][i%5]};animation-delay:${(i%9)*.18}s;animation-duration:${2.4+(i%5)*.4}s"></i>`).join('');
   return `<div id="champ" class="champ${c.seen?' seen':''}" onclick="champClose()" role="dialog" aria-label="Campeón"><div class="cfet">${cf}</div><div class="cbox"><div class="cl">🏆 ¡Campeón!</div><div class="cchr">${fx}</div><div class="cn">${nm(c.id)}</div><div class="ct">${esc(c.name)}${c.g&&GAMES[c.g]?' · '+GAMES[c.g].n:''}</div><button class="pri" onclick="event.stopPropagation();champClose()">Seguir</button></div></div>`}
 function throne(n,l,sub){return `<div class="throne"><div class="cr">👑</div><div class="tl">${l}</div><div class="tn">${n}</div><div class="ts">${sub}</div></div>`}
@@ -697,10 +691,10 @@ function shame(n,l,sub){return `<div class="zocalo"><span class="zt">${l}</span>
 function worstIx(a){const i=a.length-1;return a.length>1&&a[i].d>0?i:-1}
 function worstG(G,g){const sp=sortedPlayers(G,g);const i=worstIx(sp.map(p=>stat(g,p)));return i>=0?sp[i]:null}
 const rk=(ix,ok,bad)=>bad?'<span class="crown">🔻</span>':ix===0&&ok?'<span class="crown">👑</span>':'<span class="rk">'+(ix+1)+'</span>';
-const winPose=id=>FEST[chOf(id)[4]]||'cheer';
+const winPose=id=>FEST[chOf(id)[12]]||'cheer';
 function leadCard(r){const id=r.id;
   if(!CHSHOW)return throne(r.n,'Agarrá un libro pibe',r.c+' campeonatos'+copTxt(r.cp)+' · '+dTxt(r.d)+'<br>Vení, bajame si podés');
-  return `<div class="lead"><div class="lbeam"></div><div class="lcr">👑</div><div class="lchr">${chHTML(chOf(id),winPose(id),4,.22)}</div><div class="lpod"><span>1</span></div><div class="ltl">Líder de la tabla suprema</div><div class="lnm">${nm(id)}</div><div class="lts">${r.c} ${r.c===1?'campeonato':'campeonatos'}${copTxt(r.cp)} · ${dTxt(r.d)}<br>Agarrá un libro pibe</div></div>`}
+  return `<div class="lead"><div class="lbeam"></div><div class="lcr">👑</div><div class="lchr">${chHTML(chOf(id),winPose(id),3.4,.22)}</div><div class="lpod"><span>1</span></div><div class="ltl">Líder de la tabla suprema</div><div class="lnm">${nm(id)}</div><div class="lts">${r.c} ${r.c===1?'campeonato':'campeonatos'}${copTxt(r.cp)} · ${dTxt(r.d)}<br>Agarrá un libro pibe</div></div>`}
 function throneG(){const G=S.games[v.g];const p=sortedPlayers(G,v.g)[0];if(!p)return'';const s=stat(v.g,p);if(score(s)<=0)return'';
   return throne(nm(p),'El rey de '+GAMES[v.g].n,s.c+(s.c===1?' campeonato':' campeonatos')+copTxt(s.cp)+' · '+dTxt(s.d)+'<br>Vení, bajame si podés')}
 function delT2(rev){const t=curT(),G=S.games[v.g];
@@ -1408,11 +1402,13 @@ const PJ=['','rulos','gorra','afro','skater','nerd','gamer','pelado','punk','rub
 const POSEF=['cheer','brag','polish','idle'],POSEFN=['Festejo','Fanfarrón','Limpiando','Parado'];
 const pjv=v=>v>0?{c:Math.floor((v-1)/5)+1,s:(v-1)%5}:{c:0,s:0},pjFile=v=>{const o=pjv(v);return 'pj-'+PJ[o.c]+STYF[o.s]+'.webp'};
 const CHMAX=[SKINS.length,CHN.hair.length,HAIRC.length,CHN.shirt.length,CLOTHC.length,CLOTHC.length,CHN.pants.length,PANTC.length,SHOEC.length,CHN.hat.length,CLOTHC.length,CHN.gl.length,PROPN.length,1+(PJ.length-1)*5,4,1+CLOTHC.length,1+PANTC.length,1+HAIRC.length,1+SHOEC.length];
-/* personaje por capas: ch=[99,cabeza,torso,piernas,festejo] (el 99 marca el formato nuevo) */
-const CCN={head:['Gorro','Rulos','Rodete'],torso:['Campera','Buzo','Remera'],legs:['Jean','Short']},FEST=['cheer','brag','walk'],FESTN=['Saltito','Fanfarrón','Caminando'];
-const CCMAX=[100,3,3,2,3];
-const normCh=a=>{if(!Array.isArray(a)||a[0]!==99)return null;return CCMAX.map((m,i)=>{const n=Math.floor(+a[i]);return i===0?99:n>=0&&n<m?n:0})};
-const defCh=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;const r=()=>{h=(h*1103515245+12345)>>>0;return h>>>8};return [99,r()%3,r()%3,r()%2,0]};
+/* personaje pixel art (LPC): ch=[98,piel,pelo,cPelo,gorro,cGorro,remera,cRemera,pantalon,cPantalon,calzado,cCalzado,festejo] (el 98 marca el formato) */
+const PXN={skin:['Clara','Trigueña','Bronceada','Morena'],hair:['Rulos','Despeinado','Rodete','Revuelto','Afro','Largo'],hat:['Ninguno','Pañuelo','Vincha','Gorra','Bombín','Galera','Navidad'],shirt:['Remera','Manga larga','Cárdigan'],legs:['Pantalón','Short','Botamanga'],shoes:['Zapatillas','Botas']};
+const PXT=[['Negro','#2b2b30'],['Castaño','#6b4226'],['Rubio','#d9b44a'],['Pelirrojo','#b5482a'],['Blanco','#f2f2f2'],['Gris','#8a8f98'],['Rojo','#d23b3b'],['Naranja','#f08a2e'],['Amarillo','#f2d03b'],['Verde','#3fa34d'],['Celeste','#4aa8e0'],['Azul','#2f55c9'],['Violeta','#7a4bc2'],['Rosa','#e86fa8']];
+const FEST=['cheer','brag','run'],FESTN=['Saltito','Saludo','Corriendo'];
+const CCMAX=[100,4,6,14,7,14,3,14,3,14,2,14,3];
+const normCh=a=>{if(!Array.isArray(a)||a[0]!==98)return null;return CCMAX.map((m,i)=>{const n=Math.floor(+a[i]);return i===0?98:n>=0&&n<m?n:0})};
+const defCh=id=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;const r=()=>{h=(h*1103515245+12345)>>>0;return h>>>8};return [98,r()%4,r()%6,[0,1,2,3,0,5][r()%6],0,0,r()%3,r()%14,r()%3,[11,0,1,5,11][r()%5],r()%2,[0,4,6,11][r()%4],0]};
 const chOf=fid=>{const u=fUid(fid);return normCh(u&&lookOf(u).ch)||defCh(fid)};
 const shade=(c,f)=>'#'+[1,3,5].map(i=>Math.min(255,Math.round(parseInt(c.substr(i,2),16)*f)).toString(16).padStart(2,'0')).join('');
 const PIMG={};
@@ -1566,34 +1562,47 @@ const CHS={};
 function chStrip(c,pn){const k=c.join('.')+'|'+pn;if(CHS[k])return CHS[k];if(c[13]>0){const im=pimg(pjFile(c[13]));if(im)return CHS[k]=pjStrip(c,pn,im)}const fr=pn==='show'?[...POSES.polish,...POSES.polish,...POSES.brag]:POSES[pn],cv=document.createElement('canvas');cv.width=CWD*fr.length;cv.height=CHT;const x=cv.getContext('2d');
   fr.forEach((f,i)=>x.drawImage(drawFrame(c,f),i*CWD,0));return CHS[k]={u:cv.toDataURL(),n:fr.length}}
 /* Personajes por capas (cabeza, torso, piernas). Poner CHARS_ON=false para ocultarlos */
-const CHAR_DEV=['joacososa01@gmail.com'];/* mientras estén en pruebas, solo estas cuentas ven los personajes; vaciar la lista y poner CHARS_ALL=true para abrirlos a todos */
+const CHAR_DEV=[];/* DESACTIVADO por ahora: para volver a verlos solo vos, poner ['joacososa01@gmail.com'] */ /* mientras estén en pruebas, solo estas cuentas ven los personajes; vaciar la lista y poner CHARS_ALL=true para abrirlos a todos */
 const CHARS_ALL=false;let CHARS_ON=CHARS_ALL,CHSHOW=false;
 function chGate(){CHARS_ON=CHARS_ALL||!!(USER&&USER.email&&CHAR_DEV.includes(USER.email.toLowerCase()));CHSHOW=false;if(CHARS_ON)try{CHSHOW=localStorage.getItem('ps_chr')!=='0'}catch(e){}}
 function setChr(on){CHSHOW=!!on;try{localStorage.setItem('ps_chr',on?'1':'0')}catch(e){}render()}
-/* una hoja de imagen (ch-capas.webp, 800x431) con todas las piezas */
-const CCS={W:800,H:438};
-function ccPose(pn){return pn==='walk'?'walk':pn==='cheer'?'cheer':pn==='brag'?'brag':'idle'}
-function chHTML(c,pn,k){const s=CHT*k/320,u=s,p=ccPose(pn),w=180*s,h=320*s,bs=`${CCS.W*s}px ${CCS.H*s}px`;
-  const L=(t,hh,ww,x,y,ex)=>`<span class="ccl ${ex||''}" style="top:${t*s}px;height:${hh*s}px;width:${ww*s}px;background-size:${bs};background-position:-${x*s}px -${y*s}px"></span>`;
-  const lx=p==='walk'?0:200;
-  return `<span class="cc ${p}" style="width:${w}px;height:${h}px;--u:${u}px;--e:-${800*s}px" role="img" aria-label="Personaje"><span class="ccb">${L(209,111,200,lx,213+c[3]*113,'cclg')}${L(127,83,180,c[2]*180,129)}${L(0,128,180,c[1]*180,0)}</span></span>`}
-const ccThumb=(part,i)=>{const o={head:[180,128,i*180,0],torso:[180,81,i*180,130],legs:[200,111,200,213+i*113]}[part],f=84/o[0],hh=o[1]*f;
-  return `<span class="cct" style="height:${hh}px;background-size:${CCS.W*f}px ${CCS.H*f}px;background-position:-${o[2]*f}px -${o[3]*f}px"></span>`};
+/* Personajes pixel art. Arte: Universal LPC Spritesheet (ver creditos-personajes.txt). Una hoja (px-capas.png): 24 capas de 576x384, 6 animaciones x hasta 9 cuadros de 64x64.
+   Capas: 0-3 piel, 4-9 pelo, 10-15 gorro, 16-18 remera, 19-21 pantalon, 22-23 calzado. Se tiñen por codigo (multiplicando por el color elegido). */
+const PXA={walk:[0,9,.72],idle:[1,2,1.2],cheer:[2,5,.8],run:[3,8,.6],brag:[4,3,1.1],sit:[5,1,1]};
+const PXP={walk:'walk',idle:'idle',polish:'idle',cheer:'cheer',brag:'brag',run:'run',sit:'sit',show:'idle'};
+let PXI=null,PXL=0;const PXK={},PXC={};
+function pxAtlas(){if(PXL)return PXI;if(!PXI){PXI=new Image();PXI.onload=()=>{PXL=1;render()};PXI.onerror=()=>{};PXI.src='px-capas.png?v=1'}return null}
+function pxLayer(i,hex){const k=i+'|'+(hex||'');if(PXK[k])return PXK[k];const cv=document.createElement('canvas');cv.width=576;cv.height=384;const x=cv.getContext('2d');x.drawImage(PXI,0,-i*384);
+  if(hex){try{const d=x.getImageData(0,0,576,384),p=d.data,r=parseInt(hex.substr(1,2),16),g=parseInt(hex.substr(3,2),16),b=parseInt(hex.substr(5,2),16);
+    for(let j=0;j<p.length;j+=4){if(!p[j+3])continue;const l=Math.min(1.15,(p[j]*.299+p[j+1]*.587+p[j+2]*.114)/225);p[j]=Math.min(255,r*l);p[j+1]=Math.min(255,g*l);p[j+2]=Math.min(255,b*l)}x.putImageData(d,0,0)}catch(e){}}
+  return PXK[k]=cv}
+function pxLayers(c){const T=i=>PXT[c[i]][1],L=[pxLayer(22+c[10],T(11)),pxLayer(19+c[8],T(9)),pxLayer(c[1]),pxLayer(16+c[6],T(7)),pxLayer(4+c[2],T(3))];if(c[4]>0)L.push(pxLayer(9+c[4],T(5)));return L}
+function pxStrip(c,an){const A=PXA[an]||PXA.idle,k=c.slice(1,12).join('.')+'|'+an;if(PXC[k])return PXC[k];const L=pxLayers(c),cv=document.createElement('canvas');cv.width=64*A[1];cv.height=64;const x=cv.getContext('2d');
+  for(let f=0;f<A[1];f++)L.forEach(l=>x.drawImage(l,f*64,A[0]*64,64,64,f*64,0,64,64));return PXC[k]={u:cv.toDataURL(),n:A[1],d:A[2]}}
+function winPoseOf(c){return FEST[c[12]]||'cheer'}
+function chHTML(c,pn,k){const an=PXP[pn]||'idle',bh=CHT*k,bw=bh*.5,m=Math.max(1,Math.round(bh*64/52/64)),box=`<span class="pxc" style="width:${bw}px;height:${bh}px" role="img" aria-label="Personaje">`;
+  if(!pxAtlas())return box+'</span>';const st=pxStrip(c,an),W=64*m;
+  return box+`<span class="pxf" style="width:${W}px;height:${W}px;margin-left:-${W/2}px;bottom:-${2*m}px;background-image:url(${st.u});background-size:${W*st.n}px ${W}px;--w:${W*st.n}px;--d:${st.d}s;--n:${st.n}${st.n>1?'':';animation:none'}"></span></span>`}
+const PXI_={skin:1,hair:2,hat:4,shirt:6,legs:8,shoes:10},PXCI={hair:3,hat:5,shirt:7,legs:9,shoes:11},PXCR={skin:[8,6,48],hair:[14,2,36],hat:[14,2,36],shirt:[14,18,36],legs:[14,28,36],shoes:[14,28,36]};
+const ccThumb=(c,part,j)=>{if(!pxAtlas())return '<span class="cct"></span>';const cf=c.slice();cf[PXI_[part]]=j;const st=pxStrip(cf,'idle'),r=PXCR[part],f=64/r[2];
+  return `<span class="cct" style="background-image:url(${st.u});background-size:${64*st.n*f}px ${64*f}px;background-position:-${r[0]*f}px -${r[1]*f}px"></span>`};
 /* vestidor */
-let CHD=null,CHP='walk',CHT_='head';
-const CCT=[['head','Cabeza'],['torso','Torso'],['legs','Piernas']],CCI={head:1,torso:2,legs:3};
-function charEd(){const me=S&&S.friends.find(f=>f.uid===USER.uid);if(!CHD)CHD=normCh(lookOf(USER.uid).ch)||defCh(USER.uid);const c=CHD,part=CHT_;
+let CHD=null,CHP='walk',CHT_='skin';
+const CCT=[['skin','Piel'],['hair','Pelo'],['hat','Gorro'],['shirt','Remera'],['legs','Pantalón'],['shoes','Calzado']];
+function charEd(){const me=S&&S.friends.find(f=>f.uid===USER.uid);if(!CHD)CHD=normCh(lookOf(USER.uid).ch)||defCh(USER.uid);const c=CHD,part=CHT_,ci=PXCI[part];
   return `<div class="top"><button class="ghost" onclick="go({s:'profile'});CHD=null">←</button><h2>Vestidor</h2></div>
-<div class="vest"><div class="vdoor l"></div><div class="vdoor r"></div><div class="vspot"></div><div class="vcr">${chHTML(c,CHP,4.4)}</div><div class="vfloor"></div></div>
-<div class="chips" style="justify-content:center;margin:10px 0 0"><button class="chip ${CHP==='walk'?'on':''}" onclick="CHP='walk';render()">Caminando</button><button class="chip ${CHP==='idle'?'on':''}" onclick="CHP='idle';render()">Parado</button></div>
+<div class="vest"><div class="vdoor l"></div><div class="vdoor r"></div><div class="vspot"></div><div class="vcr">${chHTML(c,CHP,3.6)}</div><div class="vfloor"></div></div>
+<div class="chips" style="justify-content:center;margin:10px 0 0">${[['walk','Caminando'],['idle','Parado'],['run','Corriendo'],['cheer','Saltando'],['brag','Saludo']].map(([p,n])=>`<button class="chip ${CHP===p?'on':''}" onclick="CHP='${p}';render()">${n}</button>`).join('')}</div>
 <p class="note" style="text-align:center;margin:6px 0 0">@${esc(ME.nick)}${me?'':' · sumate como jugador al grupo para verlo en las vitrinas'}</p>
-<div class="tabs" style="margin:12px 0 8px">${CCT.map(([k,n])=>`<button class="${part===k?'on':''}" onclick="CHT_='${k}';render()">${n}</button>`).join('')}</div>
-<div class="vgrid">${CCN[part].map((n,j)=>`<button class="vopt ${c[CCI[part]]===j?'on':''}" onclick="chSet(${CCI[part]},${j})" aria-label="${n}">${ccThumb(part,j)}<b>${n}</b></button>`).join('')}</div>
-<div class="card" style="text-align:left;margin-top:12px"><p class="note" style="margin:0 0 6px"><b style="color:var(--tx)">Tu festejo</b> · lo que hace cuando sos líder o campeón.</p><div class="chips">${FESTN.map((n,j)=>`<button class="chip ${c[4]===j?'on':''}" onclick="chSet(4,${j})">${n}</button>`).join('')}</div></div>
+<div class="tabs" style="margin:12px 0 8px;flex-wrap:wrap">${CCT.map(([k,n])=>`<button class="${part===k?'on':''}" onclick="CHT_='${k}';render()">${n}</button>`).join('')}</div>
+<div class="vgrid">${PXN[part].map((n,j)=>`<button class="vopt ${c[PXI_[part]]===j?'on':''}" onclick="chSet(${PXI_[part]},${j})" aria-label="${n}">${ccThumb(c,part,j)}<b>${n}</b></button>`).join('')}</div>
+${ci?`<p class="note" style="margin:12px 0 4px">Color · <b style="color:var(--tx)">${PXT[c[ci]][0]}</b></p><div class="sws">${PXT.map((t,j)=>`<button class="sw ${c[ci]===j?'on':''}" style="background:${t[1]}" onclick="chSet(${ci},${j})" aria-label="${t[0]}"></button>`).join('')}</div>`:''}
+<div class="card" style="text-align:left;margin-top:12px"><p class="note" style="margin:0 0 6px"><b style="color:var(--tx)">Tu festejo</b> · lo que hace cuando sos líder o campeón.</p><div class="chips">${FESTN.map((n,j)=>`<button class="chip ${c[12]===j?'on':''}" onclick="chSet(12,${j})">${n}</button>`).join('')}</div></div>
 <div class="row2"><button onclick="chRnd()">🎲 Aleatorio</button><button class="pri" onclick="chSave()">Guardar personaje</button></div>
-<p class="note" style="text-align:center">Se ve en tu vitrina y lo ven los demás del grupo.</p>`}
-function chSet(i,j){CHD[i]=j;if(i===4&&FEST[j]!=='walk')CHP=FEST[j];render()}
-function chRnd(){CHD=[99,Math.floor(Math.random()*3),Math.floor(Math.random()*3),Math.floor(Math.random()*2),CHD?CHD[4]:0];render()}
+<p class="note" style="text-align:center">Se ve en tu vitrina y lo ven los demás del grupo.</p>
+<details class="note" style="margin-top:10px"><summary>Créditos del arte</summary><p style="margin:6px 0 0">Personajes basados en el <i>Universal LPC Spritesheet Character Generator</i> (Liberated Pixel Cup). Autores: Stephen Challener (Redshrike), Eliza Wyatt (ElizaWy), Benjamin K. Smith (BenCreating), bluecarrot16, JaidynReiman, Johannes Sjölund (wulax), Matthew Krohn (makrohn), Manuel Riecke (MrBeast), Marcel van de Steeg (MadMarcel), Mandi Paugh, Durrani, Evert, MuffinElZangano, Nila122, TheraHedwig. Licencias según la pieza: CC-BY-SA 3.0, GPL 3.0, OGA-BY 3.0, CC-BY 3.0, CC0. Detalle por pieza en creditos-personajes.txt.</p></details>`}
+function chSet(i,j){CHD[i]=j;if(i===12)CHP=FEST[j];render()}
+function chRnd(){const d=defCh(String(Math.random())+Date.now());d[12]=CHD?CHD[12]:0;CHD=d;render()}
 async function chSave(){await setLookF({ch:CHD});toast('Personaje guardado.')}
 
 function render(reset){RN++;
