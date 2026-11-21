@@ -476,7 +476,7 @@ button:active{transform:scale(.96)}
 .ghost{background:rgba(255,255,255,.04)}
 .top>.ghost:first-child{width:44px;min-height:44px;padding:0;font-size:20px;border-radius:14px;background:rgba(255,255,255,.06)}
 /* superficies */
-.card,.throne,.strip,.tcd,.vsheet,.brsh,.imgp,.mnu,.rob,.tabs,.t-item,.glb{position:relative}
+.card,.throne,.strip,.tcd,.rob,.tabs,.t-item,.glb{position:relative}
 .card{border-radius:18px;background:linear-gradient(160deg,color-mix(in srgb,var(--acc) 6%,var(--panel)),var(--panel) 60%);border-color:color-mix(in srgb,var(--acc) 16%,var(--line));box-shadow:0 10px 30px -18px #000}
 .card h3{font-size:19px}
 .in{border-radius:12px;background:rgba(255,255,255,.05);border-color:color-mix(in srgb,var(--acc) 18%,var(--line));transition:border-color .25s,box-shadow .25s}
@@ -626,7 +626,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 function migrate(r){if(r&&r.groups&&r.groups.length)return r;const g={id:nid(),name:'Mi grupo',...blank()};if(r&&r.games){g.friends=r.friends||[];g.games=r.games}return{groups:[g],cur:g.id}}
 let S=null;function setS(){S=R.groups.find(g=>g.id===R.cur)||R.groups[0]||null;if(S)R.cur=S.id}
 let USER=null,authChecked=false,ready=false,loginErr='',subs={},tms={};
-const APP_V='21-nov-2026 · l';
+const APP_V='21-nov-2026 · m';
 const isAdminOf=g=>!!(g&&USER&&(g.owner===USER.uid||(g.admins||[]).includes(USER.uid)));
 const canEdit=()=>isAdminOf(S);
 let toastT=null;
